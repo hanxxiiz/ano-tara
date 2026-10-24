@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-void main() {
-  runApp(const MyApp());
+Future<void> main() async {
+  await Supabase.initialize(
+    url: 'https://mfeoezkjndigezqrcehh.supabase.co',
+    publishableKey: 'sb_publishable_AkrMT6v0CFsSfENL1KUovQ_nCIifJ4y',
+  );
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
