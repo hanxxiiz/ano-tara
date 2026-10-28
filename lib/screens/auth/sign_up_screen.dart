@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../app_routes.dart';
 import '../../widgets/auth_widgets.dart';
 import 'login_screen.dart';
 import 'validators.dart';
+import 'package:anotara/main.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -30,10 +32,48 @@ class _SignUpScreenState extends State<SignUpScreen> {
     super.dispose();
   }
 
-  void _signUp() {
-    if (!_formKey.currentState!.validate()) return;
-    // TODO: create the account with Supabase and save the profile fields.
-    Navigator.of(context).pushNamedAndRemoveUntil(AppRoutes.onboarding, (_) => false);
+  // creates the account with Supabase.
+  bool _loading = false;
+
+  void _show(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  Future<void> _signUp() async {
+    if (_loading || !_formKey.currentState!.validate()) return;
+    setState(() => _loading = true);
+
+    try {
+      final response = await supabase.auth.signUp(
+        email: _email.text.trim(),
+        password: _password.text,
+      );
+      if (!mounted) return;
+
+      // With email confirmation on, Supabase hides "already registered"
+      // by returning a user with no identities.
+      if (response.user?.identities?.isEmpty ?? false) {
+        _show('An account with this email already exists. Try logging in.');
+        return;
+      }
+
+      if (response.session == null) {
+        _show('Check your email to confirm your account.');
+        return;
+      }
+
+      // Signed in. AuthGate reacts to the session, so just clear pushed screens.
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    } on AuthException catch (e) {
+      _show(e.message);
+    } catch (_) {
+      _show('Something went wrong. Please try again.');
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   void _continueWithGoogle() {

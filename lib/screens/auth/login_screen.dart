@@ -5,6 +5,7 @@ import '../../widgets/auth_widgets.dart';
 import 'forgot_password_screen.dart';
 import 'sign_up_screen.dart';
 import 'validators.dart';
+import 'package:anotara/main.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -25,10 +26,29 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _logIn() {
+  // sign in with Supabase (email + password).
+  Future<void> _logIn() async {
     if (!_formKey.currentState!.validate()) return;
-    // TODO: sign in with Supabase (email + password).
-    Navigator.of(context).pushNamedAndRemoveUntil(AppRoutes.home, (_) => false);
+
+    try {
+      final response = await supabase.auth.signInWithPassword(
+        email: _email.text.trim(),
+        password: _password.text,
+      );
+
+      if (!mounted) return;
+
+      if (response.user != null) {
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil(AppRoutes.home, (_) => false);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Something went wrong: $e")));
+    }
   }
 
   void _continueWithGoogle() {
@@ -76,7 +96,10 @@ class _LoginScreenState extends State<LoginScreen> {
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
             ),
-            child: const Text('Forgot password?', style: TextStyle(fontSize: 14)),
+            child: const Text(
+              'Forgot password?',
+              style: TextStyle(fontSize: 14),
+            ),
           ),
         ),
         const SizedBox(height: 20),
