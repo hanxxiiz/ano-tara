@@ -72,17 +72,17 @@ class AppTypography {
         height: 1.4,
       );
 
-  // Input & Form Text (Open Sans)
-  static TextStyle get inputLabel => GoogleFonts.openSans(
-        fontSize: 13.0,
-        fontWeight: FontWeight.w600,
-        color: AppColors.chucky,
+  // Input & Form Text (Urbanist headings & labels)
+  static TextStyle get inputLabel => GoogleFonts.urbanist(
+        fontSize: 14.0,
+        fontWeight: FontWeight.w700,
+        color: AppColors.secondaryDark,
       );
 
-  static TextStyle get inputText => GoogleFonts.openSans(
+  static TextStyle get inputText => GoogleFonts.urbanist(
         fontSize: 15.0,
-        fontWeight: FontWeight.w400,
-        color: AppColors.chucky,
+        fontWeight: FontWeight.w600,
+        color: AppColors.secondaryDark,
       );
 
   static TextStyle get inputHint => GoogleFonts.openSans(

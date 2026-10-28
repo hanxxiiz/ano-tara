@@ -4,9 +4,9 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_radii.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/routes/app_routes.dart';
 import '../../../../components/atoms/app_avatar.dart';
 import '../../../../components/atoms/app_badge.dart';
-import '../../../../components/atoms/app_button.dart';
 import '../../../../components/organisms/app_top_bar.dart';
 import '../../../../components/organisms/availability_panel.dart';
 import '../../../../components/organisms/member_panel.dart';
@@ -53,7 +53,9 @@ class GroupsTab extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Iconsax.user_add, color: AppColors.primaryNavy),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.pushNamed(context, AppRoutes.createGroup);
+            },
             splashRadius: 22,
           ),
         ],
@@ -135,7 +137,9 @@ class GroupsTab extends StatelessWidget {
                     style: AppTypography.titleLarge.copyWith(color: AppColors.chucky),
                   ),
                   TextButton.icon(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.pushNamed(context, AppRoutes.createGroup);
+                    },
                     icon: const Icon(Iconsax.add, size: 16, color: AppColors.primaryOrange),
                     label: Text(
                       'Invite',

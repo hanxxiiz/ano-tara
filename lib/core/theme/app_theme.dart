@@ -105,34 +105,34 @@ class AppTheme {
         ),
       ),
 
-      // Input Decoration Theme
+      // Input Decoration Theme matching Atomic Design
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surfaceMuted,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        hintStyle: GoogleFonts.openSans(
+        fillColor: AppColors.secondaryLight,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        hintStyle: GoogleFonts.urbanist(
           color: AppColors.shayne,
           fontSize: 14,
         ),
         border: OutlineInputBorder(
-          borderRadius: AppRadii.radiusMd,
-          borderSide: const BorderSide(color: AppColors.ann, width: 1),
+          borderRadius: BorderRadius.circular(20.0),
+          borderSide: const BorderSide(color: AppColors.secondaryDark, width: 2.0),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: AppRadii.radiusMd,
-          borderSide: const BorderSide(color: AppColors.ann, width: 1),
+          borderRadius: BorderRadius.circular(20.0),
+          borderSide: const BorderSide(color: AppColors.secondaryDark, width: 2.0),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: AppRadii.radiusMd,
-          borderSide: const BorderSide(color: AppColors.primaryNavy, width: 1.5),
+          borderRadius: BorderRadius.circular(20.0),
+          borderSide: const BorderSide(color: AppColors.secondaryDark, width: 2.0),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: AppRadii.radiusMd,
-          borderSide: const BorderSide(color: AppColors.semanticRed, width: 1),
+          borderRadius: BorderRadius.circular(20.0),
+          borderSide: const BorderSide(color: AppColors.primaryOrange, width: 2.0),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: AppRadii.radiusMd,
-          borderSide: const BorderSide(color: AppColors.semanticRed, width: 1.5),
+          borderRadius: BorderRadius.circular(20.0),
+          borderSide: const BorderSide(color: AppColors.primaryOrange, width: 2.0),
         ),
       ),
 

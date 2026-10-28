@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax/iconsax.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_radii.dart';
 import '../../core/constants/app_typography.dart';
@@ -11,9 +12,18 @@ enum AppBadgeVariant {
   neutralLight,
   semanticRed,
   semanticGreen,
+  organizer,
 }
 
-/// Badge atom for tier badges (e.g. "Plus"), counters ("+3", "7 free"), and status tags.
+enum RsvpStatus {
+  going,
+  maybe,
+  notGoing,
+  pending,
+}
+
+/// Badge atom matching Figma "Badges & status" specification:
+/// Supports organizer pill, counters, tier badges, and RSVP status tiles.
 class AppBadge extends StatelessWidget {
   final String label;
   final AppBadgeVariant variant;
@@ -27,6 +37,13 @@ class AppBadge extends StatelessWidget {
     this.icon,
     this.onTap,
   });
+
+  factory AppBadge.organizer() {
+    return const AppBadge(
+      label: 'Organizer',
+      variant: AppBadgeVariant.organizer,
+    );
+  }
 
   factory AppBadge.tierPlus() {
     return const AppBadge(
@@ -49,6 +66,10 @@ class AppBadge extends StatelessWidget {
     BorderSide border = BorderSide.none;
 
     switch (variant) {
+      case AppBadgeVariant.organizer:
+        bg = AppColors.secondaryDark;
+        fg = AppColors.white;
+        break;
       case AppBadgeVariant.primaryNavy:
         bg = AppColors.primaryNavy;
         fg = AppColors.white;
@@ -112,5 +133,89 @@ class AppBadge extends StatelessWidget {
     }
 
     return badge;
+  }
+}
+
+/// Standalone RSVP status tile matching Figma "Badges & status" board:
+/// Going (Navy), Maybe (Yellow), Not going (Orange), Pending (Grey/Purple).
+class AppRsvpStatusTile extends StatelessWidget {
+  final RsvpStatus status;
+  final VoidCallback? onTap;
+
+  const AppRsvpStatusTile({
+    super.key,
+    required this.status,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    Color bg;
+    Color iconColor;
+    String label;
+
+    switch (status) {
+      case RsvpStatus.going:
+        bg = AppColors.primaryNavy;
+        iconColor = AppColors.white;
+        label = 'Going';
+        break;
+      case RsvpStatus.maybe:
+        bg = AppColors.semanticYellow;
+        iconColor = AppColors.secondaryDark;
+        label = 'Maybe';
+        break;
+      case RsvpStatus.notGoing:
+        bg = AppColors.primaryOrange;
+        iconColor = AppColors.white;
+        label = 'Not going';
+        break;
+      case RsvpStatus.pending:
+        bg = const Color(0xFFC3C0CB);
+        iconColor = AppColors.secondaryDark;
+        label = 'Pending';
+        break;
+    }
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: bg,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.secondaryDark, width: 2.0),
+              boxShadow: const [
+                BoxShadow(
+                  color: AppColors.secondaryDark,
+                  offset: Offset(0, 3),
+                  blurRadius: 0,
+                ),
+              ],
+            ),
+            child: Center(
+              child: Icon(
+                Iconsax.user,
+                color: iconColor,
+                size: 22,
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: AppTypography.caption.copyWith(
+              color: AppColors.secondaryDark,
+              fontWeight: FontWeight.w600,
+              fontSize: 11,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -1,11 +1,10 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_radii.dart';
 import '../../core/constants/app_typography.dart';
 
 enum AppButtonVariant {
   primaryNavy,
+  secondary,
   primaryOrange,
   outline,
   ghost,
@@ -15,10 +14,11 @@ enum AppButtonVariant {
 
 enum AppButtonSize {
   small, // 44px
-  medium, // 50px
+  medium, // 52px
 }
 
-/// A comprehensive button atom adhering to Figma specifications.
+/// A comprehensive button atom adhering to the Ano Tara Atomic Design specifications:
+/// Outlines (2px Ink #0F0331) & Hard Shadows (offset: 0, 4, blur: 0, #0F0331).
 /// Supports default, loading, and disabled states.
 /// Tap target is always guaranteed to be >= 44x44.
 class AppButton extends StatelessWidget {
@@ -62,15 +62,10 @@ class AppButton extends StatelessWidget {
       variant: AppButtonVariant.google,
       isLoading: isLoading,
       isDisabled: isDisabled,
-      iconLeading: Image.network(
-        'https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg',
-        width: 20,
-        height: 20,
-        errorBuilder: (_, __, ___) => const Icon(
-          Icons.g_mobiledata,
-          size: 24,
-          color: AppColors.chucky,
-        ),
+      iconLeading: const Icon(
+        Icons.person,
+        size: 22,
+        color: AppColors.secondaryDark,
       ),
     );
   }
@@ -100,52 +95,53 @@ class AppButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool effectivelyDisabled = isDisabled || isLoading || onPressed == null;
-    final double height = size == AppButtonSize.small ? 44.0 : 50.0;
+    final double height = size == AppButtonSize.small ? 44.0 : 52.0;
 
     Color backgroundColor;
     Color foregroundColor;
-    BorderSide borderSide = BorderSide.none;
+    Border? border = Border.all(color: AppColors.secondaryDark, width: 2.0);
+    List<BoxShadow> boxShadow = const [
+      BoxShadow(
+        color: AppColors.secondaryDark,
+        offset: Offset(0, 4),
+        blurRadius: 0,
+      ),
+    ];
 
     switch (variant) {
       case AppButtonVariant.primaryNavy:
         backgroundColor = effectivelyDisabled
-            ? AppColors.ann.withValues(alpha: 0.5)
+            ? const Color(0xFF8B9CB2)
             : AppColors.primaryNavy;
-        foregroundColor = effectivelyDisabled ? AppColors.shayne : AppColors.white;
+        foregroundColor = AppColors.white;
+        break;
+
+      case AppButtonVariant.secondary:
+      case AppButtonVariant.outline:
+        backgroundColor = effectivelyDisabled
+            ? const Color(0xFFDCDAD5)
+            : AppColors.secondaryLight;
+        foregroundColor = AppColors.secondaryDark;
         break;
 
       case AppButtonVariant.primaryOrange:
+      case AppButtonVariant.destructive:
         backgroundColor = effectivelyDisabled
-            ? AppColors.ann.withValues(alpha: 0.5)
+            ? const Color(0xFFEAA697)
             : AppColors.primaryOrange;
-        foregroundColor = effectivelyDisabled ? AppColors.shayne : AppColors.white;
-        break;
-
-      case AppButtonVariant.outline:
-        backgroundColor = Colors.transparent;
-        foregroundColor = effectivelyDisabled ? AppColors.ann : AppColors.primaryNavy;
-        borderSide = BorderSide(
-          color: effectivelyDisabled ? AppColors.ann : AppColors.primaryNavy,
-          width: 1.5,
-        );
+        foregroundColor = AppColors.white;
         break;
 
       case AppButtonVariant.ghost:
         backgroundColor = Colors.transparent;
         foregroundColor = effectivelyDisabled ? AppColors.ann : AppColors.primaryNavy;
-        break;
-
-      case AppButtonVariant.destructive:
-        backgroundColor = effectivelyDisabled
-            ? AppColors.ann.withValues(alpha: 0.5)
-            : AppColors.semanticRed;
-        foregroundColor = effectivelyDisabled ? AppColors.shayne : AppColors.white;
+        border = null;
+        boxShadow = const [];
         break;
 
       case AppButtonVariant.google:
-        backgroundColor = AppColors.surfaceLight;
-        foregroundColor = effectivelyDisabled ? AppColors.shayne : AppColors.chucky;
-        borderSide = const BorderSide(color: AppColors.ann, width: 1.0);
+        backgroundColor = AppColors.secondaryLight;
+        foregroundColor = effectivelyDisabled ? AppColors.shayne : AppColors.secondaryDark;
         break;
     }
 
@@ -179,7 +175,7 @@ class AppButton extends StatelessWidget {
               style: (size == AppButtonSize.small
                       ? AppTypography.buttonMedium
                       : AppTypography.buttonLarge)
-                  .copyWith(color: foregroundColor),
+                  .copyWith(color: foregroundColor, fontWeight: FontWeight.w700),
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -209,13 +205,14 @@ class AppButton extends StatelessWidget {
       constraints: const BoxConstraints(minWidth: 44.0, minHeight: 44.0),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: AppRadii.radiusMd,
-        border: borderSide != BorderSide.none ? Border.fromBorderSide(borderSide) : null,
+        borderRadius: BorderRadius.circular(20.0),
+        border: border,
+        boxShadow: boxShadow,
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: AppRadii.radiusMd,
+          borderRadius: BorderRadius.circular(18.0),
           onTap: effectivelyDisabled ? null : onPressed,
           child: Padding(
             padding: EdgeInsets.symmetric(

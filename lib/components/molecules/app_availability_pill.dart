@@ -1,58 +1,59 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_radii.dart';
-import '../../core/constants/app_typography.dart';
 
-/// Availability pill molecule for week days selection.
+/// Availability pill molecule matching Figma Step 6:
+/// Wide rounded button with 2px Dark Ink (#0F0331) border and hard drop shadow (0, 4).
+/// Selected: solid Orange (#E24B27) with white text.
+/// Unselected: peach/coral (#F1A591) with white text.
 class AppAvailabilityPill extends StatelessWidget {
   final String day;
   final bool isSelected;
   final VoidCallback onTap;
-  final Color activeColor;
 
   const AppAvailabilityPill({
     super.key,
     required this.day,
     required this.isSelected,
     required this.onTap,
-    this.activeColor = AppColors.primaryOrange,
   });
 
   @override
   Widget build(BuildContext context) {
+    // When selected: Primary Orange #E24B27
+    // When unselected: Soft peach/coral tone #F1A591 (as seen in Figma 6/7)
+    final Color bgColor = isSelected ? AppColors.primaryOrange : const Color(0xFFF1A591);
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: AppRadii.radiusPill,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          constraints: const BoxConstraints(minHeight: 44.0, minWidth: 100.0),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        borderRadius: BorderRadius.circular(20.0),
+        child: Container(
+          width: 154.0,
+          height: 60.0,
           decoration: BoxDecoration(
-            color: isSelected ? activeColor : AppColors.surfaceLight,
-            borderRadius: AppRadii.radiusPill,
+            color: bgColor,
+            borderRadius: BorderRadius.circular(20.0),
             border: Border.all(
-              color: isSelected ? activeColor : AppColors.borderLight,
-              width: 1.5,
+              color: AppColors.secondaryDark,
+              width: 2.0,
             ),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: activeColor.withValues(alpha: 0.25),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    )
-                  ]
-                : null,
-          ),
-          child: Center(
-            child: Text(
-              day,
-              style: AppTypography.buttonMedium.copyWith(
-                color: isSelected ? AppColors.white : AppColors.chucky,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+            boxShadow: const [
+              BoxShadow(
+                color: AppColors.secondaryDark,
+                offset: Offset(0, 4),
+                blurRadius: 0,
               ),
+            ],
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            day,
+            style: GoogleFonts.urbanist(
+              color: AppColors.white,
+              fontWeight: FontWeight.w800,
+              fontSize: 16,
             ),
           ),
         ),

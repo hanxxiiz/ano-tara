@@ -1,172 +1,133 @@
 import 'package:flutter/material.dart';
-import 'package:iconsax/iconsax.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_radii.dart';
 import '../../core/constants/app_typography.dart';
-import '../atoms/app_avatar.dart';
-import '../atoms/app_badge.dart';
+import '../molecules/app_member_action_row.dart';
+import '../molecules/app_search_filter_bar.dart';
 
 class MemberData {
   final String id;
   final String name;
-  final String role; // "Organizer", "Member", etc.
-  final List<String> availableDays; // e.g. ["Mon", "Tue", "Fri"]
+  final String role;
+  final List<String> availableDays;
   final String? avatarUrl;
   final bool isCurrentUser;
 
   const MemberData({
     required this.id,
     required this.name,
-    required this.role,
+    this.role = 'Member',
     this.availableDays = const [],
     this.avatarUrl,
     this.isCurrentUser = false,
   });
 }
 
-/// Member Card / Panel organism matching Figma "Member Card.pdf" & "Member Status.pdf".
-class MemberPanel extends StatelessWidget {
-  final MemberData member;
+/// O05 Member panel organism matching Figma "03 Organisms" board:
+/// Recipe: Search molecule + repeated M04 member action rows.
+/// Accepts data as parameters (`memberNames` or `member` for single item) and supports loading & empty states.
+class MemberPanel extends StatefulWidget {
+  final List<String> memberNames;
+  final MemberData? member;
+  final String searchHint;
+  final ValueChanged<String>? onMemberActionTap;
   final VoidCallback? onTap;
   final VoidCallback? onMorePressed;
+  final bool showSearch;
+  final bool isLoading;
+  final String emptyMessage;
 
   const MemberPanel({
     super.key,
-    required this.member,
+    this.memberNames = const [
+      'Hannah S. Labandero',
+      'Louielyn Abella',
+      'Ellle Bernante',
+    ],
+    this.member,
+    this.searchHint = 'Search members...',
+    this.onMemberActionTap,
     this.onTap,
     this.onMorePressed,
+    this.showSearch = true,
+    this.isLoading = false,
+    this.emptyMessage = 'No matching members found.',
   });
 
   @override
+  State<MemberPanel> createState() => _MemberPanelState();
+}
+
+class _MemberPanelState extends State<MemberPanel> {
+  final _searchController = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final bool isOrganizer = member.role.toLowerCase() == 'organizer';
+    // Backwards-compatible single member row mode
+    if (widget.member != null) {
+      return AppMemberActionRow(
+        name: widget.member!.name,
+        onActionTap: widget.onMorePressed ?? widget.onTap,
+      );
+    }
 
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: AppRadii.radiusLg,
-        border: Border.all(color: AppColors.borderLight, width: 1.0),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: AppRadii.radiusLg,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Top row: Avatar + Name + Role Badge
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    AppAvatar(
-                      name: member.name,
-                      imageUrl: member.avatarUrl,
-                      size: 44,
-                      backgroundColor: isOrganizer
-                          ? AppColors.primaryOrangeLight
-                          : AppColors.primaryNavyLight,
-                      textColor: isOrganizer
-                          ? AppColors.primaryOrange
-                          : AppColors.primaryNavy,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  member.name,
-                                  style: AppTypography.titleMedium.copyWith(color: AppColors.chucky),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              if (member.isCurrentUser) ...[
-                                const SizedBox(width: 6),
-                                Text(
-                                  '(You)',
-                                  style: AppTypography.caption.copyWith(color: AppColors.shayne),
-                                ),
-                              ],
-                            ],
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            member.role,
-                            style: AppTypography.caption.copyWith(
-                              color: isOrganizer ? AppColors.primaryOrange : AppColors.carla,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (onMorePressed != null)
-                      IconButton(
-                        icon: const Icon(Iconsax.more, color: AppColors.shayne, size: 20),
-                        onPressed: onMorePressed,
-                        splashRadius: 20,
-                      )
-                    else
-                      AppBadge(
-                        label: member.role,
-                        variant: isOrganizer
-                            ? AppBadgeVariant.primaryOrange
-                            : AppBadgeVariant.neutralLight,
-                      ),
-                  ],
-                ),
-
-                // General Availability row matching Member Card.pdf
-                if (member.availableDays.isNotEmpty) ...[
-                  const Divider(height: 20),
-                  Row(
-                    children: [
-                      Text(
-                        'General Availability:',
-                        style: AppTypography.caption.copyWith(
-                          color: AppColors.shayne,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Wrap(
-                          spacing: 6,
-                          runSpacing: 4,
-                          children: member.availableDays.map((day) {
-                            return Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: AppColors.surfaceMuted,
-                                borderRadius: AppRadii.radiusSm,
-                                border: Border.all(color: AppColors.ann, width: 0.8),
-                              ),
-                              child: Text(
-                                day,
-                                style: AppTypography.caption.copyWith(
-                                  color: AppColors.chucky,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 10,
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ],
-            ),
-          ),
+    if (widget.isLoading) {
+      return const Padding(
+        padding: EdgeInsets.all(24.0),
+        child: Center(
+          child: CircularProgressIndicator(color: AppColors.primaryNavy),
         ),
-      ),
+      );
+    }
+
+    final filtered = widget.memberNames
+        .where((name) => name.toLowerCase().contains(_query.toLowerCase()))
+        .toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (widget.showSearch) ...[
+          AppSearchFilterBar(
+            hintText: widget.searchHint,
+            controller: _searchController,
+            showFilterButton: false,
+            onChanged: (val) => setState(() => _query = val),
+          ),
+          const SizedBox(height: 14),
+        ],
+        if (filtered.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceLight,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.secondaryDark, width: 1.5),
+            ),
+            child: Center(
+              child: Text(
+                widget.emptyMessage,
+                style: AppTypography.bodySmall.copyWith(color: AppColors.carla),
+              ),
+            ),
+          )
+        else
+          for (int i = 0; i < filtered.length; i++) ...[
+            AppMemberActionRow(
+              name: filtered[i],
+              onActionTap: () => widget.onMemberActionTap?.call(filtered[i]),
+            ),
+            if (i < filtered.length - 1) const SizedBox(height: 12),
+          ],
+      ],
     );
   }
 }

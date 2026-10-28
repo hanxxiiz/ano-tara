@@ -1,123 +1,157 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_radii.dart';
 import '../../core/constants/app_typography.dart';
-import '../atoms/app_badge.dart';
-import '../atoms/app_button.dart';
+import '../atoms/app_icon.dart';
 
-/// Overview Summary Panel organism matching Figma "Card #6.pdf".
-/// Features AI Generation CTA, Plus tier badge, and customizable card summary.
+class OverviewMetricData {
+  final Color badgeColor;
+  final IconData badgeIcon;
+  final String value;
+  final String label;
+
+  const OverviewMetricData({
+    required this.badgeColor,
+    required this.badgeIcon,
+    required this.value,
+    required this.label,
+  });
+}
+
+/// O04 Overview summary panel organism matching Figma "03 Organisms" board:
+/// Recipe: A set of metric molecules: icon + value + label.
+/// Accepts customizable parameters so it works on different screens.
 class OverviewSummaryPanel extends StatelessWidget {
-  final String title;
-  final String description;
-  final String? tierBadgeText;
-  final VoidCallback? onGenerateAi;
-  final VoidCallback? onViewDetails;
-  final bool isAiLoading;
+  final String availableToday;
+  final String upcomingTrips;
+  final String totalExpenses;
+  final String destinations;
+  final List<OverviewMetricData>? customMetrics;
+  final bool isLoading;
 
   const OverviewSummaryPanel({
     super.key,
-    this.title = 'AI Trip Intelligence',
-    this.description =
-        'Get smart itinerary recommendations, budget splitting suggestions, and group schedule coordination optimized by AI.',
-    this.tierBadgeText = 'Plus',
-    this.onGenerateAi,
-    this.onViewDetails,
-    this.isAiLoading = false,
+    this.availableToday = '5/7',
+    this.upcomingTrips = '3',
+    this.totalExpenses = 'P50,000',
+    this.destinations = '4',
+    this.customMetrics,
+    this.isLoading = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFF0F2647),
-            AppColors.primaryNavy,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+    if (isLoading) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24.0),
+          child: CircularProgressIndicator(color: AppColors.primaryNavy),
         ),
-        borderRadius: AppRadii.radiusXl,
-        boxShadow: [
+      );
+    }
+
+    final metrics = customMetrics ??
+        [
+          OverviewMetricData(
+            badgeColor: AppColors.primaryNavy,
+            badgeIcon: Iconsax.calendar_add5,
+            value: availableToday,
+            label: 'Available Today',
+          ),
+          OverviewMetricData(
+            badgeColor: AppColors.primaryOrange,
+            badgeIcon: Iconsax.map5,
+            value: upcomingTrips,
+            label: 'Upcoming Trips',
+          ),
+          OverviewMetricData(
+            badgeColor: AppColors.semanticYellow,
+            badgeIcon: Iconsax.wallet_25,
+            value: totalExpenses,
+            label: 'Total Expenses',
+          ),
+          OverviewMetricData(
+            badgeColor: const Color(0xFF3B3254),
+            badgeIcon: Iconsax.location5,
+            value: destinations,
+            label: 'Destinations',
+          ),
+        ];
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          children: [
+            Expanded(child: _buildMetricCard(metrics[0])),
+            const SizedBox(width: 12),
+            Expanded(child: _buildMetricCard(metrics[1])),
+          ],
+        ),
+        if (metrics.length >= 4) ...[
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(child: _buildMetricCard(metrics[2])),
+              const SizedBox(width: 12),
+              Expanded(child: _buildMetricCard(metrics[3])),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildMetricCard(OverviewMetricData metric) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.secondaryDark, width: 2.0),
+        boxShadow: const [
           BoxShadow(
-            color: AppColors.primaryNavy.withValues(alpha: 0.3),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
+            color: AppColors.secondaryDark,
+            offset: Offset(0, 3),
+            blurRadius: 0,
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          // Header: Title and Plus Tier Badge
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Row(
-                children: [
-                  const Icon(
-                    Iconsax.magicpen,
-                    color: AppColors.semanticYellow,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    title,
-                    style: AppTypography.titleLarge.copyWith(color: AppColors.white),
-                  ),
-                ],
-              ),
-              if (tierBadgeText != null)
-                AppBadge(
-                  label: tierBadgeText!,
-                  variant: AppBadgeVariant.tierYellow,
-                ),
-            ],
-          ),
-          const SizedBox(height: 12),
-
-          // Description Card
-          Text(
-            description,
-            style: AppTypography.bodyMedium.copyWith(
-              color: AppColors.white.withValues(alpha: 0.85),
-              height: 1.5,
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: metric.badgeColor,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Center(
+              child: AppIcon(metric.badgeIcon, color: AppColors.white, size: 22),
             ),
           ),
-          const SizedBox(height: 20),
-
-          // Action Buttons Row
-          Row(
-            children: [
-              Expanded(
-                child: AppButton(
-                  text: 'Generate with AI',
-                  variant: AppButtonVariant.primaryOrange,
-                  size: AppButtonSize.small,
-                  isLoading: isAiLoading,
-                  iconLeading: const Icon(
-                    Iconsax.cpu_charge,
-                    size: 16,
-                    color: AppColors.white,
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  metric.value,
+                  style: AppTypography.titleLarge.copyWith(
+                    color: AppColors.secondaryDark,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 16,
                   ),
-                  onPressed: onGenerateAi,
                 ),
-              ),
-              if (onViewDetails != null) ...[
-                const SizedBox(width: 12),
-                AppButton(
-                  text: 'Details',
-                  variant: AppButtonVariant.outline,
-                  size: AppButtonSize.small,
-                  isFullWidth: false,
-                  onPressed: onViewDetails,
+                Text(
+                  metric.label,
+                  style: AppTypography.caption.copyWith(
+                    color: AppColors.carla,
+                    fontSize: 11,
+                  ),
                 ),
               ],
-            ],
+            ),
           ),
         ],
       ),

@@ -26,6 +26,7 @@ class AppColors {
   /// Warning / Accent / Tier Yellow (#F9CF09)
   static const Color semanticYellow = Color(0xFFF9CF09);
   static const Color semanticYellowLight = Color(0xFFFFF9E0);
+  static const Color creamYellow = Color(0xFFFDE8B3);
 
   /// Error / Destructive Red (#F50506)
   static const Color semanticRed = Color(0xFFF50506);

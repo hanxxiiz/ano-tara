@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../../../components/organisms/app_bottom_navigation.dart';
+import '../../../groups/presentation/screens/group_detail_screen.dart';
 import 'home_tab.dart';
 import 'trips_tab.dart';
 import 'create_tab.dart';
-import 'groups_tab.dart';
 import 'profile_tab.dart';
 
 /// Main Shell screen hosting the bottom navigation bar and active tabs.
@@ -38,12 +38,19 @@ class _MainShellScreenState extends State<MainShellScreen> {
       HomeTab(
         onNavigateToTrips: () => _onTabSelected(1),
         onNavigateToGroups: () => _onTabSelected(3),
+        onNavigateToProfile: () => _onTabSelected(4),
       ),
-      const TripsTab(),
+      GroupDetailScreen(
+        groupName: 'Trip to Bantayan',
+        embeddedInShell: true,
+        onNavigateToProfile: () => _onTabSelected(4),
+      ),
       CreateTab(
         onTripCreated: () => _onTabSelected(1),
       ),
-      const GroupsTab(),
+      TripsTab(
+        onNavigateToProfile: () => _onTabSelected(4),
+      ),
       const ProfileTab(),
     ];
 

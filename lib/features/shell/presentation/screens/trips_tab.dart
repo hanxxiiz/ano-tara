@@ -1,203 +1,283 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_radii.dart';
-import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
-import '../../../../components/atoms/app_button.dart';
-import '../../../../components/molecules/app_search_bar.dart';
-import '../../../../components/organisms/app_top_bar.dart';
-import '../../../../components/organisms/trip_summary_card.dart';
+import '../../../../core/routes/app_routes.dart';
+import '../../../../components/atoms/app_avatar.dart';
+import '../../../../components/atoms/app_icon.dart';
+import '../../../../components/molecules/app_search_filter_bar.dart';
+import '../../../../components/organisms/app_main_top_bar.dart';
 
 class TripsTab extends StatefulWidget {
-  const TripsTab({super.key});
+  final VoidCallback? onNavigateToProfile;
+
+  const TripsTab({super.key, this.onNavigateToProfile});
 
   @override
   State<TripsTab> createState() => _TripsTabState();
 }
 
 class _TripsTabState extends State<TripsTab> {
-  int _selectedFilter = 0; // 0: All, 1: Upcoming, 2: Completed, 3: Loading Demo
-  final List<String> _filters = ['All', 'Upcoming', 'Completed', 'Simulate Loading'];
+  final _searchController = TextEditingController();
+
+  final List<Map<String, dynamic>> _groups = [
+    {
+      'name': 'Trip to Bantayan',
+      'organizer': 'Louie Abella',
+      'nextTrip': 'Next: Bantayan Trip',
+    },
+    {
+      'name': 'The Group',
+      'organizer': 'Carla Santos',
+      'nextTrip': 'Next: Bantayan Trip',
+    },
+    {
+      'name': 'Weekend Wanderers',
+      'organizer': 'You · Organizer',
+      'nextTrip': 'Next: Bantayan Trip',
+    },
+    {
+      'name': 'Blackpink',
+      'organizer': 'Sarah Jenkins',
+      'nextTrip': 'Next: Cebu Food Crawl',
+    },
+  ];
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: const AppTopBar(
-        showBackButton: false,
-        title: 'Trips & Hangouts',
-        subtitle: 'Manage your group itineraries',
+      backgroundColor: AppColors.white,
+      // Fixed Non-Scrollable Top Bar
+      appBar: AppMainTopBar(
+        onProfileTap: widget.onNavigateToProfile,
+        onNotificationTap: () => Navigator.pushNamed(context, AppRoutes.invitations),
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-              child: AppSearchBar(
-                hintText: 'Search trips by title or location...',
-                onChanged: (val) {},
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // M02 Search & Filter Bar Molecule
+              AppSearchFilterBar(
+                hintText: 'Search trips...',
+                controller: _searchController,
+                onFilterTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Filter options opened'),
+                      backgroundColor: AppColors.primaryNavy,
+                      duration: Duration(milliseconds: 1200),
+                    ),
+                  );
+                },
               ),
-            ),
+              const SizedBox(height: 16),
 
-            // Filter Pills
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: List.generate(_filters.length, (index) {
-                    final isSelected = _selectedFilter == index;
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
-                      child: ChoiceChip(
-                        label: Text(_filters[index]),
-                        selected: isSelected,
-                        onSelected: (_) => setState(() => _selectedFilter = index),
-                        labelStyle: AppTypography.caption.copyWith(
-                          color: isSelected ? AppColors.white : AppColors.chucky,
-                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              // Create a Group Button
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    Navigator.pushNamed(context, AppRoutes.createGroup);
+                  },
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    width: double.infinity,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryNavy,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.secondaryDark, width: 2.0),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: AppColors.secondaryDark,
+                          offset: Offset(0, 4),
+                          blurRadius: 0,
                         ),
-                        selectedColor: AppColors.primaryNavy,
-                        backgroundColor: AppColors.surfaceLight,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: AppRadii.radiusPill,
-                          side: BorderSide(
-                            color: isSelected ? AppColors.primaryNavy : AppColors.borderLight,
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const AppIcon(
+                          Iconsax.profile_2user5,
+                          color: AppColors.white,
+                          size: 24,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          'Create a Group',
+                          style: AppTypography.buttonLarge.copyWith(
+                            color: AppColors.white,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 15,
                           ),
                         ),
-                      ),
-                    );
-                  }),
+                      ],
+                    ),
+                  ),
                 ),
               ),
-            ),
+              const SizedBox(height: 20),
 
-            // Content List
-            Expanded(
-              child: _buildTripsList(),
-            ),
-          ],
+              // Group Cards List
+              for (final group in _groups) ...[
+                _buildGroupCard(
+                  name: group['name'] as String,
+                  organizer: group['organizer'] as String,
+                  nextTrip: group['nextTrip'] as String,
+                ),
+                const SizedBox(height: 16),
+              ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildTripsList() {
-    if (_selectedFilter == 3) {
-      // Loading State Demo
-      return ListView.separated(
-        padding: AppSpacing.screenPadding,
-        itemCount: 3,
-        separatorBuilder: (_, __) => const SizedBox(height: 16),
-        itemBuilder: (_, __) => const TripSummaryCard(
-          title: '',
-          location: '',
-          dateRange: '',
-          type: '',
-          amount: 0,
-          paidByName: '',
-          isLoading: true,
-        ),
-      );
-    }
-
-    if (_selectedFilter == 2) {
-      // Empty State Demo
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+  Widget _buildGroupCard({
+    required String name,
+    required String organizer,
+    required String nextTrip,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          Navigator.pushNamed(
+            context,
+            AppRoutes.groupDetail,
+            arguments: name,
+          );
+        },
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.secondaryDark, width: 2.0),
+            boxShadow: const [
+              BoxShadow(
+                color: AppColors.secondaryDark,
+                offset: Offset(0, 4),
+                blurRadius: 0,
+              ),
+            ],
+          ),
+          child: Row(
             children: [
+              // Terracotta/Orange Large Rounded Square
               Container(
-                width: 72,
-                height: 72,
-                decoration: const BoxDecoration(
-                  color: AppColors.surfaceLight,
-                  shape: BoxShape.circle,
+                width: 86,
+                height: 86,
+                decoration: BoxDecoration(
+                  color: AppColors.primaryOrange,
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Icon(
-                  Iconsax.archive_book,
-                  size: 36,
-                  color: AppColors.shayne,
+                child: const Center(
+                  child: AppIcon(
+                    Iconsax.profile_2user5,
+                    color: AppColors.white,
+                    size: 38,
+                  ),
                 ),
               ),
-              const SizedBox(height: 16),
-              Text(
-                'No Completed Trips Yet',
-                style: AppTypography.titleLarge.copyWith(color: AppColors.chucky),
+              const SizedBox(width: 14),
+
+              // Details Column
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: AppTypography.titleLarge.copyWith(
+                        color: AppColors.secondaryDark,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      organizer,
+                      style: AppTypography.caption.copyWith(
+                        color: AppColors.carla,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+
+                    // Avatars row (reusable A06 Member token cluster)
+                    const AppMemberTokenCluster(extraCount: 3, size: 16),
+                    const SizedBox(height: 8),
+
+                    // Next Trip Pill
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFD4DEE8),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        nextTrip,
+                        style: AppTypography.caption.copyWith(
+                          color: AppColors.secondaryDark,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 10.5,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 6),
-              Text(
-                'Once your group finishes an adventure, trip records will appear here.',
-                textAlign: TextAlign.center,
-                style: AppTypography.bodySmall,
-              ),
-              const SizedBox(height: 20),
-              AppButton(
-                text: 'View Upcoming Trips',
-                variant: AppButtonVariant.primaryOrange,
-                size: AppButtonSize.small,
-                isFullWidth: false,
-                onPressed: () => setState(() => _selectedFilter = 1),
+
+              // Circular Message / Chat Button on Right
+              GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.groupChat,
+                    arguments: name,
+                  );
+                },
+                child: Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryNavy,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.secondaryDark, width: 2.0),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: AppColors.secondaryDark,
+                        offset: Offset(0, 3),
+                        blurRadius: 0,
+                      ),
+                    ],
+                  ),
+                  child: const Center(
+                    child: AppIcon(
+                      Iconsax.sms5,
+                      color: AppColors.white,
+                      size: 22,
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
         ),
-      );
-    }
-
-    final trips = [
-      (
-        title: 'Bantayan Island Beach & Sunset Camp',
-        location: 'Santa Fe, Bantayan',
-        dateRange: 'Nov 14 - Nov 16, 2026',
-        type: 'Beach Trip',
-        amount: 8500.0,
-        paidByName: 'Louie Abella',
       ),
-      (
-        title: 'Cebu City Heritage & Food Crawl',
-        location: 'Colon & IT Park, Cebu',
-        dateRange: 'Dec 05 - Dec 06, 2026',
-        type: 'Food Trips',
-        amount: 3200.0,
-        paidByName: 'Carla Santos',
-      ),
-      (
-        title: 'Osmeña Peak Sunrise Trek',
-        location: 'Dalaguete, Cebu',
-        dateRange: 'Jan 10 - Jan 11, 2027',
-        type: 'Hiking',
-        amount: 4100.0,
-        paidByName: 'Ann Reyes',
-      ),
-    ];
-
-    return ListView.separated(
-      padding: AppSpacing.screenPadding,
-      itemCount: trips.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 16),
-      itemBuilder: (context, index) {
-        final item = trips[index];
-        return TripSummaryCard(
-          title: item.title,
-          location: item.location,
-          dateRange: item.dateRange,
-          type: item.type,
-          amount: item.amount,
-          paidByName: item.paidByName,
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Selected trip: ${item.title}'),
-                backgroundColor: AppColors.primaryNavy,
-              ),
-            );
-          },
-        );
-      },
     );
   }
 }

@@ -1,76 +1,182 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_typography.dart';
+import 'app_icon.dart';
 
-/// Avatar atom for displaying user pictures or initials, plus stacked avatar groups.
+enum AppAvatarType {
+  singleUser,
+  group,
+  initials,
+}
+
+/// Avatar atom matching Figma "Avatars" board:
+/// Supports single user avatar (yellow circle), group avatar (orange with group icon), and avatar cluster.
 class AppAvatar extends StatelessWidget {
   final String? name;
   final String? imageUrl;
   final double size;
-  final Color backgroundColor;
-  final Color textColor;
+  final AppAvatarType type;
+  final Color? backgroundColor;
+  final Color? textColor;
+  final bool hasBorder;
 
   const AppAvatar({
     super.key,
     this.name,
     this.imageUrl,
-    this.size = 40.0,
-    this.backgroundColor = AppColors.primaryNavyLight,
-    this.textColor = AppColors.primaryNavy,
+    this.size = 44.0,
+    this.type = AppAvatarType.singleUser,
+    this.backgroundColor,
+    this.textColor,
+    this.hasBorder = false,
   });
 
-  String _getInitials() {
-    if (name == null || name!.trim().isEmpty) return '?';
-    final parts = name!.trim().split(' ');
-    if (parts.length >= 2) {
-      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
-    }
-    return parts[0][0].toUpperCase();
+  factory AppAvatar.group({double size = 56.0}) {
+    return AppAvatar(
+      size: size,
+      type: AppAvatarType.group,
+      hasBorder: true,
+      backgroundColor: AppColors.primaryOrange,
+    );
+  }
+
+  factory AppAvatar.singleUser({double size = 44.0}) {
+    return AppAvatar(
+      size: size,
+      type: AppAvatarType.singleUser,
+      backgroundColor: AppColors.semanticYellow,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    Color bg = backgroundColor ?? (type == AppAvatarType.group ? AppColors.primaryOrange : AppColors.semanticYellow);
+
+    Widget childWidget;
+    if (type == AppAvatarType.group) {
+      childWidget = Icon(
+        Iconsax.profile_2user5,
+        color: AppColors.white,
+        size: size * 0.5,
+      );
+    } else if (type == AppAvatarType.singleUser) {
+      childWidget = AppIcon(
+        Iconsax.user5,
+        color: AppColors.white,
+        size: size * 0.55,
+      );
+    } else {
+      final initial = (name != null && name!.isNotEmpty) ? name![0].toUpperCase() : 'U';
+      childWidget = Text(
+        initial,
+        style: TextStyle(
+          color: textColor ?? AppColors.white,
+          fontSize: size * 0.42,
+          fontWeight: FontWeight.w800,
+        ),
+      );
+    }
+
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
+        color: bg,
         shape: BoxShape.circle,
-        color: backgroundColor,
-        border: Border.all(color: AppColors.white, width: 2.0),
+        border: hasBorder ? Border.all(color: AppColors.secondaryDark, width: 2.0) : null,
+        boxShadow: hasBorder
+            ? const [
+                BoxShadow(
+                  color: AppColors.secondaryDark,
+                  offset: Offset(0, 3),
+                  blurRadius: 0,
+                ),
+              ]
+            : null,
       ),
-      clipBehavior: Clip.antiAlias,
-      child: Center(
-        child: imageUrl != null && imageUrl!.isNotEmpty
-            ? Image.network(
-                imageUrl!,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _buildFallback(),
-              )
-            : _buildFallback(),
-      ),
-    );
-  }
-
-  Widget _buildFallback() {
-    if (name != null && name!.trim().isNotEmpty) {
-      return Text(
-        _getInitials(),
-        style: AppTypography.buttonMedium.copyWith(
-          color: textColor,
-          fontSize: size * 0.38,
-        ),
-      );
-    }
-    return Icon(
-      Iconsax.user,
-      size: size * 0.5,
-      color: textColor,
+      child: Center(child: childWidget),
     );
   }
 }
 
-/// Stacked avatars atom showing overlapping avatars and a "+X" overflow indicator.
+/// Reusable member avatar tokens row matching Figma "A06 Member tokens":
+/// 4 overlapping gradient orange-to-peach circles + separate "+3" circle.
+class AppMemberTokenCluster extends StatelessWidget {
+  final int extraCount;
+  final double size;
+
+  const AppMemberTokenCluster({
+    super.key,
+    this.extraCount = 3,
+    this.size = 18.0,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const colors = [
+      Color(0xFFE24B27),
+      Color(0xFFEA7B61),
+      Color(0xFFF2A794),
+      Color(0xFFF9D2C8),
+    ];
+
+    final double overlapStep = size * 0.62;
+    final double stackWidth = size + (colors.length - 1) * overlapStep;
+
+    return SizedBox(
+      height: size,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: stackWidth,
+            height: size,
+            child: Stack(
+              children: [
+                for (int i = 0; i < colors.length; i++)
+                  Positioned(
+                    left: i * overlapStep,
+                    child: Container(
+                      width: size,
+                      height: size,
+                      decoration: BoxDecoration(
+                        color: colors[i],
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          if (extraCount > 0) ...[
+            const SizedBox(width: 4),
+            Container(
+              width: size,
+              height: size,
+              decoration: const BoxDecoration(
+                color: AppColors.primaryOrange,
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Text(
+                  '+$extraCount',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: size * 0.45,
+                    fontWeight: FontWeight.w800,
+                    height: 1.0,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Avatar group showing overlapping member avatars with optional "+N" overflow badge.
 class AppAvatarGroup extends StatelessWidget {
   final List<String> names;
   final int maxVisible;
@@ -85,49 +191,48 @@ class AppAvatarGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final visibleCount = names.length > maxVisible ? maxVisible : names.length;
-    final overflow = names.length - visibleCount;
-
-    final avatarColors = [
-      (AppColors.primaryNavyLight, AppColors.primaryNavy),
-      (AppColors.primaryOrangeLight, AppColors.primaryOrange),
-      (AppColors.semanticYellowLight, AppColors.chucky),
-      (AppColors.surfaceMuted, AppColors.carla),
-    ];
+    final visibleNames = names.take(maxVisible).toList();
+    final overflow = names.length - maxVisible;
 
     return SizedBox(
       height: avatarSize,
-      width: (visibleCount * (avatarSize * 0.72)) + (overflow > 0 ? avatarSize * 0.8 : avatarSize * 0.28),
-      child: Stack(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          for (int i = 0; i < visibleCount; i++)
-            Positioned(
-              left: i * (avatarSize * 0.72),
-              child: AppAvatar(
-                name: names[i],
-                size: avatarSize,
-                backgroundColor: avatarColors[i % avatarColors.length].$1,
-                textColor: avatarColors[i % avatarColors.length].$2,
+          for (int i = 0; i < visibleNames.length; i++)
+            Transform.translate(
+              offset: Offset(i * -8.0, 0),
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.white, width: 2),
+                ),
+                child: AppAvatar(
+                  name: visibleNames[i],
+                  type: AppAvatarType.initials,
+                  size: avatarSize,
+                  backgroundColor: AppColors.primaryOrange,
+                ),
               ),
             ),
           if (overflow > 0)
-            Positioned(
-              left: visibleCount * (avatarSize * 0.72),
+            Transform.translate(
+              offset: Offset(visibleNames.length * -8.0, 0),
               child: Container(
                 width: avatarSize,
                 height: avatarSize,
                 decoration: BoxDecoration(
+                  color: AppColors.chucky,
                   shape: BoxShape.circle,
-                  color: AppColors.carla,
-                  border: Border.all(color: AppColors.white, width: 2.0),
+                  border: Border.all(color: AppColors.white, width: 2),
                 ),
                 child: Center(
                   child: Text(
                     '+$overflow',
-                    style: AppTypography.caption.copyWith(
+                    style: TextStyle(
                       color: AppColors.white,
-                      fontWeight: FontWeight.w700,
                       fontSize: avatarSize * 0.35,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),

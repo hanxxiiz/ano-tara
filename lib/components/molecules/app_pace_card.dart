@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:iconsax/iconsax.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_radii.dart';
-import '../../core/constants/app_typography.dart';
 
-/// Horizontal pace option card molecule for Onboarding Step 5.
+/// Horizontal pace option card molecule for Onboarding Step 5 matching Figma.
+/// Features a 2px Dark Ink (#0F0331) border, hard drop shadow (0, 4), and vibrant orange icon container.
 class AppPaceCard extends StatelessWidget {
   final String title;
   final String description;
@@ -25,54 +24,50 @@ class AppPaceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color bgColor = isSelected ? activeColor : AppColors.surfaceLight;
-    final Color titleColor = isSelected ? AppColors.white : AppColors.chucky;
-    final Color descColor = isSelected ? AppColors.white.withValues(alpha: 0.9) : AppColors.carla;
-    final Color iconColor = isSelected ? AppColors.white : activeColor;
-
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: AppRadii.radiusLg,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          padding: const EdgeInsets.all(16),
-          constraints: const BoxConstraints(minHeight: 72),
+        borderRadius: BorderRadius.circular(20.0),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
-            color: bgColor,
-            borderRadius: AppRadii.radiusLg,
+            color: isSelected ? const Color(0xFFFDECE8) : AppColors.white,
+            borderRadius: BorderRadius.circular(20.0),
             border: Border.all(
-              color: isSelected ? activeColor : AppColors.borderLight,
-              width: 1.5,
+              color: isSelected ? AppColors.primaryOrange : AppColors.secondaryDark,
+              width: 2.0,
             ),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: activeColor.withValues(alpha: 0.25),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    )
-                  ]
-                : null,
+            boxShadow: const [
+              BoxShadow(
+                color: AppColors.secondaryDark,
+                offset: Offset(0, 4),
+                blurRadius: 0,
+              ),
+            ],
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              // Orange Left Badge
               Container(
-                width: 44,
-                height: 44,
+                width: 58,
+                height: 58,
                 decoration: BoxDecoration(
-                  color: isSelected ? AppColors.white.withValues(alpha: 0.2) : activeColor.withValues(alpha: 0.1),
-                  borderRadius: AppRadii.radiusMd,
+                  color: AppColors.primaryOrange,
+                  borderRadius: BorderRadius.circular(14.0),
                 ),
-                child: Icon(
-                  icon,
-                  color: iconColor,
-                  size: 22,
+                child: Center(
+                  child: Icon(
+                    icon,
+                    color: AppColors.white,
+                    size: 28,
+                  ),
                 ),
               ),
               const SizedBox(width: 14),
+
+              // Title and Description
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,21 +75,33 @@ class AppPaceCard extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: AppTypography.titleLarge.copyWith(color: titleColor),
+                      style: GoogleFonts.urbanist(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.secondaryDark,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       description,
-                      style: AppTypography.bodySmall.copyWith(color: descColor),
+                      style: GoogleFonts.openSans(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.carla,
+                        height: 1.35,
+                      ),
                     ),
                   ],
                 ),
               ),
+
               const SizedBox(width: 8),
-              Icon(
-                Iconsax.arrow_right_3,
-                color: isSelected ? AppColors.white : AppColors.shayne,
-                size: 18,
+
+              // Right Arrow Chevron
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: AppColors.secondaryDark,
+                size: 24,
               ),
             ],
           ),

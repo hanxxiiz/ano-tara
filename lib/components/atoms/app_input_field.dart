@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:iconsax/iconsax.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_radii.dart';
-import '../../core/constants/app_typography.dart';
 
-/// Input field atom matching Figma specs (with label, placeholder, icons, password eye, error state).
-class AppInputField extends StatefulWidget {
+/// Input field atom matching Ano Tara Atomic Design ("01 Atoms - Text inputs"):
+/// Uses OutlineInputBorder with 20px rounded corners, solid 2px Dark Ink (#0F0331) or Error Orange (#E24B27) border,
+/// and smooth neutral fill (#E6E3DF). Supports default, disabled, loading, and error states.
+class AppInputField extends StatelessWidget {
   final String? label;
   final String? hint;
   final String? errorText;
+  final bool showErrorCaption;
   final String? helperText;
   final TextEditingController? controller;
   final TextInputType keyboardType;
   final bool isPassword;
   final bool isEnabled;
+  final bool isLoading;
   final bool isReadOnly;
   final Widget? prefixIcon;
   final Widget? suffixIcon;
@@ -28,11 +30,13 @@ class AppInputField extends StatefulWidget {
     this.label,
     this.hint,
     this.errorText,
+    this.showErrorCaption = true,
     this.helperText,
     this.controller,
     this.keyboardType = TextInputType.text,
     this.isPassword = false,
     this.isEnabled = true,
+    this.isLoading = false,
     this.isReadOnly = false,
     this.prefixIcon,
     this.suffixIcon,
@@ -44,131 +48,113 @@ class AppInputField extends StatefulWidget {
   });
 
   @override
-  State<AppInputField> createState() => _AppInputFieldState();
-}
-
-class _AppInputFieldState extends State<AppInputField> {
-  late bool _obscureText;
-  final FocusNode _focusNode = FocusNode();
-  bool _isFocused = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _obscureText = widget.isPassword;
-    _focusNode.addListener(() {
-      setState(() {
-        _isFocused = _focusNode.hasFocus;
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _focusNode.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final bool hasError = widget.errorText != null && widget.errorText!.isNotEmpty;
+    final bool hasError = errorText != null && errorText!.isNotEmpty;
+    final bool effectivelyEnabled = isEnabled && !isLoading;
+
+    final outlineBorder = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(20.0),
+      borderSide: BorderSide(
+        color: hasError
+            ? AppColors.primaryOrange
+            : (effectivelyEnabled ? AppColors.secondaryDark : AppColors.shayne),
+        width: 2.0,
+      ),
+    );
+
+    final Widget? effectiveSuffix = isLoading
+        ? const Padding(
+            padding: EdgeInsets.all(12.0),
+            child: SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.0,
+                color: AppColors.primaryNavy,
+              ),
+            ),
+          )
+        : suffixIcon;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (widget.label != null) ...[
+        if (label != null) ...[
           Text(
-            widget.label!,
-            style: AppTypography.inputLabel.copyWith(
-              color: widget.isEnabled ? AppColors.chucky : AppColors.shayne,
+            label!,
+            style: GoogleFonts.urbanist(
+              fontSize: 14.0,
+              fontWeight: FontWeight.w700,
+              color: effectivelyEnabled ? AppColors.secondaryDark : AppColors.shayne,
             ),
           ),
           const SizedBox(height: 6),
         ],
-        Container(
+        ConstrainedBox(
           constraints: const BoxConstraints(minHeight: 48.0),
-          decoration: BoxDecoration(
-            color: widget.isEnabled ? AppColors.surfaceMuted : AppColors.surfaceLight,
-            borderRadius: AppRadii.radiusMd,
-            border: Border.all(
-              color: hasError
-                  ? AppColors.semanticRed
-                  : _isFocused
-                      ? AppColors.primaryNavy
-                      : AppColors.ann,
-              width: _isFocused ? 1.5 : 1.0,
-            ),
-          ),
           child: TextFormField(
-            controller: widget.controller,
-            focusNode: _focusNode,
-            enabled: widget.isEnabled,
-            readOnly: widget.isReadOnly,
-            obscureText: widget.isPassword ? _obscureText : false,
-            keyboardType: widget.keyboardType,
-            minLines: widget.isPassword ? 1 : widget.minLines,
-            maxLines: widget.isPassword ? 1 : widget.maxLines,
-            onChanged: widget.onChanged,
-            onTap: widget.onTap,
-            validator: widget.validator,
-            style: AppTypography.inputText.copyWith(
-              color: widget.isEnabled ? AppColors.chucky : AppColors.shayne,
+            controller: controller,
+            enabled: effectivelyEnabled,
+            readOnly: isReadOnly,
+            obscureText: isPassword,
+            keyboardType: keyboardType,
+            minLines: isPassword ? 1 : minLines,
+            maxLines: isPassword ? 1 : maxLines,
+            textAlignVertical: TextAlignVertical.center,
+            onChanged: onChanged,
+            onTap: onTap,
+            validator: validator,
+            style: GoogleFonts.urbanist(
+              fontSize: 15.0,
+              fontWeight: FontWeight.w600,
+              color: hasError ? AppColors.primaryOrange : AppColors.secondaryDark,
             ),
-            cursorColor: AppColors.primaryNavy,
+            cursorColor: AppColors.secondaryDark,
+            cursorHeight: 20.0,
             decoration: InputDecoration(
               isDense: true,
-              hintText: widget.hint,
-              hintStyle: AppTypography.inputHint,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              border: InputBorder.none,
-              enabledBorder: InputBorder.none,
-              focusedBorder: InputBorder.none,
-              errorBorder: InputBorder.none,
-              focusedErrorBorder: InputBorder.none,
-              disabledBorder: InputBorder.none,
-              prefixIcon: widget.prefixIcon != null
-                  ? Padding(
-                      padding: const EdgeInsets.only(left: 12, right: 8),
-                      child: widget.prefixIcon,
-                    )
-                  : null,
-              prefixIconConstraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-              suffixIcon: widget.isPassword
-                  ? IconButton(
-                      icon: Icon(
-                        _obscureText ? Iconsax.eye_slash : Iconsax.eye,
-                        color: AppColors.shayne,
-                        size: 20,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscureText = !_obscureText;
-                        });
-                      },
-                      splashRadius: 20,
-                    )
-                  : (widget.suffixIcon != null
-                      ? Padding(
-                          padding: const EdgeInsets.only(right: 12),
-                          child: widget.suffixIcon,
-                        )
-                      : null),
-              suffixIconConstraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+              filled: true,
+              fillColor: effectivelyEnabled ? AppColors.secondaryLight : AppColors.surfaceLight,
+              hintText: hint,
+              hintStyle: GoogleFonts.urbanist(
+                fontSize: 14.0,
+                fontWeight: FontWeight.w500,
+                color: hasError ? AppColors.primaryOrange : AppColors.shayne,
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+              border: outlineBorder,
+              enabledBorder: outlineBorder,
+              focusedBorder: outlineBorder,
+              errorBorder: outlineBorder,
+              focusedErrorBorder: outlineBorder,
+              disabledBorder: outlineBorder,
+              prefixIcon: prefixIcon,
+              prefixIconConstraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+              suffixIcon: effectiveSuffix,
+              suffixIconConstraints: const BoxConstraints(minWidth: 44, minHeight: 44),
             ),
           ),
         ),
-        if (hasError) ...[
+        if (hasError && showErrorCaption) ...[
           const SizedBox(height: 4),
           Text(
-            widget.errorText!,
-            style: AppTypography.caption.copyWith(color: AppColors.semanticRed),
+            errorText!,
+            style: GoogleFonts.urbanist(
+              fontSize: 12.0,
+              fontWeight: FontWeight.w600,
+              color: AppColors.primaryOrange,
+            ),
           ),
-        ] else if (widget.helperText != null) ...[
+        ] else if (helperText != null) ...[
           const SizedBox(height: 4),
           Text(
-            widget.helperText!,
-            style: AppTypography.caption,
+            helperText!,
+            style: GoogleFonts.urbanist(
+              fontSize: 12.0,
+              fontWeight: FontWeight.w500,
+              color: AppColors.shayne,
+            ),
           ),
         ],
       ],

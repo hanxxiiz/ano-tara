@@ -1,211 +1,197 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_radii.dart';
 import '../../core/constants/app_typography.dart';
-import '../atoms/app_avatar.dart';
-import '../atoms/app_badge.dart';
+import '../atoms/app_icon.dart';
+import '../molecules/app_trip_metadata.dart';
 
-/// Trip Summary Card organism matching Figma "Card #4.pdf".
-/// Displays Type, Location, Start - Finish, Title, Amount, Paid by.
-/// Fully accepts data as parameters for reusability across any screen.
+/// O03 Trip summary card organism matching Figma "03 Organisms" board:
+/// Recipe: Photo + title + M08 trip metadata + open-trip action.
+/// Accepts data as parameters for reusability across Home, Group Detail, and Trips screens.
+/// Supports loading and error states.
 class TripSummaryCard extends StatelessWidget {
   final String title;
   final String location;
+  final String groupLabel;
   final String dateRange;
-  final String type;
-  final double amount;
-  final String paidByName;
-  final String? paidByAvatarUrl;
+  final String imageUrl;
   final VoidCallback? onTap;
   final bool isLoading;
+  final String? errorText;
 
   const TripSummaryCard({
     super.key,
-    required this.title,
-    required this.location,
-    required this.dateRange,
-    required this.type,
-    required this.amount,
-    required this.paidByName,
-    this.paidByAvatarUrl,
+    this.title = 'Bantayan Trip',
+    this.location = 'Bantayan, Philippines',
+    this.groupLabel = 'The Group (6 going)',
+    this.dateRange = 'Oct 10 - Oct 15',
+    this.imageUrl = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80',
     this.onTap,
     this.isLoading = false,
+    this.errorText,
   });
-
-  String get formattedAmount {
-    return '₱ ${amount.toStringAsFixed(2).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}';
-  }
 
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return _buildSkeleton();
+      return _buildLoadingState();
     }
 
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: AppRadii.radiusLg,
-        border: Border.all(color: AppColors.borderLight, width: 1.0),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.chucky.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
+    if (errorText != null && errorText!.isNotEmpty) {
+      return _buildErrorState();
+    }
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.secondaryDark, width: 2.0),
+            boxShadow: const [
+              BoxShadow(
+                color: AppColors.secondaryDark,
+                offset: Offset(0, 4),
+                blurRadius: 0,
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: AppRadii.radiusLg,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header row: Type Badge and Location
-                Row(
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Photo Header
+              SizedBox(
+                height: 125,
+                width: double.infinity,
+                child: Image.network(
+                  imageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => _buildBeachFallback(),
+                ),
+              ),
+              Container(
+                height: 1.5,
+                width: double.infinity,
+                color: AppColors.secondaryDark,
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    AppBadge(
-                      label: type,
-                      variant: AppBadgeVariant.primaryNavy,
-                    ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Iconsax.location,
-                          size: 14,
-                          color: AppColors.primaryOrange,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          location,
-                          style: AppTypography.caption.copyWith(
-                            color: AppColors.carla,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                // Title
-                Text(
-                  title,
-                  style: AppTypography.titleLarge.copyWith(color: AppColors.chucky),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 6),
-
-                // Date Range [Start - Finish]
-                Row(
-                  children: [
-                    const Icon(
-                      Iconsax.calendar_1,
-                      size: 14,
-                      color: AppColors.shayne,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      dateRange,
-                      style: AppTypography.bodySmall.copyWith(color: AppColors.shayne),
-                    ),
-                  ],
-                ),
-                const Divider(height: 24),
-
-                // Footer row: Amount and Paid by
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Amount:',
-                          style: AppTypography.caption.copyWith(color: AppColors.shayne),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          formattedAmount,
-                          style: AppTypography.titleLarge.copyWith(
-                            color: AppColors.primaryNavy,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              'Paid by:',
-                              style: AppTypography.caption.copyWith(color: AppColors.shayne),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: AppTypography.titleLarge.copyWith(
+                              color: AppColors.secondaryDark,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 16.5,
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              paidByName,
-                              style: AppTypography.caption.copyWith(
-                                color: AppColors.chucky,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
+                          ),
+                          const SizedBox(height: 8),
+                          // M08 Trip metadata molecule
+                          AppTripMetadata(
+                            location: location,
+                            groupName: groupLabel,
+                            dateRange: dateRange,
+                          ),
+                        ],
+                      ),
+                    ),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(minWidth: 44.0, minHeight: 44.0),
+                      child: const Center(
+                        child: Icon(
+                          Iconsax.arrow_right_1,
+                          color: AppColors.secondaryDark,
+                          size: 26,
                         ),
-                        const SizedBox(width: 8),
-                        AppAvatar(
-                          name: paidByName,
-                          imageUrl: paidByAvatarUrl,
-                          size: 32,
-                        ),
-                      ],
+                      ),
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildSkeleton() {
+  Widget _buildBeachFallback() {
     return Container(
-      height: 160,
-      padding: const EdgeInsets.all(16),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF26A69A),
+            Color(0xFF80CBC4),
+            Color(0xFFFFE082),
+          ],
+        ),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const AppIcon(Iconsax.sun_15, color: Colors.white, size: 36),
+            const SizedBox(height: 4),
+            Text(
+              title,
+              style: AppTypography.caption.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Container(
+      height: 220,
       decoration: BoxDecoration(
         color: AppColors.surfaceLight,
-        borderRadius: AppRadii.radiusLg,
-        border: Border.all(color: AppColors.borderLight, width: 1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.secondaryDark, width: 2.0),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: const Center(
+        child: CircularProgressIndicator(color: AppColors.primaryNavy),
+      ),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.primaryOrangeLight,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.primaryOrange, width: 2.0),
+      ),
+      child: Row(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(width: 80, height: 24, decoration: BoxDecoration(color: AppColors.ann.withValues(alpha: 0.3), borderRadius: AppRadii.radiusPill)),
-              Container(width: 70, height: 16, decoration: BoxDecoration(color: AppColors.ann.withValues(alpha: 0.3), borderRadius: AppRadii.radiusSm)),
-            ],
+          const AppIcon(Iconsax.warning_25, color: AppColors.primaryOrange, size: 24),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              errorText!,
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColors.secondaryDark,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
-          const SizedBox(height: 16),
-          Container(width: 180, height: 20, decoration: BoxDecoration(color: AppColors.ann.withValues(alpha: 0.3), borderRadius: AppRadii.radiusSm)),
-          const SizedBox(height: 8),
-          Container(width: 120, height: 14, decoration: BoxDecoration(color: AppColors.ann.withValues(alpha: 0.3), borderRadius: AppRadii.radiusSm)),
-          const Spacer(),
-          Container(width: double.infinity, height: 28, decoration: BoxDecoration(color: AppColors.ann.withValues(alpha: 0.2), borderRadius: AppRadii.radiusSm)),
         ],
       ),
     );

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_spacing.dart';
-import '../../../../core/constants/app_typography.dart';
 import '../../../../components/atoms/app_button.dart';
 import '../../../../core/routes/app_routes.dart';
 
 /// Landing screen matching Figma Auth Screen 1:
-/// Large orange circle graphic, "Create Account" primary button, "Log In" outline button.
+/// Solid orange circle logo, "Create Account" primary button, "Log In" secondary button.
+/// Follows the Atomic Design system with 2px Ink outlines & hard shadows.
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
@@ -16,56 +15,23 @@ class WelcomeScreen extends StatelessWidget {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Padding(
-          padding: AppSpacing.screenPadding,
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
             children: [
-              const Spacer(flex: 2),
+              const Spacer(flex: 3),
 
-              // Orange Brand Graphic Circle
+              // Solid Orange Brand Graphic Circle
               Container(
-                width: 140,
-                height: 140,
+                width: 190,
+                height: 190,
                 decoration: const BoxDecoration(
                   color: AppColors.primaryOrange,
                   shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Color(0x33E24B27),
-                      blurRadius: 24,
-                      offset: Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: Text(
-                    'ano\ntara',
-                    textAlign: TextAlign.center,
-                    style: AppTypography.h3.copyWith(
-                      color: AppColors.white,
-                      fontWeight: FontWeight.w900,
-                      height: 1.1,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
                 ),
               ),
 
-              const SizedBox(height: 28),
-              Text(
-                'Ano Tara!',
-                style: AppTypography.h1.copyWith(
-                  color: AppColors.chucky,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Plan trips, align schedules, and explore together effortlessly.',
-                textAlign: TextAlign.center,
-                style: AppTypography.bodyMedium,
-              ),
-
-              const Spacer(flex: 3),
+              // Spacing keeping buttons close to the logo
+              const SizedBox(height: 36),
 
               // Action Buttons
               AppButton(
@@ -75,30 +41,16 @@ class WelcomeScreen extends StatelessWidget {
                   Navigator.of(context).pushNamed(AppRoutes.register);
                 },
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
               AppButton(
                 text: 'Log In',
-                variant: AppButtonVariant.outline,
+                variant: AppButtonVariant.secondary,
                 onPressed: () {
                   Navigator.of(context).pushNamed(AppRoutes.login);
                 },
               ),
-              const SizedBox(height: 14),
 
-              // Quick bypass to Design System Showcase for pairing / evaluation
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pushNamed(AppRoutes.showcase);
-                },
-                child: Text(
-                  'Explore Design System & Atoms Gallery',
-                  style: AppTypography.caption.copyWith(
-                    color: AppColors.primaryOrange,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
+              const Spacer(flex: 3),
             ],
           ),
         ),

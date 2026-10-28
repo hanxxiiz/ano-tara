@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_radii.dart';
-import '../../core/constants/app_typography.dart';
 
-/// 6-digit OTP code verification input atom matching Figma design.
+/// 6-digit OTP code verification input atom matching Ano Tara Atomic Design:
+/// Neutral fill (#E8E6E3), 2px solid Dark Ink (#0F0331) border, 16px corner radius,
+/// and hard drop shadow (0, 4) in #0F0331.
 class AppOtpField extends StatefulWidget {
   final int length;
   final ValueChanged<String>? onCompleted;
@@ -87,48 +88,55 @@ class _AppOtpFieldState extends State<AppOtpField> {
       children: List.generate(widget.length, (index) {
         return Container(
           width: 48,
-          height: 52,
+          height: 60,
           decoration: BoxDecoration(
-            color: AppColors.surfaceMuted,
-            borderRadius: AppRadii.radiusMd,
+            color: AppColors.secondaryLight,
+            borderRadius: BorderRadius.circular(16.0),
             border: Border.all(
-              color: widget.hasError
-                  ? AppColors.semanticRed
-                  : _focusNodes[index].hasFocus
-                      ? AppColors.primaryNavy
-                      : AppColors.ann,
-              width: _focusNodes[index].hasFocus ? 1.5 : 1.0,
+              color: widget.hasError ? AppColors.primaryOrange : AppColors.secondaryDark,
+              width: 2.0,
             ),
-          ),
-          child: Center(
-            child: RawKeyboardListener(
-              focusNode: FocusNode(),
-              onKey: (event) {
-                if (event is RawKeyDownEvent &&
-                    event.logicalKey == LogicalKeyboardKey.backspace &&
-                    _controllers[index].text.isEmpty &&
-                    index > 0) {
-                  _focusNodes[index - 1].requestFocus();
-                }
-              },
-              child: TextField(
-                controller: _controllers[index],
-                focusNode: _focusNodes[index],
-                textAlign: TextAlign.center,
-                keyboardType: TextInputType.number,
-                maxLength: 1,
-                cursorColor: AppColors.primaryNavy,
-                style: AppTypography.h3.copyWith(color: AppColors.chucky),
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                decoration: const InputDecoration(
-                  counterText: '',
-                  contentPadding: EdgeInsets.zero,
-                  border: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                ),
-                onChanged: (val) => _onDigitChanged(index, val),
+            boxShadow: const [
+              BoxShadow(
+                color: AppColors.secondaryDark,
+                offset: Offset(0, 4),
+                blurRadius: 0,
               ),
+            ],
+          ),
+          alignment: Alignment.center,
+          child: KeyboardListener(
+            focusNode: FocusNode(),
+            onKeyEvent: (event) {
+              if (event is KeyDownEvent &&
+                  event.logicalKey == LogicalKeyboardKey.backspace &&
+                  _controllers[index].text.isEmpty &&
+                  index > 0) {
+                _focusNodes[index - 1].requestFocus();
+              }
+            },
+            child: TextField(
+              controller: _controllers[index],
+              focusNode: _focusNodes[index],
+              textAlign: TextAlign.center,
+              keyboardType: TextInputType.number,
+              maxLength: 1,
+              cursorColor: AppColors.secondaryDark,
+              style: GoogleFonts.urbanist(
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                color: AppColors.secondaryDark,
+              ),
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              decoration: const InputDecoration(
+                counterText: '',
+                contentPadding: EdgeInsets.zero,
+                filled: false,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+              ),
+              onChanged: (val) => _onDigitChanged(index, val),
             ),
           ),
         );

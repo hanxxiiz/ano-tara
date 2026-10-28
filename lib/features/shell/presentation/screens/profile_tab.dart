@@ -7,7 +7,7 @@ import '../../../../core/constants/app_typography.dart';
 import '../../../../components/atoms/app_avatar.dart';
 import '../../../../components/atoms/app_badge.dart';
 import '../../../../components/atoms/app_button.dart';
-import '../../../../components/organisms/app_top_bar.dart';
+import '../../../../components/organisms/app_main_top_bar.dart';
 import '../../../../core/routes/app_routes.dart';
 
 class ProfileTab extends StatelessWidget {
@@ -17,9 +17,8 @@ class ProfileTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const AppTopBar(
-        showBackButton: false,
-        title: 'My Profile',
+      appBar: AppMainTopBar(
+        onNotificationTap: () => Navigator.pushNamed(context, AppRoutes.invitations),
       ),
       body: SafeArea(
         child: SingleChildScrollView(

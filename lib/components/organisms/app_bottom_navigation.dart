@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_radii.dart';
-import '../../core/constants/app_typography.dart';
+import '../molecules/app_navigation_item.dart';
 
 enum AppTab {
   home,
@@ -12,8 +11,8 @@ enum AppTab {
   profile,
 }
 
-/// Bottom Navigation Bar organism matching Figma "Navigation Bar.pdf".
-/// All tabs have guaranteed >= 44x44 tap targets and clear active states.
+/// O01 Bottom Navigation Bar organism built from AppNavigationItem molecules.
+/// Selected / Pressed tab uses AppColors.primaryNavy (#144885) and unselected uses AppColors.shayne (#868097).
 class AppBottomNavigation extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTabSelected;
@@ -27,17 +26,10 @@ class AppBottomNavigation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.white,
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.chucky.withValues(alpha: 0.06),
-            blurRadius: 16,
-            offset: const Offset(0, -4),
-          ),
-        ],
-        border: const Border(
-          top: BorderSide(color: AppColors.borderLight, width: 1.0),
+        border: Border(
+          top: BorderSide(color: Color(0xFFE8E6E3), width: 1.2),
         ),
       ),
       child: SafeArea(
@@ -47,32 +39,30 @@ class AppBottomNavigation extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(
-                index: 0,
+              AppNavigationItem(
+                icon: Iconsax.home_15,
                 label: 'Home',
-                icon: Iconsax.home_2,
-                activeIcon: Iconsax.home_15,
+                isSelected: currentIndex == 0,
+                onTap: () => onTabSelected(0),
               ),
-              _buildNavItem(
-                index: 1,
+              AppNavigationItem(
+                icon: Iconsax.send_25,
                 label: 'Trips',
-                icon: Iconsax.routing_2,
-                activeIcon: Iconsax.routing,
+                isSelected: currentIndex == 1,
+                onTap: () => onTabSelected(1),
               ),
-              _buildCreateItem(
-                index: 2,
-              ),
-              _buildNavItem(
-                index: 3,
+              _buildCreateItem(index: 2),
+              AppNavigationItem(
+                icon: Iconsax.profile_2user5,
                 label: 'Groups',
-                icon: Iconsax.people,
-                activeIcon: Iconsax.profile_2user,
+                isSelected: currentIndex == 3,
+                onTap: () => onTabSelected(3),
               ),
-              _buildNavItem(
-                index: 4,
+              AppNavigationItem(
+                icon: Iconsax.user5,
                 label: 'Profile',
-                icon: Iconsax.user,
-                activeIcon: Iconsax.profile_tick,
+                isSelected: currentIndex == 4,
+                onTap: () => onTabSelected(4),
               ),
             ],
           ),
@@ -81,78 +71,26 @@ class AppBottomNavigation extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem({
-    required int index,
-    required String label,
-    required IconData icon,
-    required IconData activeIcon,
-  }) {
-    final bool isSelected = currentIndex == index;
-    final Color color = isSelected ? AppColors.primaryNavy : AppColors.shayne;
-
-    return Expanded(
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => onTabSelected(index),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minWidth: 44.0, minHeight: 44.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  isSelected ? activeIcon : icon,
-                  color: color,
-                  size: 22,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  label,
-                  style: AppTypography.caption.copyWith(
-                    color: color,
-                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                    fontSize: 11,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildCreateItem({required int index}) {
     final bool isSelected = currentIndex == index;
-
     return Expanded(
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => onTabSelected(index),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minWidth: 44.0, minHeight: 44.0),
-            child: Center(
-              child: Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: isSelected ? AppColors.primaryNavy : AppColors.primaryOrange,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: (isSelected ? AppColors.primaryNavy : AppColors.primaryOrange)
-                          .withValues(alpha: 0.35),
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Iconsax.add,
-                  color: AppColors.white,
-                  size: 24,
-                ),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => onTabSelected(index),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 44.0, minHeight: 44.0),
+          child: Center(
+            child: Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: isSelected ? AppColors.primaryNavy : AppColors.secondaryDark,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Iconsax.add,
+                color: AppColors.white,
+                size: 26,
               ),
             ),
           ),

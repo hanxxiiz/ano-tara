@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_spacing.dart';
-import '../../../../core/constants/app_typography.dart';
 import '../../../../components/atoms/app_button.dart';
 import '../../../../components/atoms/app_input_field.dart';
-import '../../../../components/organisms/app_top_bar.dart';
 import '../../../../core/routes/app_routes.dart';
 
 /// Sign Up screen matching Figma Auth Screen 3 ("Create Your Account").
@@ -38,7 +36,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _isLoading = true;
     });
 
-    await Future.delayed(const Duration(milliseconds: 600));
+    await Future.delayed(const Duration(milliseconds: 500));
 
     if (!mounted) return;
     setState(() {
@@ -53,29 +51,51 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const AppTopBar(),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: AppSpacing.screenPadding,
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Orange Brand Graphic
+              // Back Button (Top Left)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  icon: const Icon(
+                    Icons.arrow_back,
+                    color: AppColors.secondaryDark,
+                    size: 26,
+                  ),
+                  onPressed: () => Navigator.of(context).maybePop(),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // Solid Orange Brand Graphic Circle
               Container(
-                width: 72,
-                height: 72,
+                width: 130,
+                height: 130,
                 decoration: const BoxDecoration(
                   color: AppColors.primaryOrange,
                   shape: BoxShape.circle,
                 ),
               ),
+
               const SizedBox(height: 20),
 
-              // Title
+              // Title: "Create Your Account"
               Text(
                 'Create Your Account',
-                style: AppTypography.h2.copyWith(color: AppColors.chucky),
+                style: GoogleFonts.urbanist(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.secondaryDark,
+                ),
               ),
+
               const SizedBox(height: 24),
 
               // Side-by-side First Name & Last Name
@@ -85,47 +105,46 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   Expanded(
                     child: AppInputField(
                       label: 'First Name',
-                      hint: 'First name',
                       controller: _firstNameController,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 14),
                   Expanded(
                     child: AppInputField(
                       label: 'Last Name',
-                      hint: 'Last name',
                       controller: _lastNameController,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
+
+              const SizedBox(height: 16),
 
               // Username
               AppInputField(
                 label: 'Username',
-                hint: 'Choose a username',
                 controller: _usernameController,
               ),
-              const SizedBox(height: 14),
+
+              const SizedBox(height: 16),
 
               // Email
               AppInputField(
                 label: 'Email',
-                hint: 'Enter your email address',
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
               ),
-              const SizedBox(height: 14),
+
+              const SizedBox(height: 16),
 
               // Password
               AppInputField(
                 label: 'Password',
-                hint: 'Create a password',
                 controller: _passwordController,
                 isPassword: true,
               ),
-              const SizedBox(height: 24),
+
+              const SizedBox(height: 28),
 
               // Sign Up Button
               AppButton(
@@ -134,31 +153,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 isLoading: _isLoading,
                 onPressed: _handleRegister,
               ),
-              const SizedBox(height: 20),
 
-              // Or divider
-              Row(
-                children: [
-                  const Expanded(child: Divider()),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      'Or',
-                      style: AppTypography.caption.copyWith(color: AppColors.shayne),
-                    ),
+              // "or" text (Centered, plain lowercase, no dividers)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: Text(
+                  'or',
+                  style: GoogleFonts.urbanist(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.secondaryDark,
                   ),
-                  const Expanded(child: Divider()),
-                ],
+                ),
               ),
-              const SizedBox(height: 20),
 
-              // Continue with Google
+              // Continue with Google Button
               AppButton.google(
                 onPressed: () {
                   Navigator.of(context).pushReplacementNamed(AppRoutes.onboarding);
                 },
               ),
-              const SizedBox(height: 24),
+
+              const SizedBox(height: 32),
 
               // Already have an account? Log In
               Row(
@@ -166,7 +182,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 children: [
                   Text(
                     'Already have an account? ',
-                    style: AppTypography.bodySmall.copyWith(color: AppColors.carla),
+                    style: GoogleFonts.urbanist(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.secondaryDark,
+                    ),
                   ),
                   GestureDetector(
                     onTap: () {
@@ -174,15 +194,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     },
                     child: Text(
                       'Log In',
-                      style: AppTypography.bodySmall.copyWith(
+                      style: GoogleFonts.urbanist(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
                         color: AppColors.primaryOrange,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+
+              const SizedBox(height: 20),
             ],
           ),
         ),
