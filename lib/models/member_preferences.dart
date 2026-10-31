@@ -24,29 +24,30 @@ class MemberPreferences {
   final String notes;
 
   factory MemberPreferences.fromMap(Map<String, dynamic> map) {
-    List<String> list(String key) =>
-        (map[key] as List<dynamic>? ?? const []).map((e) => e.toString()).toList();
+    List<String> list(String key) => (map[key] as List<dynamic>? ?? const [])
+        .map((e) => e.toString())
+        .toList();
 
     return MemberPreferences(
-      activities: list('activities'),
+      activities: list('preferred_activities'),
       dietaryPreferences: list('dietary_preferences'),
       allergies: list('allergies'),
-      budget: (map['budget'] as num?)?.toInt() ?? 2000,
+      budget: (map['budget_preference'] as num?)?.toInt() ?? 2000,
       travelPace: map['travel_pace'] as String?,
-      availableDays: list('available_days'),
+      availableDays: list('usual_free_days'),
       notes: map['notes'] as String? ?? '',
     );
   }
 
   Map<String, dynamic> toMap() => {
-        'activities': activities,
-        'dietary_preferences': dietaryPreferences,
-        'allergies': allergies,
-        'budget': budget,
-        'travel_pace': travelPace,
-        'available_days': availableDays,
-        'notes': notes,
-      };
+    'preferred_activities': activities,
+    'dietary_preferences': dietaryPreferences,
+    'allergies': allergies,
+    'budget_preference': budget,
+    'travel_pace': travelPace,
+    'usual_free_days': availableDays,
+    'notes': notes,
+  };
 }
 
 enum TravelPace { relaxed, balanced, packed }

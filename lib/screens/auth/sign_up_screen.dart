@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:async';
 
-import '../../app_routes.dart';
+//import '../../app_routes.dart';
 import '../../widgets/auth_widgets.dart';
 import 'login_screen.dart';
 import 'validators.dart';
@@ -24,6 +25,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   void dispose() {
+    _authSub.cancel();
     _firstName.dispose();
     _lastName.dispose();
     _username.dispose();
@@ -47,9 +49,26 @@ class _SignUpScreenState extends State<SignUpScreen> {
     setState(() => _loading = true);
 
     try {
+      final username = _username.text.trim().toLowerCase();
+      final available = await supabase.rpc(
+        'username_available',
+        params: {'p_username': username},
+      );
+      if (available != true) {
+        _show('That username is already taken.');
+        return;
+      }
+
       final response = await supabase.auth.signUp(
         email: _email.text.trim(),
         password: _password.text,
+        emailRedirectTo:
+            'io.supabase.anotara://login-callback/', // when email confirms with the link supabase will redirect users back to the app
+        data: {
+          'first_name': _firstName.text.trim(),
+          'last_name': _lastName.text.trim(),
+          'username': username,
+        },
       );
       if (!mounted) return;
 
@@ -68,7 +87,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
       // Signed in. AuthGate reacts to the session, so just clear pushed screens.
       Navigator.of(context).popUntil((route) => route.isFirst);
     } on AuthException catch (e) {
-      _show(e.message);
+      _show(
+        e.message.contains('Database error')
+            ? 'That username is already taken.'
+            : e.message,
+      );
     } catch (_) {
       _show('Something went wrong. Please try again.');
     } finally {
@@ -78,6 +101,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   void _continueWithGoogle() {
     // TODO: sign up with Supabase Google OAuth.
+  }
+
+  late final StreamSubscription<AuthState> _authSub;
+
+  @override
+  void initState() {
+    super.initState();
+    _authSub = supabase.auth.onAuthStateChange.listen((data) {
+      if (data.event == AuthChangeEvent.signedIn && mounted) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
+    });
   }
 
   @override

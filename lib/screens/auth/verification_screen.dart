@@ -1,5 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:anotara/main.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/auth_widgets.dart';
 import 'new_password_screen.dart';
@@ -15,26 +18,86 @@ class VerificationScreen extends StatefulWidget {
 
 class _VerificationScreenState extends State<VerificationScreen> {
   static const _codeLength = 6;
-  String _code = '';
+  static const _coolDownSeconds = 60;
 
-  void _verify() {
-    if (_code.length < _codeLength) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter the full 6-digit code.')),
-      );
-      return;
-    }
-    // TODO: verify the code with Supabase.
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const NewPasswordScreen()),
-    );
+  String _code = '';
+  bool _loading = false;
+  int _coolDown = _coolDownSeconds;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _startCooldown();
   }
 
-  void _resend() {
-    // TODO: resend the recovery code with Supabase.
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('A new code was sent to ${widget.email}.')),
-    );
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  // temporary error message
+  void _show(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  void _startCooldown() {
+    _timer?.cancel();
+    setState(() => _coolDown = _coolDownSeconds);
+    _timer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
+      setState(() => _coolDown--);
+      if (_coolDown <= 0) t.cancel();
+    });
+  }
+
+  // verify the code with Supabase.
+  Future<void> _verify() async {
+    if (_loading) return;
+    if (_code.length < _codeLength) {
+      _show('Enter the full 6-digit code.');
+      return;
+    }
+    setState(() => _loading = true);
+
+    try {
+      await supabase.auth.verifyOTP(
+        email: widget.email,
+        token: _code,
+        type: OtpType.recovery,
+      );
+      if (!mounted) return;
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => const NewPasswordScreen()));
+    } on AuthException {
+      _show('Invalid or expired code.');
+    } catch (_) {
+      _show('Something went wrong. Please try again.');
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  // resend the recovery code with Supabase.
+  Future<void> _resend() async {
+    if (_coolDown > 0) return;
+    try {
+      await supabase.auth.resetPasswordForEmail(widget.email);
+      _startCooldown();
+      _show('A new code was sent to ${widget.email}.');
+    } on AuthException catch (e) {
+      _show(e.message);
+    } catch (_) {
+      _show('Something went wrong. Please try again.');
+    }
   }
 
   @override
@@ -71,7 +134,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
           ),
         ),
         const SizedBox(height: 38),
-        AppButton(label: 'Verify', onPressed: _verify),
+        AppButton(label: 'Verify', loading: _loading, onPressed: _verify),
       ],
     );
   }

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:anotara/main.dart';
 
-import '../../app_routes.dart';
 import '../../models/member_preferences.dart';
 import '../../services/preferences_service.dart';
 import '../../theme/app_theme.dart';
@@ -178,32 +177,33 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
 
   Future<void> _finish() async {
     setState(() => _saving = true);
+    debugPrint('SENDING: ${_answers().toMap()}');
     try {
       await _service.save(_answers());
-
-      // Mark onboarding as done (only on first-time onboarding, not when editing)
-      if (!widget.editing) {
-        await supabase.auth.updateUser(
-          UserAttributes(data: {'onboarded': true}),
-        );
-      }
     } on NotSignedInException {
       _showMessage('Log in again to save your preferences.');
       if (mounted) setState(() => _saving = false);
       return;
-    } catch (_) {
+    } catch (e) {
+      debugPrint('SAVE FAILED: $e');
       _showMessage("Couldn't save your answers. Please try again.");
       if (mounted) setState(() => _saving = false);
       return;
     }
+    // catch (_) {
+    //   _showMessage("Couldn't save your answers. Please try again.");
+    //   if (mounted) setState(() => _saving = false);
+    //   return;
+    // }
 
     if (!mounted) return;
     if (widget.editing) {
       _showMessage('Preferences updated.');
       Navigator.of(context).pop(true);
+    } else {
+      // Rebuilds AuthGate, which now finds saved preferences and shows Home.
+      Navigator.of(context).pushNamedAndRemoveUntil('/', (_) => false);
     }
-    // First-time onboarding: no navigation needed. The updateUser call makes
-    // AuthGate rebuild, and it will show HomeScreen on its own.
   }
 
   void _showMessage(String text) {
