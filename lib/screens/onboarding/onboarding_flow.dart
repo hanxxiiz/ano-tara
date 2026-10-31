@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../app_routes.dart';
 import '../../models/member_preferences.dart';
 import '../../services/preferences_service.dart';
 import '../../theme/app_theme.dart';
@@ -25,7 +24,8 @@ class OnboardingFlow extends StatefulWidget {
 class _OnboardingFlowState extends State<OnboardingFlow> {
   static const _stepCount = 7;
 
-  late final PreferencesService _service = widget.service ?? PreferencesService();
+  late final PreferencesService _service =
+      widget.service ?? PreferencesService();
 
   int _step = 0;
   bool _loading = false;
@@ -71,9 +71,24 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   }
 
   void _apply(MemberPreferences p) {
-    _restoreChoices(p.activities, activityOptions.map((o) => o.label), _activities, _activitiesOther);
-    _restoreChoices(p.dietaryPreferences, dietaryOptions.map((o) => o.label), _dietary, _dietaryOther);
-    _restoreChoices(p.allergies, allergyOptions.map((o) => o.label), _allergies, _allergiesOther);
+    _restoreChoices(
+      p.activities,
+      activityOptions.map((o) => o.label),
+      _activities,
+      _activitiesOther,
+    );
+    _restoreChoices(
+      p.dietaryPreferences,
+      dietaryOptions.map((o) => o.label),
+      _dietary,
+      _dietaryOther,
+    );
+    _restoreChoices(
+      p.allergies,
+      allergyOptions.map((o) => o.label),
+      _allergies,
+      _allergiesOther,
+    );
     _budget = budgetStops.contains(p.budget) ? p.budget : 2000;
     _pace = TravelPace.values.where((v) => v.name == p.travelPace).firstOrNull;
     _days
@@ -108,14 +123,14 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   }
 
   MemberPreferences _answers() => MemberPreferences(
-        activities: _collect(_activities, _activitiesOther),
-        dietaryPreferences: _collect(_dietary, _dietaryOther),
-        allergies: _collect(_allergies, _allergiesOther),
-        budget: _budget,
-        travelPace: _pace?.name,
-        availableDays: weekDays.where(_days.contains).toList(),
-        notes: _notes.text.trim(),
-      );
+    activities: _collect(_activities, _activitiesOther),
+    dietaryPreferences: _collect(_dietary, _dietaryOther),
+    allergies: _collect(_allergies, _allergiesOther),
+    budget: _budget,
+    travelPace: _pace?.name,
+    availableDays: weekDays.where(_days.contains).toList(),
+    notes: _notes.text.trim(),
+  );
 
   void _toggle(Set<String> set, String value) {
     setState(() => set.contains(value) ? set.remove(value) : set.add(value));
@@ -159,27 +174,32 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
 
   Future<void> _finish() async {
     setState(() => _saving = true);
+    debugPrint('SENDING: ${_answers().toMap()}');
     try {
       await _service.save(_answers());
     } on NotSignedInException {
-      // Auth isn't wired to Supabase yet, so there may be no session.
-      if (widget.editing) {
-        _showMessage('Log in again to save your preferences.');
-        setState(() => _saving = false);
-        return;
-      }
-      _showMessage('Not signed in, so your answers were not saved.');
-    } catch (_) {
+      _showMessage('Log in again to save your preferences.');
+      if (mounted) setState(() => _saving = false);
+      return;
+    } catch (e) {
+      debugPrint('SAVE FAILED: $e');
       _showMessage("Couldn't save your answers. Please try again.");
       if (mounted) setState(() => _saving = false);
       return;
     }
+    // catch (_) {
+    //   _showMessage("Couldn't save your answers. Please try again.");
+    //   if (mounted) setState(() => _saving = false);
+    //   return;
+    // }
+
     if (!mounted) return;
     if (widget.editing) {
       _showMessage('Preferences updated.');
       Navigator.of(context).pop(true);
     } else {
-      Navigator.of(context).pushNamedAndRemoveUntil(AppRoutes.home, (_) => false);
+      // Rebuilds AuthGate, which now finds saved preferences and shows Home.
+      Navigator.of(context).pushNamedAndRemoveUntil('/', (_) => false);
     }
   }
 
@@ -188,31 +208,36 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       // Floats above the Next button so it never blocks it.
-      ..showSnackBar(SnackBar(
-        content: Text(text),
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.fromLTRB(24, 0, 24, 96),
-      ));
+      ..showSnackBar(
+        SnackBar(
+          content: Text(text),
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.fromLTRB(24, 0, 24, 96),
+        ),
+      );
   }
 
   Widget _currentStep() {
     return switch (_step) {
       0 => ChoiceStep.activities(
-          selected: _activities,
-          onToggle: (v) => _toggle(_activities, v),
-          otherController: _activitiesOther,
-        ),
+        selected: _activities,
+        onToggle: (v) => _toggle(_activities, v),
+        otherController: _activitiesOther,
+      ),
       1 => ChoiceStep.dietary(
-          selected: _dietary,
-          onToggle: (v) => _toggle(_dietary, v),
-          otherController: _dietaryOther,
-        ),
+        selected: _dietary,
+        onToggle: (v) => _toggle(_dietary, v),
+        otherController: _dietaryOther,
+      ),
       2 => ChoiceStep.allergies(
-          selected: _allergies,
-          onToggle: (v) => _toggle(_allergies, v),
-          otherController: _allergiesOther,
-        ),
-      3 => BudgetStep(budget: _budget, onChanged: (v) => setState(() => _budget = v)),
+        selected: _allergies,
+        onToggle: (v) => _toggle(_allergies, v),
+        otherController: _allergiesOther,
+      ),
+      3 => BudgetStep(
+        budget: _budget,
+        onChanged: (v) => setState(() => _budget = v),
+      ),
       4 => PaceStep(pace: _pace, onChanged: (v) => setState(() => _pace = v)),
       5 => DaysStep(selected: _days, onToggle: (v) => _toggle(_days, v)),
       _ => NotesStep(controller: _notes),
@@ -233,7 +258,9 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
       child: Scaffold(
         body: SafeArea(
           child: _loading
-              ? const Center(child: CircularProgressIndicator(color: AppColors.ink))
+              ? const Center(
+                  child: CircularProgressIndicator(color: AppColors.ink),
+                )
               : Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -245,21 +272,30 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                             ? IconButton(
                                 tooltip: 'Back',
                                 onPressed: _back,
-                                icon: const Icon(Icons.arrow_back, color: AppColors.ink),
+                                icon: const Icon(
+                                  Icons.arrow_back,
+                                  color: AppColors.ink,
+                                ),
                               )
                             : null,
                       ),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 52),
-                      child: StepProgress(current: _step + 1, total: _stepCount),
+                      child: StepProgress(
+                        current: _step + 1,
+                        total: _stepCount,
+                      ),
                     ),
                     Expanded(
                       child: SingleChildScrollView(
                         padding: const EdgeInsets.fromLTRB(26, 24, 26, 24),
                         child: AnimatedSwitcher(
                           duration: const Duration(milliseconds: 200),
-                          child: KeyedSubtree(key: ValueKey(_step), child: _currentStep()),
+                          child: KeyedSubtree(
+                            key: ValueKey(_step),
+                            child: _currentStep(),
+                          ),
                         ),
                       ),
                     ),

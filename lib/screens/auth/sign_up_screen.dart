@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:async';
 
-import '../../app_routes.dart';
+//import 'package:url_launcher/url_launcher.dart';
 import '../../widgets/auth_widgets.dart';
 import 'login_screen.dart';
 import 'validators.dart';
+import 'package:anotara/main.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -22,6 +25,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   void dispose() {
+    _authSub.cancel();
     _firstName.dispose();
     _lastName.dispose();
     _username.dispose();
@@ -30,14 +34,102 @@ class _SignUpScreenState extends State<SignUpScreen> {
     super.dispose();
   }
 
-  void _signUp() {
-    if (!_formKey.currentState!.validate()) return;
-    // TODO: create the account with Supabase and save the profile fields.
-    Navigator.of(context).pushNamedAndRemoveUntil(AppRoutes.onboarding, (_) => false);
+  // creates the account with Supabase.
+  bool _loading = false;
+
+  void _show(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(msg)));
   }
 
-  void _continueWithGoogle() {
-    // TODO: sign up with Supabase Google OAuth.
+  Future<void> _signUp() async {
+    if (_loading || !_formKey.currentState!.validate()) return;
+    setState(() => _loading = true);
+
+    try {
+      final username = _username.text.trim().toLowerCase();
+      final available = await supabase.rpc(
+        'username_available',
+        params: {'p_username': username},
+      );
+      if (available != true) {
+        _show('That username is already taken.');
+        return;
+      }
+
+      final response = await supabase.auth.signUp(
+        email: _email.text.trim(),
+        password: _password.text,
+        emailRedirectTo:
+            'io.supabase.anotara://login-callback/', // when email confirms with the link supabase will redirect users back to the app
+        data: {
+          'first_name': _firstName.text.trim(),
+          'last_name': _lastName.text.trim(),
+          'username': username,
+        },
+      );
+      if (!mounted) return;
+
+      // With email confirmation on, Supabase hides "already registered"
+      // by returning a user with no identities.
+      if (response.user?.identities?.isEmpty ?? false) {
+        _show('An account with this email already exists. Try logging in.');
+        return;
+      }
+
+      if (response.session == null) {
+        _show('Check your email to confirm your account.');
+        return;
+      }
+
+      // Signed in. AuthGate reacts to the session, so just clear pushed screens.
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    } on AuthException catch (e) {
+      _show(
+        e.message.contains('Database error')
+            ? 'That username is already taken.'
+            : e.message,
+      );
+    } catch (_) {
+      _show('Something went wrong. Please try again.');
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  // sign up with Supabase Google OAuth.
+  bool _googleLoading = false;
+
+  Future<void> _continueWithGoogle() async {
+    if (_googleLoading) return;
+    setState(() => _googleLoading = true);
+    try {
+      await supabase.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: 'io.supabase.anotara://signup-callback/',
+        authScreenLaunchMode: LaunchMode.externalApplication,
+      );
+    } on AuthException catch (e) {
+      _show(e.message);
+    } catch (_) {
+      _show('Google sign-in failed. Please try again.');
+    } finally {
+      if (mounted) setState(() => _googleLoading = false);
+    }
+  }
+
+  late final StreamSubscription<AuthState> _authSub;
+
+  @override
+  void initState() {
+    super.initState();
+    _authSub = supabase.auth.onAuthStateChange.listen((data) {
+      if (data.event == AuthChangeEvent.signedIn && mounted) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
+    });
   }
 
   @override
@@ -105,12 +197,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
           ),
         ),
         const SizedBox(height: 24),
-        AppButton(label: 'Sign Up', onPressed: _signUp),
+        AppButton(label: 'Sign Up', loading: _loading, onPressed: _signUp),
         const OrDivider(),
         AppButton(
           label: 'Continue with Google',
           icon: Icons.person,
           variant: AppButtonVariant.secondary,
+          loading: _googleLoading,
           onPressed: _continueWithGoogle,
         ),
         const SizedBox(height: 28),

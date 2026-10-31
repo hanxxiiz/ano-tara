@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:anotara/services/auth_service.dart';
 
 import 'app_routes.dart';
-import 'screens/auth/start_screen.dart';
 import 'screens/onboarding/onboarding_flow.dart';
 import 'theme/app_theme.dart';
 
@@ -17,6 +18,8 @@ Future<void> main() async {
   runApp(const AnoTaraApp());
 }
 
+final supabase = Supabase.instance.client;
+
 class AnoTaraApp extends StatelessWidget {
   const AnoTaraApp({super.key});
 
@@ -26,7 +29,7 @@ class AnoTaraApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Ano Tara',
       theme: buildAppTheme(),
-      home: const StartScreen(),
+      home: const AuthGate(),
       routes: {
         AppRoutes.home: (_) => const HomeScreen(),
         AppRoutes.onboarding: (_) => const OnboardingFlow(),
@@ -48,9 +51,17 @@ class HomeScreen extends StatelessWidget {
     ];
 
     const tasks = [
-      _TaskItem(title: 'Review project roadmap', time: '09:00 AM', isDone: true),
+      _TaskItem(
+        title: 'Review project roadmap',
+        time: '09:00 AM',
+        isDone: true,
+      ),
       _TaskItem(title: 'Team sync update', time: '11:30 AM', isDone: false),
-      _TaskItem(title: 'Prepare content draft', time: '02:00 PM', isDone: false),
+      _TaskItem(
+        title: 'Prepare content draft',
+        time: '02:00 PM',
+        isDone: false,
+      ),
     ];
 
     return Scaffold(
@@ -60,12 +71,24 @@ class HomeScreen extends StatelessWidget {
         actions: [
           IconButton(
             tooltip: 'Edit travel preferences',
-            onPressed: () => Navigator.of(context).pushNamed(AppRoutes.editPreferences),
+            onPressed: () =>
+                Navigator.of(context).pushNamed(AppRoutes.editPreferences),
             icon: const Icon(Icons.tune_rounded),
           ),
           IconButton(
             onPressed: () {},
             icon: const Icon(Icons.notifications_none_rounded),
+          ),
+          IconButton(
+            tooltip: 'Log out',
+            onPressed: () async {
+              await supabase.auth.signOut();
+              if (!context.mounted) return;
+              Navigator.of(
+                context,
+              ).pushNamedAndRemoveUntil('/', (route) => false);
+            },
+            icon: const Icon(Icons.logout_rounded),
           ),
         ],
       ),
@@ -125,7 +148,10 @@ class HomeScreen extends StatelessWidget {
                 ),
                 Text(
                   _formatToday(),
-                  style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
@@ -161,10 +187,12 @@ class HomeScreen extends StatelessWidget {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            ...tasks.map((task) => Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: task,
-                )),
+            ...tasks.map(
+              (task) => Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: task,
+              ),
+            ),
           ],
         ),
       ),
@@ -179,8 +207,18 @@ class HomeScreen extends StatelessWidget {
 
 String _formatToday() {
   const months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
   final now = DateTime.now();
   return '${now.day} ${months[now.month - 1]}';
@@ -213,10 +251,7 @@ class _StatTile extends StatelessWidget {
           Container(
             width: 10,
             height: 10,
-            decoration: BoxDecoration(
-              color: accent,
-              shape: BoxShape.circle,
-            ),
+            decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
           ),
           const Spacer(),
           FittedBox(
@@ -233,7 +268,10 @@ class _StatTile extends StatelessWidget {
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.w600),
+            style: TextStyle(
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
@@ -242,10 +280,7 @@ class _StatTile extends StatelessWidget {
 }
 
 class _ActionCard extends StatelessWidget {
-  const _ActionCard({
-    required this.icon,
-    required this.label,
-  });
+  const _ActionCard({required this.icon, required this.label});
 
   final IconData icon;
   final String label;
@@ -366,4 +401,3 @@ class _TaskItem extends StatelessWidget {
     );
   }
 }
-
