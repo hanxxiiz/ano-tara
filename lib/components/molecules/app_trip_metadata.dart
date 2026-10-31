@@ -46,12 +46,16 @@ class AppTripMetadata extends StatelessWidget {
             children: [
               const AppIcon(Iconsax.profile_2user5, size: 15, color: AppColors.primaryNavy),
               const SizedBox(width: 6),
-              Text(
-                groupName!,
-                style: AppTypography.bodySmall.copyWith(
-                  color: AppColors.secondaryDark,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 12,
+              Expanded(
+                child: Text(
+                  groupName!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.secondaryDark,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                  ),
                 ),
               ),
             ],
@@ -62,12 +66,16 @@ class AppTripMetadata extends StatelessWidget {
           children: [
             const AppIcon(Iconsax.calendar5, size: 14, color: AppColors.primaryNavy),
             const SizedBox(width: 7),
-            Text(
-              dateRange,
-              style: AppTypography.bodySmall.copyWith(
-                color: AppColors.secondaryDark,
-                fontWeight: FontWeight.w600,
-                fontSize: 12,
+            Expanded(
+              child: Text(
+                dateRange,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.secondaryDark,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                ),
               ),
             ),
           ],

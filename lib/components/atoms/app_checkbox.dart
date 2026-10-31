@@ -30,10 +30,19 @@ class AppCheckbox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isMini = size == AppCheckboxSize.mini;
-    final boxSize = isMini ? 18.0 : 24.0;
-    final borderWidth = isMini ? 1.5 : 2.0;
+    final boxSize = isMini ? 18.0 : 28.0;
+    final borderWidth = isMini ? 1.8 : (value ? 2.4 : 2.2);
     final borderRadius = isMini ? 5.0 : 7.0;
-    final checkIconSize = isMini ? 12.0 : 16.0;
+    final checkIconSize = isMini ? 13.0 : 18.0;
+
+    final Color borderColor;
+    if (!isEnabled) {
+      borderColor = AppColors.shayne;
+    } else if (isMini) {
+      borderColor = AppColors.secondaryDark;
+    } else {
+      borderColor = value ? AppColors.secondaryDark : const Color(0xFF8A8894);
+    }
 
     final box = AnimatedContainer(
       duration: const Duration(milliseconds: 150),
@@ -43,18 +52,9 @@ class AppCheckbox extends StatelessWidget {
         color: AppColors.white,
         borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(
-          color: isEnabled ? AppColors.secondaryDark : AppColors.shayne,
+          color: borderColor,
           width: borderWidth,
         ),
-        boxShadow: isMini
-            ? null
-            : [
-                const BoxShadow(
-                  color: AppColors.secondaryDark,
-                  offset: Offset(0, 2),
-                  blurRadius: 0,
-                ),
-              ],
       ),
       child: value
           ? Center(

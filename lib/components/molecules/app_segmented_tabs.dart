@@ -50,12 +50,19 @@ class AppSegmentedTabs<T> extends StatelessWidget {
                       : null,
                 ),
                 child: Center(
-                  child: Text(
-                    labelBuilder(tab),
-                    style: AppTypography.caption.copyWith(
-                      color: isSelected ? AppColors.white : AppColors.secondaryDark,
-                      fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                      fontSize: 12.5,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        labelBuilder(tab),
+                        maxLines: 1,
+                        style: AppTypography.caption.copyWith(
+                          color: isSelected ? AppColors.white : AppColors.secondaryDark,
+                          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                          fontSize: 12.5,
+                        ),
+                      ),
                     ),
                   ),
                 ),

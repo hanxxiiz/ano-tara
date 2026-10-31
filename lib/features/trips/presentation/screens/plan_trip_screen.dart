@@ -2,9 +2,12 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import '../../../../components/atoms/app_button.dart';
 import '../../../../components/atoms/app_icon.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/utils/app_responsive.dart';
+import '../../data/trip_repository.dart';
 
 enum PlanTripStep {
   essentials, // Plan a Trip - 1.png
@@ -212,7 +215,49 @@ class _PlanTripScreenState extends State<PlanTripScreen> {
     }
   }
 
-  void _finishFlow() {
+  Future<void> _finishFlow() async {
+    final selectedMemberModels = <TripMemberModel>[];
+    for (int i = 0; i < _members.length; i++) {
+      if (_selectedMembers[i] || _selectAllMembers) {
+        selectedMemberModels.add(
+          TripMemberModel(
+            name: _members[i]['name']!,
+            role: _members[i]['role']!,
+          ),
+        );
+      }
+    }
+
+    final itineraryModels = _itineraryEntries
+        .map(
+          (entry) => ItineraryItemModel(
+            id: 'item-${entry.title.hashCode}-${DateTime.now().microsecondsSinceEpoch}',
+            category: entry.category,
+            placeName: entry.location,
+            location: entry.location,
+            title: entry.title,
+            startTime: entry.timeRange.split(' - ').first,
+            endTime: entry.timeRange.split(' - ').last,
+            dayNumber: _selectedDayNumber,
+          ),
+        )
+        .toList();
+
+    final createdTrip = await TripRepository.instance.saveTrip(
+      groupName: widget.initialGroupName ?? 'Trip to Bantayan',
+      name: _tripNameController.text,
+      destination: _destinationController.text,
+      startDate: _startDateController.text,
+      endDate: _endDateController.text,
+      meetingPlace: _meetingPlaceController.text,
+      description: _descriptionController.text,
+      isAiGenerated: _selectedBuildOption == 0,
+      members: selectedMemberModels,
+      itineraryItems: itineraryModels,
+    );
+
+    if (!mounted) return;
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Itinerary saved!'),
@@ -223,7 +268,7 @@ class _PlanTripScreenState extends State<PlanTripScreen> {
     if (widget.onCompleted != null) {
       widget.onCompleted!();
     } else if (Navigator.of(context).canPop()) {
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(createdTrip);
     }
   }
 
@@ -570,10 +615,17 @@ class _PlanTripScreenState extends State<PlanTripScreen> {
                 const SizedBox(height: 12),
 
                 // Member availability cards
-                for (int i = 0; i < _members.length; i++) ...[
-                  _buildMemberAvailabilityCard(i),
-                  if (i < _members.length - 1) const SizedBox(height: 12),
-                ],
+                for (int i = 0; i < _members.length; i++)
+                  if (_memberSearchController.text.trim().isEmpty ||
+                      _members[i]['role']!
+                          .toLowerCase()
+                          .contains(_memberSearchController.text.trim().toLowerCase()) ||
+                      _members[i]['name']!
+                          .toLowerCase()
+                          .contains(_memberSearchController.text.trim().toLowerCase())) ...[
+                    _buildMemberAvailabilityCard(i),
+                    if (i < _members.length - 1) const SizedBox(height: 12),
+                  ],
               ],
             ),
           ),
@@ -604,6 +656,7 @@ class _PlanTripScreenState extends State<PlanTripScreen> {
       onTap: () {
         setState(() {
           _selectedMembers[index] = !isChecked;
+          _selectAllMembers = _selectedMembers.every((v) => v);
         });
       },
       child: Container(
@@ -674,12 +727,15 @@ class _PlanTripScreenState extends State<PlanTripScreen> {
                   height: 28,
                   margin: const EdgeInsets.only(top: 2),
                   decoration: BoxDecoration(
-                    color: isChecked ? AppColors.primaryNavy : AppColors.white,
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: AppColors.secondaryDark, width: 2.0),
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(7),
+                    border: Border.all(
+                      color: isChecked ? AppColors.secondaryDark : const Color(0xFF8A8894),
+                      width: isChecked ? 2.4 : 2.2,
+                    ),
                   ),
                   child: isChecked
-                      ? const Icon(Icons.check_rounded, size: 19, color: AppColors.white)
+                      ? const Icon(Icons.check_rounded, size: 19, color: AppColors.secondaryDark)
                       : null,
                 ),
               ],
@@ -729,7 +785,7 @@ class _PlanTripScreenState extends State<PlanTripScreen> {
   // 3. PLAN A TRIP - 3.PNG ("How would you like to build your itinerary?")
   // ===========================================================================
   Widget _buildStep3BuildMethod() {
-    return Padding(
+    return AppScrollableFillBody(
       padding: const EdgeInsets.fromLTRB(20, 22, 20, 28),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -782,6 +838,7 @@ class _PlanTripScreenState extends State<PlanTripScreen> {
             subtitle: 'Generate a group itinerary based on your preferences.',
           ),
 
+          const SizedBox(height: 24),
           const Spacer(),
 
           _buildPrimaryNavyButton(
@@ -846,18 +903,22 @@ class _PlanTripScreenState extends State<PlanTripScreen> {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          title,
-                          style: AppTypography.titleMedium.copyWith(
-                            color: AppColors.secondaryDark,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 15,
+                        Flexible(
+                          child: Text(
+                            title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTypography.titleMedium.copyWith(
+                              color: AppColors.secondaryDark,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 15,
+                            ),
                           ),
                         ),
                         if (showPlusBadge) ...[
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 6),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                             decoration: BoxDecoration(
                               color: const Color(0xFFEA9A86),
                               borderRadius: BorderRadius.circular(10),
@@ -892,12 +953,15 @@ class _PlanTripScreenState extends State<PlanTripScreen> {
               width: 28,
               height: 28,
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.primaryNavy : AppColors.white,
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: AppColors.secondaryDark, width: 2.0),
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(7),
+                border: Border.all(
+                  color: isSelected ? AppColors.secondaryDark : const Color(0xFF8A8894),
+                  width: isSelected ? 2.4 : 2.2,
+                ),
               ),
               child: isSelected
-                  ? const Icon(Icons.check_rounded, size: 19, color: AppColors.white)
+                  ? const Icon(Icons.check_rounded, size: 19, color: AppColors.secondaryDark)
                   : null,
             ),
           ],
@@ -1034,11 +1098,12 @@ class _PlanTripScreenState extends State<PlanTripScreen> {
   // 5. PLAN A TRIP - ITINERARY EMPTY STATE.PNG ("View Itinerary" - No itinerary yet)
   // ===========================================================================
   Widget _buildStepItineraryEmpty() {
-    return Padding(
+    return AppScrollableFillBody(
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 22),
       child: Column(
         children: [
           _buildYellowDateStrip(),
+          const SizedBox(height: 24),
           const Spacer(),
 
           // Large Orange Circle with Centered 2-Pin Route Icon (Iconsax.routing5)
@@ -1080,6 +1145,7 @@ class _PlanTripScreenState extends State<PlanTripScreen> {
             ),
           ),
 
+          const SizedBox(height: 24),
           const Spacer(),
 
           _buildPrimaryNavyButton(
@@ -1314,10 +1380,19 @@ class _PlanTripScreenState extends State<PlanTripScreen> {
           ),
           const SizedBox(height: 18),
 
-          for (int i = 0; i < _recommendedPlaces.length; i++) ...[
-            _buildRecommendedPlaceCard(_recommendedPlaces[i]),
-            if (i < _recommendedPlaces.length - 1) const SizedBox(height: 16),
-          ],
+          for (int i = 0; i < _recommendedPlaces.length; i++)
+            if (_placeSearchController.text.trim().isEmpty ||
+                _recommendedPlaces[i]
+                    .name
+                    .toLowerCase()
+                    .contains(_placeSearchController.text.trim().toLowerCase()) ||
+                _recommendedPlaces[i]
+                    .location
+                    .toLowerCase()
+                    .contains(_placeSearchController.text.trim().toLowerCase())) ...[
+              _buildRecommendedPlaceCard(_recommendedPlaces[i]),
+              if (i < _recommendedPlaces.length - 1) const SizedBox(height: 16),
+            ],
         ],
       ),
     );
@@ -1609,7 +1684,7 @@ class _PlanTripScreenState extends State<PlanTripScreen> {
             label: 'Add',
             showLeadingPlus: true,
             showRightArrow: false,
-            onTap: () {
+            onTap: () async {
               final title = _itemTitleController.text.trim().isNotEmpty
                   ? _itemTitleController.text.trim()
                   : 'Island Hopping';
@@ -1619,6 +1694,18 @@ class _PlanTripScreenState extends State<PlanTripScreen> {
               final end = _endTimeController.text.trim().isNotEmpty
                   ? _endTimeController.text.trim()
                   : '10:00 AM';
+              final notes = _notesController.text.trim();
+
+              await TripRepository.instance.saveManualItineraryItem(
+                category: _selectedCategory,
+                placeName: _selectedPlace.name,
+                location: _selectedPlace.location,
+                title: title,
+                startTime: start,
+                endTime: end,
+                notes: notes,
+                dayNumber: _selectedDayNumber,
+              );
 
               _itineraryEntries.insert(
                 0,
@@ -1629,6 +1716,7 @@ class _PlanTripScreenState extends State<PlanTripScreen> {
                   timeRange: '$start - $end',
                 ),
               );
+              if (!mounted) return;
               _goToStep(PlanTripStep.addedSuccess);
             },
           ),
@@ -1775,7 +1863,7 @@ class _PlanTripScreenState extends State<PlanTripScreen> {
     return Scaffold(
       backgroundColor: AppColors.white,
       body: SafeArea(
-        child: Padding(
+        child: AppScrollableFillBody(
           padding: const EdgeInsets.fromLTRB(20, 40, 20, 32),
           child: Column(
             children: [
@@ -1814,6 +1902,7 @@ class _PlanTripScreenState extends State<PlanTripScreen> {
                   height: 1.35,
                 ),
               ),
+              const SizedBox(height: 24),
               const Spacer(),
 
               _buildPrimaryNavyButton(
@@ -1964,11 +2053,15 @@ class _PlanTripScreenState extends State<PlanTripScreen> {
                         size: 13.5,
                       ),
                       const SizedBox(width: 6),
-                      Text(
-                        entry.timeRange,
-                        style: AppTypography.bodySmall.copyWith(
-                          color: AppColors.secondaryDark,
-                          fontSize: 11.5,
+                      Expanded(
+                        child: Text(
+                          entry.timeRange,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColors.secondaryDark,
+                            fontSize: 11.5,
+                          ),
                         ),
                       ),
                     ],
@@ -2146,6 +2239,7 @@ class _PlanTripScreenState extends State<PlanTripScreen> {
           Expanded(
             child: TextField(
               controller: controller,
+              onChanged: (_) => setState(() {}),
               style: AppTypography.bodyMedium.copyWith(
                 color: AppColors.secondaryDark,
               ),
@@ -2179,53 +2273,26 @@ class _PlanTripScreenState extends State<PlanTripScreen> {
     bool showLeadingPlus = false,
     double height = 52,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        height: height,
-        decoration: BoxDecoration(
-          color: AppColors.primaryNavy,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.secondaryDark, width: 2.0),
-          boxShadow: const [
-            BoxShadow(
-              color: AppColors.secondaryDark,
-              offset: Offset(0, 4),
-              blurRadius: 0,
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (showLeadingPlus) ...[
-              const Icon(
-                Iconsax.add,
-                color: AppColors.white,
-                size: 22,
-              ),
-              const SizedBox(width: 10),
-            ],
-            Text(
-              label,
-              style: AppTypography.buttonMedium.copyWith(
-                color: AppColors.white,
-                fontWeight: FontWeight.w700,
-                fontSize: 13.5,
-              ),
-            ),
-            if (showRightArrow) ...[
-              const SizedBox(width: 14),
-              const Icon(
-                Iconsax.arrow_right_1,
-                color: AppColors.white,
-                size: 20,
-              ),
-            ],
-          ],
-        ),
-      ),
+    return AppButton(
+      text: label,
+      variant: AppButtonVariant.primaryNavy,
+      customHeight: height,
+      borderRadius: 16.0,
+      onPressed: onTap,
+      iconLeading: showLeadingPlus
+          ? const Icon(
+              Iconsax.add,
+              color: AppColors.white,
+              size: 22,
+            )
+          : null,
+      iconTrailing: showRightArrow
+          ? const Icon(
+              Iconsax.arrow_right_1,
+              color: AppColors.white,
+              size: 20,
+            )
+          : null,
     );
   }
 
@@ -2234,34 +2301,12 @@ class _PlanTripScreenState extends State<PlanTripScreen> {
     required VoidCallback onTap,
     double height = 48,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        height: height,
-        decoration: BoxDecoration(
-          color: AppColors.secondaryLight,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.secondaryDark, width: 2.0),
-          boxShadow: const [
-            BoxShadow(
-              color: AppColors.secondaryDark,
-              offset: Offset(0, 4),
-              blurRadius: 0,
-            ),
-          ],
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: AppTypography.buttonMedium.copyWith(
-              color: AppColors.secondaryDark,
-              fontWeight: FontWeight.w700,
-              fontSize: 13.5,
-            ),
-          ),
-        ),
-      ),
+    return AppButton(
+      text: label,
+      variant: AppButtonVariant.secondary,
+      customHeight: height,
+      borderRadius: 16.0,
+      onPressed: onTap,
     );
   }
 }

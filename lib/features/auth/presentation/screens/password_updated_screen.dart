@@ -3,6 +3,7 @@ import 'package:iconsax/iconsax.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/utils/app_responsive.dart';
 import '../../../../components/atoms/app_button.dart';
 import '../../../../components/organisms/app_top_bar.dart';
 import '../../../../core/routes/app_routes.dart';
@@ -17,7 +18,7 @@ class PasswordUpdatedScreen extends StatelessWidget {
       backgroundColor: AppColors.background,
       appBar: const AppTopBar(showBackButton: false),
       body: SafeArea(
-        child: Padding(
+        child: AppScrollableFillBody(
           padding: AppSpacing.screenPadding,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,

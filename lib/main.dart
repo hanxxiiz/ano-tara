@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/routes/app_routes.dart';
 import 'core/theme/app_theme.dart';
+import 'core/utils/app_responsive.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,6 +28,11 @@ class AnoTaraApp extends StatelessWidget {
       title: 'Ano Tara',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      builder: (context, child) {
+        return AppResponsiveWrapper(
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
       initialRoute: AppRoutes.welcome,
       routes: AppRoutes.routes,
       onGenerateRoute: AppRoutes.onGenerateRoute,

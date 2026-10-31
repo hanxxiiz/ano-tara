@@ -272,139 +272,154 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
     }
   }
 
-  // Step 1: Activities (3x3 Grid)
+  // Step 1: Activities (Responsive 3x3 Grid)
   Widget _buildActivitiesStep() {
-    return Column(
-      children: [
-        _buildStepHeader(
-          'What kind of activities do you usually\nenjoy?',
-          'Select all that apply.',
-        ),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: _activitiesList.length,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 0.95,
-          ),
-          itemBuilder: (context, index) {
-            final item = _activitiesList[index];
-            final isSelected = _selectedActivities.contains(item.$1);
-            return AppOptionCard(
-              label: item.$1,
-              icon: item.$2,
-              isSelected: isSelected,
-              selectedColor: AppColors.secondaryDark,
-              onTap: () {
-                setState(() {
-                  if (isSelected) {
-                    _selectedActivities.remove(item.$1);
-                  } else {
-                    _selectedActivities.add(item.$1);
-                  }
-                });
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final aspectRatio = constraints.maxWidth > 420 ? 1.08 : 0.95;
+        return Column(
+          children: [
+            _buildStepHeader(
+              'What kind of activities do you usually\nenjoy?',
+              'Select all that apply.',
+            ),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _activitiesList.length,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: aspectRatio,
+              ),
+              itemBuilder: (context, index) {
+                final item = _activitiesList[index];
+                final isSelected = _selectedActivities.contains(item.$1);
+                return AppOptionCard(
+                  label: item.$1,
+                  icon: item.$2,
+                  isSelected: isSelected,
+                  selectedColor: AppColors.secondaryDark,
+                  onTap: () {
+                    setState(() {
+                      if (isSelected) {
+                        _selectedActivities.remove(item.$1);
+                      } else {
+                        _selectedActivities.add(item.$1);
+                      }
+                    });
+                  },
+                );
               },
-            );
-          },
-        ),
-      ],
+            ),
+          ],
+        );
+      },
     );
   }
 
-  // Step 2: Dietary Preferences (2x3 Grid + Specify box)
+  // Step 2: Dietary Preferences (Responsive 2x3 Grid + Specify box)
   Widget _buildDietaryStep() {
-    return Column(
-      children: [
-        _buildStepHeader(
-          'Do you have any dietary preferences?',
-          'Select all that apply.',
-        ),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: _dietsList.length,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 0.95,
-          ),
-          itemBuilder: (context, index) {
-            final item = _dietsList[index];
-            final isSelected = _selectedDiets.contains(item.$1);
-            return AppOptionCard(
-              label: item.$1,
-              icon: item.$2,
-              isSelected: isSelected,
-              selectedColor: AppColors.primaryNavy,
-              onTap: () {
-                setState(() {
-                  if (isSelected) {
-                    _selectedDiets.remove(item.$1);
-                  } else {
-                    _selectedDiets.add(item.$1);
-                  }
-                });
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final aspectRatio = constraints.maxWidth > 420 ? 1.08 : 0.95;
+        return Column(
+          children: [
+            _buildStepHeader(
+              'Do you have any dietary preferences?',
+              'Select all that apply.',
+            ),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _dietsList.length,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: aspectRatio,
+              ),
+              itemBuilder: (context, index) {
+                final item = _dietsList[index];
+                final isSelected = _selectedDiets.contains(item.$1);
+                return AppOptionCard(
+                  label: item.$1,
+                  icon: item.$2,
+                  isSelected: isSelected,
+                  selectedColor: AppColors.primaryNavy,
+                  onTap: () {
+                    setState(() {
+                      if (isSelected) {
+                        _selectedDiets.remove(item.$1);
+                      } else {
+                        _selectedDiets.add(item.$1);
+                      }
+                    });
+                  },
+                );
               },
-            );
-          },
-        ),
-        const SizedBox(height: 20),
-        _buildSpecifyBox(
-          controller: _dietSpecifyController,
-          hint: 'Please specify',
-        ),
-      ],
+            ),
+            const SizedBox(height: 20),
+            _buildSpecifyBox(
+              controller: _dietSpecifyController,
+              hint: 'Please specify',
+            ),
+          ],
+        );
+      },
     );
   }
 
-  // Step 3: Allergies (3x3 Grid with Orange selection + Specify box)
+  // Step 3: Allergies (Responsive 3x3 Grid with Orange selection + Specify box)
   Widget _buildAllergiesStep() {
-    return Column(
-      children: [
-        _buildStepHeader(
-          'Do you have any food or other allergies we\nshould consider?',
-          'Select all that apply.',
-        ),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: _allergiesList.length,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 0.95,
-          ),
-          itemBuilder: (context, index) {
-            final item = _allergiesList[index];
-            final isSelected = _selectedAllergies.contains(item.$1);
-            return AppOptionCard(
-              label: item.$1,
-              icon: item.$2,
-              isSelected: isSelected,
-              selectedColor: AppColors.primaryOrange,
-              onTap: () {
-                setState(() {
-                  if (isSelected) {
-                    _selectedAllergies.remove(item.$1);
-                  } else {
-                    _selectedAllergies.add(item.$1);
-                  }
-                });
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final aspectRatio = constraints.maxWidth > 420 ? 1.08 : 0.95;
+        return Column(
+          children: [
+            _buildStepHeader(
+              'Do you have any food or other allergies we\nshould consider?',
+              'Select all that apply.',
+            ),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _allergiesList.length,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: aspectRatio,
+              ),
+              itemBuilder: (context, index) {
+                final item = _allergiesList[index];
+                final isSelected = _selectedAllergies.contains(item.$1);
+                return AppOptionCard(
+                  label: item.$1,
+                  icon: item.$2,
+                  isSelected: isSelected,
+                  selectedColor: AppColors.primaryOrange,
+                  onTap: () {
+                    setState(() {
+                      if (isSelected) {
+                        _selectedAllergies.remove(item.$1);
+                      } else {
+                        _selectedAllergies.add(item.$1);
+                      }
+                    });
+                  },
+                );
               },
-            );
-          },
-        ),
-        const SizedBox(height: 20),
-        _buildSpecifyBox(
-          controller: _allergySpecifyController,
-          hint: 'Please specify',
-        ),
-      ],
+            ),
+            const SizedBox(height: 20),
+            _buildSpecifyBox(
+              controller: _allergySpecifyController,
+              hint: 'Please specify',
+            ),
+          ],
+        );
+      },
     );
   }
 

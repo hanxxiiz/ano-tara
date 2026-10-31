@@ -91,15 +91,18 @@ class _HomeTabState extends State<HomeTab> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          SizedBox(
-                            width: 175,
-                            child: Text(
-                              'Get the group together and start planning what’s next.',
-                              style: AppTypography.bodySmall.copyWith(
-                                color: AppColors.secondaryDark.withValues(alpha: 0.9),
-                                fontWeight: FontWeight.w600,
-                                fontSize: 11.5,
-                                height: 1.3,
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 210),
+                            child: FractionallySizedBox(
+                              widthFactor: 0.54,
+                              child: Text(
+                                'Get the group together and start planning what’s next.',
+                                style: AppTypography.bodySmall.copyWith(
+                                  color: AppColors.secondaryDark.withValues(alpha: 0.9),
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 11.5,
+                                  height: 1.3,
+                                ),
                               ),
                             ),
                           ),

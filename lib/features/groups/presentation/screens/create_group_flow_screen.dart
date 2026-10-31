@@ -3,6 +3,8 @@ import 'package:iconsax/iconsax.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/routes/app_routes.dart';
+import '../../../../core/utils/app_responsive.dart';
+import '../../../../components/atoms/app_button.dart';
 import '../../../../components/atoms/app_icon.dart';
 import '../../../../components/atoms/app_input_field.dart';
 import '../widgets/shield_check_icon.dart';
@@ -719,45 +721,18 @@ class _CreateGroupFlowScreenState extends State<CreateGroupFlowScreen> {
     required VoidCallback onTap,
     IconData? icon,
   }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          width: double.infinity,
-          height: 52,
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.secondaryDark, width: 2.0),
-            boxShadow: const [
-              BoxShadow(
-                color: AppColors.secondaryDark,
-                offset: Offset(0, 4),
-                blurRadius: 0,
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (icon != null) ...[
-                AppIcon(icon, color: textColor, size: 22),
-                const SizedBox(width: 8),
-              ],
-              Text(
-                text,
-                style: AppTypography.buttonLarge.copyWith(
-                  color: textColor,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 14.5,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    final variant = backgroundColor == AppColors.primaryNavy
+        ? AppButtonVariant.primaryNavy
+        : (backgroundColor == AppColors.primaryOrange
+            ? AppButtonVariant.primaryOrange
+            : AppButtonVariant.secondary);
+    return AppButton(
+      text: text,
+      variant: variant,
+      borderRadius: 16.0,
+      onPressed: onTap,
+      iconLeading:
+          icon != null ? AppIcon(icon, color: textColor, size: 22) : null,
     );
   }
 
@@ -771,8 +746,8 @@ class _CreateGroupFlowScreenState extends State<CreateGroupFlowScreen> {
     return Scaffold(
       backgroundColor: AppColors.white,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 28),
+        child: AppScrollableFillBody(
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
           child: Column(
             children: [
               const Spacer(),
@@ -807,6 +782,7 @@ class _CreateGroupFlowScreenState extends State<CreateGroupFlowScreen> {
                   height: 1.4,
                 ),
               ),
+              const SizedBox(height: 24),
               const Spacer(),
               _buildNeobrutalistButton(
                 text: 'View Group',

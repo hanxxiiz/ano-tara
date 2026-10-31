@@ -11,6 +11,7 @@ import '../../../../components/organisms/member_panel.dart';
 import '../../../../components/organisms/overview_summary_panel.dart';
 import '../../../../components/organisms/trip_summary_card.dart';
 import '../../../shell/presentation/screens/main_shell_screen.dart';
+import '../../../trips/data/trip_repository.dart';
 
 enum GroupDetailTab { overview, trips, availability, members }
 
@@ -86,12 +87,15 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
                 groupName: widget.groupName,
                 roleLabel: 'Organizer',
                 memberCount: 7,
-                onPlanTripTap: () {
-                  Navigator.pushNamed(
+                onPlanTripTap: () async {
+                  final created = await Navigator.pushNamed(
                     context,
                     AppRoutes.planTrip,
                     arguments: widget.groupName,
                   );
+                  if (created != null && mounted) {
+                    setState(() => _activeTab = GroupDetailTab.trips);
+                  }
                 },
               ),
 
@@ -158,61 +162,71 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
 
   // ================= 1. OVERVIEW SIBLING DESTINATION =================
   Widget _buildOverviewContent() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // O04 Overview summary panel organism
-        const OverviewSummaryPanel(
-          availableToday: '5/7',
-          upcomingTrips: '3',
-          totalExpenses: 'P50,000',
-          destinations: '4',
-        ),
-        const SizedBox(height: 24),
+    return ValueListenableBuilder<List<TripModel>>(
+      valueListenable: TripRepository.instance.tripsNotifier,
+      builder: (context, _, _) {
+        final groupTrips = TripRepository.instance.tripsForGroup(widget.groupName);
+        final upcoming = groupTrips.isNotEmpty ? groupTrips.first : null;
 
-        // Upcoming Trip Section
-        Text(
-          'Upcoming Trip',
-          style: AppTypography.titleLarge.copyWith(
-            color: AppColors.secondaryDark,
-            fontWeight: FontWeight.w800,
-            fontSize: 18,
-          ),
-        ),
-        const SizedBox(height: 12),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // O04 Overview summary panel organism
+            OverviewSummaryPanel(
+              availableToday: '5/7',
+              upcomingTrips: '${groupTrips.length + 1}',
+              totalExpenses: 'P50,000',
+              destinations: '4',
+            ),
+            const SizedBox(height: 24),
 
-        // O03 Trip summary card organism
-        TripSummaryCard(
-          title: 'Bantayan Trip',
-          location: 'Bantayan, Philippines',
-          groupLabel: 'The Group (6 going)',
-          dateRange: 'Oct 10 - Oct 15',
-          onTap: () => Navigator.pushNamed(context, AppRoutes.tripOverview),
-        ),
-      ],
+            // Upcoming Trip Section
+            Text(
+              'Upcoming Trip',
+              style: AppTypography.titleLarge.copyWith(
+                color: AppColors.secondaryDark,
+                fontWeight: FontWeight.w800,
+                fontSize: 18,
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // O03 Trip summary card organism
+            if (upcoming != null)
+              TripSummaryCard(
+                title: upcoming.name,
+                location: upcoming.destination,
+                groupLabel: upcoming.groupGoingLabel,
+                dateRange: upcoming.dateRangeLabel,
+                onTap: () => Navigator.pushNamed(context, AppRoutes.tripOverview),
+              ),
+          ],
+        );
+      },
     );
   }
 
   // ================= 2. TRIPS SIBLING DESTINATION =================
   Widget _buildTripsContent() {
-    return Column(
-      children: [
-        TripSummaryCard(
-          title: 'Bantayan Trip',
-          location: 'Bantayan, Philippines',
-          groupLabel: 'The Group (6 going)',
-          dateRange: 'Oct 10 - Oct 15',
-          onTap: () => Navigator.pushNamed(context, AppRoutes.tripOverview),
-        ),
-        const SizedBox(height: 16),
-        TripSummaryCard(
-          title: 'Bantayan Trip',
-          location: 'Bantayan, Philippines',
-          groupLabel: 'The Group (6 going)',
-          dateRange: 'Oct 10 - Oct 15',
-          onTap: () => Navigator.pushNamed(context, AppRoutes.tripOverview),
-        ),
-      ],
+    return ValueListenableBuilder<List<TripModel>>(
+      valueListenable: TripRepository.instance.tripsNotifier,
+      builder: (context, _, _) {
+        final groupTrips = TripRepository.instance.tripsForGroup(widget.groupName);
+        return Column(
+          children: [
+            for (int i = 0; i < groupTrips.length; i++) ...[
+              TripSummaryCard(
+                title: groupTrips[i].name,
+                location: groupTrips[i].destination,
+                groupLabel: groupTrips[i].groupGoingLabel,
+                dateRange: groupTrips[i].dateRangeLabel,
+                onTap: () => Navigator.pushNamed(context, AppRoutes.tripOverview),
+              ),
+              if (i < groupTrips.length - 1) const SizedBox(height: 16),
+            ],
+          ],
+        );
+      },
     );
   }
 }
