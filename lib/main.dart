@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'app_routes.dart';
 import 'screens/auth/start_screen.dart';
 import 'screens/onboarding/onboarding_flow.dart';
+import 'screens/trips/trips_screen.dart';
 import 'theme/app_theme.dart';
 
 Future<void> main() async {
@@ -31,6 +32,7 @@ class AnoTaraApp extends StatelessWidget {
         AppRoutes.home: (_) => const HomeScreen(),
         AppRoutes.onboarding: (_) => const OnboardingFlow(),
         AppRoutes.editPreferences: (_) => const OnboardingFlow(editing: true),
+        AppRoutes.trips: (_) => const TripsScreen(),
       },
     );
   }
@@ -58,6 +60,11 @@ class HomeScreen extends StatelessWidget {
         title: const Text('Ano Tara'),
         centerTitle: false,
         actions: [
+          IconButton(
+            tooltip: 'Trips',
+            onPressed: () => Navigator.of(context).pushNamed(AppRoutes.trips),
+            icon: const Icon(Icons.luggage_rounded),
+          ),
           IconButton(
             tooltip: 'Edit travel preferences',
             onPressed: () => Navigator.of(context).pushNamed(AppRoutes.editPreferences),
