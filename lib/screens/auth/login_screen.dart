@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'dart:async';
 import '../../app_routes.dart';
 import '../../widgets/auth_widgets.dart';
 import 'forgot_password_screen.dart';
@@ -19,16 +21,41 @@ class _LoginScreenState extends State<LoginScreen> {
   final _email = TextEditingController();
   final _password = TextEditingController();
 
+  // onAuthStateChange listener to pop the login screen when the user signs in.
+  late final StreamSubscription<AuthState> _authSub;
+
+  @override
+  void initState() {
+    super.initState();
+    _authSub = supabase.auth.onAuthStateChange.listen((data) {
+      if (data.event == AuthChangeEvent.signedIn && mounted) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
+    });
+  }
+
   @override
   void dispose() {
+    _authSub.cancel();
     _email.dispose();
     _password.dispose();
     super.dispose();
   }
 
+  //temporaray notification for erros and other
+  void _show(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  bool _loading = false;
+
   // sign in with Supabase (email + password).
   Future<void> _logIn() async {
     if (!_formKey.currentState!.validate()) return;
+    setState(() => _loading = true);
 
     try {
       final response = await supabase.auth.signInWithPassword(
@@ -51,8 +78,25 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _continueWithGoogle() {
-    // TODO: sign in with Supabase Google OAuth.
+  // sign in with Supabase Google OAuth.
+  bool _googleLoading = false;
+
+  Future<void> _continueWithGoogle() async {
+    if (_googleLoading) return;
+    setState(() => _googleLoading = true);
+    try {
+      await supabase.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: 'io.supabase.anotara://login-callback/',
+        authScreenLaunchMode: LaunchMode.externalApplication,
+      );
+    } on AuthException catch (e) {
+      _show(e.message);
+    } catch (_) {
+      _show('Google sign-in failed. Please try again.');
+    } finally {
+      if (mounted) setState(() => _googleLoading = false);
+    }
   }
 
   @override
@@ -103,12 +147,13 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
         const SizedBox(height: 20),
-        AppButton(label: 'Log In', onPressed: _logIn),
+        AppButton(label: 'Log In', loading: _loading, onPressed: _logIn),
         const OrDivider(),
         AppButton(
           label: 'Continue with Google',
           icon: Icons.person,
           variant: AppButtonVariant.secondary,
+          loading: _googleLoading,
           onPressed: _continueWithGoogle,
         ),
         const SizedBox(height: 32),

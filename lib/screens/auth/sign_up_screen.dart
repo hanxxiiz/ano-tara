@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:async';
 
-//import '../../app_routes.dart';
+//import 'package:url_launcher/url_launcher.dart';
 import '../../widgets/auth_widgets.dart';
 import 'login_screen.dart';
 import 'validators.dart';
@@ -99,8 +99,25 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
   }
 
-  void _continueWithGoogle() {
-    // TODO: sign up with Supabase Google OAuth.
+  // sign up with Supabase Google OAuth.
+  bool _googleLoading = false;
+
+  Future<void> _continueWithGoogle() async {
+    if (_googleLoading) return;
+    setState(() => _googleLoading = true);
+    try {
+      await supabase.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: 'io.supabase.anotara://signup-callback/',
+        authScreenLaunchMode: LaunchMode.externalApplication,
+      );
+    } on AuthException catch (e) {
+      _show(e.message);
+    } catch (_) {
+      _show('Google sign-in failed. Please try again.');
+    } finally {
+      if (mounted) setState(() => _googleLoading = false);
+    }
   }
 
   late final StreamSubscription<AuthState> _authSub;
@@ -180,12 +197,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
           ),
         ),
         const SizedBox(height: 24),
-        AppButton(label: 'Sign Up', onPressed: _signUp),
+        AppButton(label: 'Sign Up', loading: _loading, onPressed: _signUp),
         const OrDivider(),
         AppButton(
           label: 'Continue with Google',
           icon: Icons.person,
           variant: AppButtonVariant.secondary,
+          loading: _googleLoading,
           onPressed: _continueWithGoogle,
         ),
         const SizedBox(height: 28),

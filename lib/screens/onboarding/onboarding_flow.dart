@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:anotara/main.dart';
-
 import '../../models/member_preferences.dart';
 import '../../services/preferences_service.dart';
 import '../../theme/app_theme.dart';
