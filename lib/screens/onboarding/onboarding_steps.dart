@@ -43,7 +43,13 @@ const allergyOptions = [
 const budgetStops = [500, 1000, 2000, 5000, 10000];
 
 const weekDays = [
-  'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday',
 ];
 
 /// Selected tile color per step, as in the Figma screens.
@@ -59,9 +65,9 @@ const _dayIdle = Color(0xFFF0A492);
 
 String formatPeso(int amount) {
   final digits = amount.toString().replaceAllMapped(
-        RegExp(r'\B(?=(\d{3})+(?!\d))'),
-        (_) => ',',
-      );
+    RegExp(r'\B(?=(\d{3})+(?!\d))'),
+    (_) => ',',
+  );
   return amount >= budgetStops.last ? '₱$digits+' : '₱$digits';
 }
 
@@ -88,43 +94,40 @@ class ChoiceStep extends StatelessWidget {
     required Set<String> selected,
     required ValueChanged<String> onToggle,
     required TextEditingController otherController,
-  }) =>
-      ChoiceStep(
-        title: 'What kind of activities do you enjoy\nmost when traveling?',
-        options: activityOptions,
-        selected: selected,
-        onToggle: onToggle,
-        otherController: otherController,
-        selectedColor: _activitySelected,
-      );
+  }) => ChoiceStep(
+    title: 'What kind of activities do you enjoy\nmost when traveling?',
+    options: activityOptions,
+    selected: selected,
+    onToggle: onToggle,
+    otherController: otherController,
+    selectedColor: _activitySelected,
+  );
 
   factory ChoiceStep.dietary({
     required Set<String> selected,
     required ValueChanged<String> onToggle,
     required TextEditingController otherController,
-  }) =>
-      ChoiceStep(
-        title: 'Do you have any dietary preferences?',
-        options: dietaryOptions,
-        selected: selected,
-        onToggle: onToggle,
-        otherController: otherController,
-        selectedColor: _dietarySelected,
-      );
+  }) => ChoiceStep(
+    title: 'Do you have any dietary preferences?',
+    options: dietaryOptions,
+    selected: selected,
+    onToggle: onToggle,
+    otherController: otherController,
+    selectedColor: _dietarySelected,
+  );
 
   factory ChoiceStep.allergies({
     required Set<String> selected,
     required ValueChanged<String> onToggle,
     required TextEditingController otherController,
-  }) =>
-      ChoiceStep(
-        title: 'Do you have any food allergies\nor restrictions?',
-        options: allergyOptions,
-        selected: selected,
-        onToggle: onToggle,
-        otherController: otherController,
-        selectedColor: _allergySelected,
-      );
+  }) => ChoiceStep(
+    title: 'Do you have any food allergies\nor restrictions?',
+    options: allergyOptions,
+    selected: selected,
+    onToggle: onToggle,
+    otherController: otherController,
+    selectedColor: _allergySelected,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -174,7 +177,9 @@ class BudgetStep extends StatelessWidget {
             color: const Color(0xFFD9D9D9),
             borderRadius: BorderRadius.circular(9),
             border: Border.all(color: AppColors.ink, width: 2),
-            boxShadow: const [BoxShadow(color: AppColors.ink, offset: Offset(0, 4))],
+            boxShadow: const [
+              BoxShadow(color: AppColors.ink, offset: Offset(0, 4)),
+            ],
           ),
           child: Text(
             formatPeso(budgetStops[index]),
@@ -196,8 +201,12 @@ class BudgetStep extends StatelessWidget {
             thumbColor: AppColors.ink,
             overlayColor: AppColors.ink.withValues(alpha: 0.12),
             thumbShape: const _RingThumb(),
-            overlayShape: const RoundSliderOverlayShape(overlayRadius: _sliderOverlayRadius),
-            padding: const EdgeInsets.symmetric(horizontal: _sliderOverlayRadius),
+            overlayShape: const RoundSliderOverlayShape(
+              overlayRadius: _sliderOverlayRadius,
+            ),
+            padding: const EdgeInsets.symmetric(
+              horizontal: _sliderOverlayRadius,
+            ),
             trackShape: const RoundedRectSliderTrackShape(),
             showValueIndicator: ShowValueIndicator.never,
           ),
@@ -206,7 +215,8 @@ class BudgetStep extends StatelessWidget {
             min: 0,
             max: (budgetStops.length - 1).toDouble(),
             divisions: budgetStops.length - 1,
-            semanticFormatterCallback: (v) => formatPeso(budgetStops[v.round()]),
+            semanticFormatterCallback: (v) =>
+                formatPeso(budgetStops[v.round()]),
             onChanged: (v) => onChanged(budgetStops[v.round()]),
           ),
         ),
@@ -217,7 +227,8 @@ class BudgetStep extends StatelessWidget {
           builder: (context, constraints) {
             const inset = _sliderOverlayRadius;
             const labelWidth = 64.0;
-            final step = (constraints.maxWidth - inset * 2) / (budgetStops.length - 1);
+            final step =
+                (constraints.maxWidth - inset * 2) / (budgetStops.length - 1);
             return SizedBox(
               height: 46,
               child: Stack(
@@ -371,7 +382,9 @@ class _PaceCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: radius,
-          boxShadow: const [BoxShadow(color: AppColors.ink, offset: Offset(0, 4))],
+          boxShadow: const [
+            BoxShadow(color: AppColors.ink, offset: Offset(0, 4)),
+          ],
         ),
         child: Material(
           color: isSelected ? AppColors.navy : Colors.white,
@@ -411,7 +424,11 @@ class _PaceCard extends StatelessWidget {
                         const SizedBox(height: 6),
                         Text(
                           description,
-                          style: TextStyle(fontSize: 12, color: foreground, height: 1.3),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: foreground,
+                            height: 1.3,
+                          ),
                         ),
                       ],
                     ),
@@ -462,7 +479,11 @@ class DaysStep extends StatelessWidget {
 }
 
 class _DayChip extends StatelessWidget {
-  const _DayChip({required this.label, required this.isSelected, required this.onTap});
+  const _DayChip({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
 
   final String label;
   final bool isSelected;
@@ -479,7 +500,9 @@ class _DayChip extends StatelessWidget {
         height: 50,
         decoration: BoxDecoration(
           borderRadius: radius,
-          boxShadow: const [BoxShadow(color: AppColors.ink, offset: Offset(0, 4))],
+          boxShadow: const [
+            BoxShadow(color: AppColors.ink, offset: Offset(0, 4)),
+          ],
         ),
         child: Material(
           color: isSelected ? AppColors.accent : _dayIdle,

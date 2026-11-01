@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:anotara/main.dart';
 import '../../widgets/auth_widgets.dart';
 import 'password_updated_screen.dart';
 import 'validators.dart';
@@ -15,6 +17,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _password = TextEditingController();
   final _confirm = TextEditingController();
+  bool _loading = false;
 
   @override
   void dispose() {
@@ -23,13 +26,38 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
     super.dispose();
   }
 
-  void _reset() {
-    if (!_formKey.currentState!.validate()) return;
-    // TODO: update the password with Supabase.
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const PasswordUpdatedScreen()),
-      (route) => route.isFirst,
-    );
+  // temporary error message
+  void _show(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  // update the password with Supabase.
+  Future<void> _reset() async {
+    if (_loading || !_formKey.currentState!.validate()) return;
+    setState(() => _loading = true);
+
+    try {
+      await supabase.auth.updateUser(UserAttributes(password: _password.text));
+
+      // The code step signed the user in. Sign out so they log in with
+      // the new password.
+      await supabase.auth.signOut();
+      if (!mounted) return;
+
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const PasswordUpdatedScreen()),
+        (route) => route.isFirst,
+      );
+    } on AuthException catch (e) {
+      _show(e.message);
+    } catch (_) {
+      _show('Something went wrong. Please try again.');
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   @override
@@ -68,7 +96,11 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
           ),
         ),
         const SizedBox(height: 40),
-        AppButton(label: 'Reset Password', onPressed: _reset),
+        AppButton(
+          label: 'Reset Password',
+          loading: _loading,
+          onPressed: _reset,
+        ),
       ],
     );
   }
