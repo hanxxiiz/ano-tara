@@ -362,9 +362,7 @@ class _HomeScreenState extends State<HomeScreen> {
           // Navigation logic placeholder
         },
         onCreatePressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Create trip (+) tapped')),
-          );
+          Navigator.of(context).pushNamed(AppRoutes.createGroup);
         },
       ),
     );

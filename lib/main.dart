@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app_routes.dart';
 import 'screens/auth/start_screen.dart';
+import 'screens/create_group/create_group_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/notifications_screen.dart';
 import 'screens/onboarding/onboarding_flow.dart';
@@ -33,6 +34,7 @@ class AnoTaraApp extends StatelessWidget {
         AppRoutes.home: (_) => const HomeScreen(),
         AppRoutes.notifications: (_) => const NotificationsScreen(),
         AppRoutes.onboarding: (_) => const OnboardingFlow(),
+        AppRoutes.createGroup: (_) => const CreateGroupScreen(),
         AppRoutes.editPreferences: (_) => const OnboardingFlow(editing: true),
       },
     );

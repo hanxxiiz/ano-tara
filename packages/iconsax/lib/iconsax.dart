@@ -50,4 +50,23 @@ class Iconsax {
   static const IconData clock = IconData(0xe953, fontFamily: _fontFamily, fontPackage: _fontPackage);
   static const IconData user = IconData(0xea12, fontFamily: _fontFamily, fontPackage: _fontPackage);
   static const IconData profile_2user = IconData(0xe9cd, fontFamily: _fontFamily, fontPackage: _fontPackage);
+
+  // Trash / Delete icons
+  static const IconData trash = IconData(0xea1c, fontFamily: _fontFamily, fontPackage: _fontPackage);
+
+  // Edit icons
+  static const IconData edit = IconData(0xe963, fontFamily: _fontFamily, fontPackage: _fontPackage);
+  static const IconData edit_2 = IconData(0xe964, fontFamily: _fontFamily, fontPackage: _fontPackage);
+
+  // Search icons
+  static const IconData search_normal = IconData(0xe9f3, fontFamily: _fontFamily, fontPackage: _fontPackage);
+  static const IconData search_normal_1 = IconData(0xe9f4, fontFamily: _fontFamily, fontPackage: _fontPackage);
+
+  // Camera / Media icons
+  static const IconData camera = IconData(0xe945, fontFamily: _fontFamily, fontPackage: _fontPackage);
+
+  static const IconData profile_2user5 = IconData(0x05b2, fontFamily: _fontFamily, fontPackage: _fontPackage);
+
+  // Misc
+  static const IconData add = IconData(0xe904, fontFamily: _fontFamily, fontPackage: _fontPackage);
 }
