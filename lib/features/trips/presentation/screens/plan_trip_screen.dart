@@ -1,11 +1,11 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../../../components/atoms/app_button.dart';
 import '../../../../components/atoms/app_checkbox.dart';
 import '../../../../components/atoms/app_icon.dart';
-import '../../../../components/atoms/app_pressable.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/utils/app_responsive.dart';
@@ -593,7 +593,7 @@ class _PlanTripScreenState extends State<PlanTripScreen> {
                 const SizedBox(height: 12),
 
                 // "Select all members" pill button
-                AppPressable(
+                GestureDetector(
                   onTap: () {
                     setState(() {
                       _selectAllMembers = !_selectAllMembers;
@@ -681,7 +681,7 @@ class _PlanTripScreenState extends State<PlanTripScreen> {
     final List<String> days = (member['availability'] as List<String>?) ?? ['Mon', 'Tue'];
     final Color avatarColor = (member['avatarColor'] as Color?) ?? AppColors.semanticYellow;
 
-    return AppPressable(
+    return GestureDetector(
       onTap: () {
         setState(() {
           _selectedMembers[index] = !isChecked;
@@ -979,7 +979,7 @@ class _PlanTripScreenState extends State<PlanTripScreen> {
                 ),
               ),
               child: isSelected
-                  ? const Icon(Icons.check_rounded, size: 19, color: AppColors.secondaryDark)
+                  ? const Icon(Iconsax.tick_square, size: 19, color: AppColors.secondaryDark)
                   : null,
             ),
           ],
@@ -1558,7 +1558,7 @@ class _PlanTripScreenState extends State<PlanTripScreen> {
                       width: 88,
                       height: 88,
                       decoration: BoxDecoration(
-                        color: Colors.black,
+                        color: AppColors.secondaryDark,
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),

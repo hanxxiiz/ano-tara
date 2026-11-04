@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:iconsax/iconsax.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../components/atoms/app_button.dart';
 import '../../../../components/atoms/app_otp_field.dart';
@@ -44,7 +45,7 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                   icon: const Icon(
-                    Icons.arrow_back,
+                    Iconsax.arrow_left,
                     color: AppColors.secondaryDark,
                     size: 26,
                   ),
@@ -71,9 +72,9 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
                       borderRadius: BorderRadius.circular(14.0),
                     ),
                     child: const Icon(
-                      Icons.keyboard_arrow_down_rounded,
+                      Iconsax.arrow_down_1,
                       color: AppColors.primaryOrange,
-                      size: 38,
+                      size: 30,
                     ),
                   ),
                 ),

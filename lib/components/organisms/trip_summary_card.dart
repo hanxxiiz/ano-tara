@@ -3,14 +3,13 @@ import 'package:iconsax/iconsax.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_typography.dart';
 import '../atoms/app_icon.dart';
-import '../atoms/app_pressable.dart';
 import '../molecules/app_trip_metadata.dart';
 
 /// O03 Trip summary card organism matching Figma "03 Organisms" board:
 /// Recipe: Photo + title + M08 trip metadata + open-trip action.
 /// Accepts data as parameters for reusability across Home, Group Detail, and Trips screens.
-/// Supports loading, error states, and smooth pressable interaction.
-class TripSummaryCard extends StatelessWidget {
+/// Supports loading, error states, and smooth pressed transition (scale, 2px Y-offset, shadow reduction, and color feedback).
+class TripSummaryCard extends StatefulWidget {
   final String title;
   final String location;
   final String groupLabel;
@@ -34,92 +33,137 @@ class TripSummaryCard extends StatelessWidget {
   });
 
   @override
+  State<TripSummaryCard> createState() => _TripSummaryCardState();
+}
+
+class _TripSummaryCardState extends State<TripSummaryCard> {
+  bool _isPressed = false;
+
+  void _handleTapDown(TapDownDetails details) {
+    setState(() => _isPressed = true);
+  }
+
+  void _handleTapCancel() {
+    if (!_isPressed) return;
+    setState(() => _isPressed = false);
+  }
+
+  Future<void> _handleTapUp(TapUpDetails details) async {
+    if (!_isPressed) {
+      setState(() => _isPressed = true);
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 120));
+    if (mounted) {
+      setState(() => _isPressed = false);
+    }
+    widget.onTap?.call();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (isLoading) {
+    if (widget.isLoading) {
       return _buildLoadingState();
     }
 
-    if (errorText != null && errorText!.isNotEmpty) {
+    if (widget.errorText != null && widget.errorText!.isNotEmpty) {
       return _buildErrorState();
     }
 
-    return AppPressable(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.secondaryDark, width: 2.0),
-          boxShadow: const [
-            BoxShadow(
-              color: AppColors.secondaryDark,
-              offset: Offset(0, 4),
-              blurRadius: 0,
-            ),
-          ],
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Photo Header
-            SizedBox(
-              height: 125,
-              width: double.infinity,
-              child: Image.network(
-                imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) =>
-                    _buildBeachFallback(),
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTapDown: _handleTapDown,
+      onTapUp: _handleTapUp,
+      onTapCancel: _handleTapCancel,
+      child: AnimatedScale(
+        scale: _isPressed ? 0.97 : 1.0,
+        duration: Duration(milliseconds: _isPressed ? 90 : 250),
+        curve: _isPressed ? Curves.easeOutQuad : Curves.elasticOut,
+        child: AnimatedContainer(
+          duration: Duration(milliseconds: _isPressed ? 80 : 200),
+          curve: Curves.easeOutCubic,
+          transform: Matrix4.translationValues(0, _isPressed ? 2.0 : 0.0, 0),
+          decoration: BoxDecoration(
+            color: _isPressed ? AppColors.primaryNavyLight : AppColors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.secondaryDark, width: 2.0),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.secondaryDark,
+                offset: Offset(0, _isPressed ? 2 : 4),
+                blurRadius: 0,
               ),
-            ),
-            Container(
-              height: 1.5,
-              width: double.infinity,
-              color: AppColors.secondaryDark,
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: AppTypography.titleLarge.copyWith(
-                            color: AppColors.secondaryDark,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 16.5,
+            ],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Photo Header
+              SizedBox(
+                height: 125,
+                width: double.infinity,
+                child: Image.network(
+                  widget.imageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) =>
+                      _buildBeachFallback(),
+                ),
+              ),
+              Container(
+                height: 1.5,
+                width: double.infinity,
+                color: AppColors.secondaryDark,
+              ),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.title,
+                            style: AppTypography.titleLarge.copyWith(
+                              color: AppColors.secondaryDark,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 16.5,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        // M08 Trip metadata molecule
-                        AppTripMetadata(
-                          location: location,
-                          groupName: groupLabel,
-                          dateRange: dateRange,
-                        ),
-                      ],
-                    ),
-                  ),
-                  ConstrainedBox(
-                    constraints:
-                        const BoxConstraints(minWidth: 44.0, minHeight: 44.0),
-                    child: const Center(
-                      child: Icon(
-                        Iconsax.arrow_right_1,
-                        color: AppColors.secondaryDark,
-                        size: 26,
+                          const SizedBox(height: 8),
+                          // M08 Trip metadata molecule
+                          AppTripMetadata(
+                            location: widget.location,
+                            groupName: widget.groupLabel,
+                            dateRange: widget.dateRange,
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                ],
+                    ConstrainedBox(
+                      constraints:
+                          const BoxConstraints(minWidth: 44.0, minHeight: 44.0),
+                      child: Center(
+                        child: AnimatedSlide(
+                          offset: Offset(_isPressed ? 0.15 : 0.0, 0),
+                          duration: const Duration(milliseconds: 150),
+                          child: Icon(
+                            Iconsax.arrow_right_1,
+                            color: _isPressed
+                                ? AppColors.primaryNavy
+                                : AppColors.secondaryDark,
+                            size: 26,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -142,12 +186,12 @@ class TripSummaryCard extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const AppIcon(Iconsax.sun_15, color: Colors.white, size: 36),
+            const AppIcon(Iconsax.sun_15, color: AppColors.white, size: 36),
             const SizedBox(height: 4),
             Text(
-              title,
+              widget.title,
               style: AppTypography.caption.copyWith(
-                color: Colors.white,
+                color: AppColors.white,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -177,16 +221,19 @@ class TripSummaryCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.primaryOrangeLight,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.primaryOrange, width: 2.0),
+        border: Border.all(color: AppColors.secondaryDark, width: 2.0),
       ),
       child: Row(
         children: [
-          const AppIcon(Iconsax.warning_25,
-              color: AppColors.primaryOrange, size: 24),
+          const AppIcon(
+            Iconsax.warning_25,
+            color: AppColors.primaryOrange,
+            size: 24,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              errorText!,
+              widget.errorText!,
               style: AppTypography.bodySmall.copyWith(
                 color: AppColors.secondaryDark,
                 fontWeight: FontWeight.w600,

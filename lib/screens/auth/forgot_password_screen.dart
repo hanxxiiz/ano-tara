@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:anotara/main.dart';
-import '../../widgets/auth_widgets.dart';
+import '../../components/atoms/app_button.dart';
+import '../../components/atoms/app_input_field.dart';
+import '../../core/constants/app_colors.dart';
+import '../../core/constants/app_typography.dart';
 import 'validators.dart';
 import 'verification_screen.dart';
 
@@ -14,7 +18,6 @@ class ForgotPasswordScreen extends StatefulWidget {
 }
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
-  final _formKey = GlobalKey<FormState>();
   final _email = TextEditingController();
   bool _loading = false;
 
@@ -24,7 +27,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     super.dispose();
   }
 
-  // temporary message function to show error messages in a snackbar.
   void _show(String msg) {
     if (!mounted) return;
     ScaffoldMessenger.of(context)
@@ -32,9 +34,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       ..showSnackBar(SnackBar(content: Text(msg)));
   }
 
-  // send the recovery code with Supabase.
   Future<void> _sendCode() async {
-    if (_loading || !_formKey.currentState!.validate()) return;
+    if (_loading) return;
+    final err = validateEmail(_email.text);
+    if (err != null) {
+      _show(err);
+      return;
+    }
     setState(() => _loading = true);
     final email = _email.text.trim();
 
@@ -55,30 +61,65 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AuthScaffold(
-      children: [
-        const SizedBox(height: 40),
-        const LogoBadge(size: 140, icon: Icons.shield_rounded),
-        const SizedBox(height: 22),
-        const AuthHeader(
-          title: 'Forgot Password',
-          subtitle: "Enter your email and we'll send you a verification code.",
-        ),
-        const SizedBox(height: 22),
-        Form(
-          key: _formKey,
-          child: AppTextField(
-            label: 'Email',
-            controller: _email,
-            keyboardType: TextInputType.emailAddress,
-            textInputAction: TextInputAction.done,
-            autofillHints: const [AutofillHints.email],
-            validator: validateEmail,
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(26, 12, 26, 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: IconButton(
+                  onPressed: () => Navigator.of(context).maybePop(),
+                  icon: const Icon(Iconsax.arrow_left, color: AppColors.secondaryDark),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Center(
+                child: Container(
+                  width: 140,
+                  height: 140,
+                  decoration: const BoxDecoration(
+                    color: AppColors.primaryOrange,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Iconsax.shield_tick5,
+                    color: AppColors.white,
+                    size: 72,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 22),
+              Text(
+                'Forgot Password',
+                textAlign: TextAlign.center,
+                style: AppTypography.h2.copyWith(color: AppColors.secondaryDark),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                "Enter your email and we'll send you a verification code.",
+                textAlign: TextAlign.center,
+                style: AppTypography.bodyMedium.copyWith(color: AppColors.secondaryDark),
+              ),
+              const SizedBox(height: 22),
+              AppInputField(
+                label: 'Email',
+                controller: _email,
+                keyboardType: TextInputType.emailAddress,
+              ),
+              const SizedBox(height: 30),
+              AppButton(
+                text: 'Send Code',
+                isLoading: _loading,
+                onPressed: _sendCode,
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 30),
-        AppButton(label: 'Send Code', loading: _loading, onPressed: _sendCode),
-      ],
+      ),
     );
   }
 }

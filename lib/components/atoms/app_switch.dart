@@ -1,8 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_radii.dart';
 
 /// Custom Switch atom matching Figma "Switch.pdf" & "Active Right Option.pdf".
+/// Uses #0F0331 (AppColors.secondaryDark) for outline and outer shadow.
 /// Minimum tap target >= 44x44.
 class AppSwitch extends StatelessWidget {
   final bool value;
@@ -36,24 +37,32 @@ class AppSwitch extends StatelessWidget {
               color: value
                   ? (isDisabled ? AppColors.ann : activeColor)
                   : (isDisabled ? AppColors.surfaceLight : AppColors.ann),
+              border: Border.all(
+                color: AppColors.secondaryDark,
+                width: 1.5,
+              ),
+              boxShadow: const [
+                BoxShadow(
+                  color: AppColors.secondaryDark,
+                  offset: Offset(0, 2),
+                  blurRadius: 0,
+                ),
+              ],
             ),
             child: AnimatedAlign(
               duration: const Duration(milliseconds: 200),
               curve: Curves.easeInOut,
               alignment: value ? Alignment.centerRight : Alignment.centerLeft,
               child: Container(
-                width: 23.0,
-                height: 23.0,
-                decoration: const BoxDecoration(
+                width: 21.0,
+                height: 21.0,
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: AppColors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Color(0x20000000),
-                      blurRadius: 3,
-                      offset: Offset(0, 1),
-                    ),
-                  ],
+                  border: Border.all(
+                    color: AppColors.secondaryDark,
+                    width: 1.5,
+                  ),
                 ),
               ),
             ),

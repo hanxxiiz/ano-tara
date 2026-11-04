@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../core/constants/app_colors.dart';
 import 'app_icon.dart';
@@ -50,7 +50,10 @@ class AppAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color bg = backgroundColor ?? (type == AppAvatarType.group ? AppColors.primaryOrange : AppColors.semanticYellow);
+    final Color bg = backgroundColor ??
+        (type == AppAvatarType.group
+            ? AppColors.primaryOrange
+            : AppColors.semanticYellow);
 
     Widget childWidget;
     if (type == AppAvatarType.group) {
@@ -66,7 +69,8 @@ class AppAvatar extends StatelessWidget {
         size: size * 0.55,
       );
     } else {
-      final initial = (name != null && name!.isNotEmpty) ? name![0].toUpperCase() : 'U';
+      final initial =
+          (name != null && name!.isNotEmpty) ? name![0].toUpperCase() : 'U';
       childWidget = Text(
         initial,
         style: TextStyle(
@@ -83,7 +87,9 @@ class AppAvatar extends StatelessWidget {
       decoration: BoxDecoration(
         color: bg,
         shape: BoxShape.circle,
-        border: hasBorder ? Border.all(color: AppColors.secondaryDark, width: 2.0) : null,
+        border: hasBorder
+            ? Border.all(color: AppColors.secondaryDark, width: 2.0)
+            : null,
         boxShadow: hasBorder
             ? const [
                 BoxShadow(
@@ -161,7 +167,7 @@ class AppMemberTokenCluster extends StatelessWidget {
                 child: Text(
                   '+$extraCount',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: AppColors.white,
                     fontSize: size * 0.45,
                     fontWeight: FontWeight.w800,
                     height: 1.0,
@@ -177,6 +183,7 @@ class AppMemberTokenCluster extends StatelessWidget {
 }
 
 /// Avatar group showing overlapping member avatars with optional "+N" overflow badge.
+/// Uses the same overlap spacing pattern (0.62 * size in a Stack + 4px gap for "+N") as [AppMemberTokenCluster].
 class AppAvatarGroup extends StatelessWidget {
   final List<String> names;
   final int maxVisible;
@@ -194,50 +201,81 @@ class AppAvatarGroup extends StatelessWidget {
     final visibleNames = names.take(maxVisible).toList();
     final overflow = names.length - maxVisible;
 
+    if (visibleNames.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    const avatarColors = [
+      Color(0xFFE24B27),
+      Color(0xFFEA7B61),
+      Color(0xFFF2A794),
+      Color(0xFF144885),
+    ];
+
+    final double overlapStep = avatarSize * 0.62;
+    final double stackWidth =
+        avatarSize + (visibleNames.length - 1) * overlapStep;
+
     return SizedBox(
       height: avatarSize,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          for (int i = 0; i < visibleNames.length; i++)
-            Transform.translate(
-              offset: Offset(i * -8.0, 0),
-              child: Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.white, width: 2),
-                ),
-                child: AppAvatar(
-                  name: visibleNames[i],
-                  type: AppAvatarType.initials,
-                  size: avatarSize,
-                  backgroundColor: AppColors.primaryOrange,
+          SizedBox(
+            width: stackWidth,
+            height: avatarSize,
+            child: Stack(
+              children: [
+                for (int i = 0; i < visibleNames.length; i++)
+                  Positioned(
+                    left: i * overlapStep,
+                    child: Container(
+                      width: avatarSize,
+                      height: avatarSize,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: AppColors.secondaryDark,
+                          width: 1.5,
+                        ),
+                      ),
+                      child: AppAvatar(
+                        name: visibleNames[i],
+                        type: AppAvatarType.initials,
+                        size: avatarSize,
+                        backgroundColor: avatarColors[i % avatarColors.length],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          if (overflow > 0) ...[
+            const SizedBox(width: 4),
+            Container(
+              width: avatarSize,
+              height: avatarSize,
+              decoration: BoxDecoration(
+                color: AppColors.primaryOrange,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppColors.secondaryDark,
+                  width: 1.5,
                 ),
               ),
-            ),
-          if (overflow > 0)
-            Transform.translate(
-              offset: Offset(visibleNames.length * -8.0, 0),
-              child: Container(
-                width: avatarSize,
-                height: avatarSize,
-                decoration: BoxDecoration(
-                  color: AppColors.chucky,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.white, width: 2),
-                ),
-                child: Center(
-                  child: Text(
-                    '+$overflow',
-                    style: TextStyle(
-                      color: AppColors.white,
-                      fontSize: avatarSize * 0.35,
-                      fontWeight: FontWeight.bold,
-                    ),
+              child: Center(
+                child: Text(
+                  '+$overflow',
+                  style: TextStyle(
+                    color: AppColors.white,
+                    fontSize: avatarSize * 0.42,
+                    fontWeight: FontWeight.w800,
+                    height: 1.0,
                   ),
                 ),
               ),
             ),
+          ],
         ],
       ),
     );

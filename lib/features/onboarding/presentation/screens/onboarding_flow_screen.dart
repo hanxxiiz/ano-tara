@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:iconsax/iconsax.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../components/atoms/app_button.dart';
 import '../../../../components/molecules/app_availability_pill.dart';
 import '../../../../components/molecules/app_budget_slider.dart';
 import '../../../../components/molecules/app_option_card.dart';
 import '../../../../components/molecules/app_pace_card.dart';
+import '../../../../components/molecules/step_progress.dart';
 import '../../../../core/routes/app_routes.dart';
 
 /// 7-Step Onboarding Preferences flow matching Figma design:
 /// Activities -> Dietary Preferences -> Allergies -> Budget -> Pace -> Availability -> Getting Started.
+/// Uses Iconsax icons and the reusable StepProgress molecule.
 class OnboardingFlowScreen extends StatefulWidget {
   const OnboardingFlowScreen({super.key});
 
@@ -21,72 +24,78 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
   int _currentStep = 0; // 0 to 6 (Steps 1/7 to 7/7)
   final int _totalSteps = 7;
 
-  // Step 1: Activities
+  // Step 1: Activities (using Iconsax icons)
   final Set<String> _selectedActivities = {'Hiking', 'Sightseeing'};
   final List<(String, IconData)> _activitiesList = const [
-    ('Beaches', Icons.beach_access_rounded),
-    ('Food Trips', Icons.restaurant_rounded),
-    ('Sightseeing', Icons.visibility_rounded),
-    ('Hiking', Icons.landscape_rounded),
-    ('Museums', Icons.museum_rounded),
-    ('Shopping', Icons.shopping_bag_rounded),
-    ('Nightlife', Icons.local_bar_rounded),
-    ('Beaches', Icons.beach_access_rounded),
-    ('Others', Icons.add_circle_rounded),
+    ('Beaches', Iconsax.sun_1),
+    ('Food Trips', Iconsax.cup),
+    ('Sightseeing', Iconsax.eye),
+    ('Hiking', Iconsax.routing),
+    ('Museums', Iconsax.bank),
+    ('Shopping', Iconsax.shopping_bag),
+    ('Nightlife', Iconsax.music),
+    ('Nature', Iconsax.tree),
+    ('Others', Iconsax.add_circle),
   ];
 
-  // Step 2: Dietary Preferences
+  // Step 2: Dietary Preferences (using Iconsax icons)
   final Set<String> _selectedDiets = {'Gluten-free', 'Vegetarian'};
   final TextEditingController _dietSpecifyController = TextEditingController();
   final List<(String, IconData)> _dietsList = const [
-    ('Gluten-free', Icons.grass_rounded),
-    ('Vegan', Icons.eco_rounded),
-    ('Pescatarian', Icons.set_meal_rounded),
-    ('Keto', Icons.egg_alt_rounded),
-    ('Vegetarian', Icons.spa_rounded),
-    ('Others', Icons.add_circle_rounded),
+    ('Gluten-free', Iconsax.verify),
+    ('Vegan', Iconsax.tree),
+    ('Pescatarian', Iconsax.drop),
+    ('Keto', Iconsax.flash_1),
+    ('Vegetarian', Iconsax.heart),
+    ('Others', Iconsax.add_circle),
   ];
 
-  // Step 3: Allergies
+  // Step 3: Allergies (using Iconsax icons)
   final Set<String> _selectedAllergies = {'Dairy', 'Gluten', 'Eggs', 'Sesame'};
-  final TextEditingController _allergySpecifyController = TextEditingController();
+  final TextEditingController _allergySpecifyController =
+      TextEditingController();
   final List<(String, IconData)> _allergiesList = const [
-    ('Seafood', Icons.set_meal_rounded),
-    ('Peanuts', Icons.egg_rounded),
-    ('Dairy', Icons.local_drink_rounded),
-    ('Gluten', Icons.grass_rounded),
-    ('Eggs', Icons.egg_rounded),
-    ('Shellfish', Icons.water_drop_rounded),
-    ('Soy', Icons.grain_rounded),
-    ('Sesame', Icons.grain_rounded),
-    ('Others', Icons.add_circle_rounded),
+    ('Seafood', Iconsax.drop),
+    ('Peanuts', Iconsax.warning_2),
+    ('Dairy', Iconsax.cup),
+    ('Gluten', Iconsax.verify),
+    ('Eggs', Iconsax.star_1),
+    ('Shellfish', Iconsax.sun_fog),
+    ('Soy', Iconsax.tree),
+    ('Sesame', Iconsax.magic_star),
+    ('Others', Iconsax.add_circle),
   ];
 
   // Step 4: Budget
-  int _selectedBudgetIndex = 2; // P 2.000
+  int _selectedBudgetIndex = 2; // P2,000
 
-  // Step 5: Pace
+  // Step 5: Pace (using Iconsax icons)
   String _selectedPace = 'Balanced';
   final List<(String, String, IconData)> _pacesList = const [
     (
       'Relaxed',
       'Slow mornings, spontaneous stops, and plenty of time to just vibe.',
-      Icons.air_rounded,
+      Iconsax.wind,
     ),
     (
       'Balanced',
       'A little adventure, a little chill — the sweet spot for your trip.',
-      Icons.hourglass_bottom_rounded,
+      Iconsax.timer_1,
     ),
     (
       'Packed',
       'Go, go, go! Max out the day and squeeze in as much fun as possible.',
-      Icons.timer_rounded,
+      Iconsax.timer_start,
     ),
   ];
 
-  // Step 6: Availability (matching Figma Step 6: Mon, Wed, Thu, Sat selected)
-  final Set<String> _selectedDays = {'Monday', 'Wednesday', 'Thursday', 'Saturday'};
+  // Step 6: Availability
+  final Set<String> _selectedDays = {
+    'Monday',
+    'Wednesday',
+    'Thursday',
+    'Saturday',
+  };
 
   // Step 7: Notes
   final TextEditingController _notesController = TextEditingController();
@@ -136,62 +145,34 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Header: Back Arrow (Steps 2..7) and Top Progress Capsule Indicator
+            // Header: Back Arrow and Reusable StepProgress Molecule
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
-              child: Stack(
-                alignment: Alignment.center,
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+              child: Row(
                 children: [
-                  // Back Arrow on Left
                   if (_currentStep > 0)
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: IconButton(
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        icon: const Icon(
-                          Icons.arrow_back,
-                          color: AppColors.secondaryDark,
-                          size: 26,
-                        ),
-                        onPressed: _previousStep,
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints:
+                          const BoxConstraints(minWidth: 40, minHeight: 40),
+                      icon: const Icon(
+                        Iconsax.arrow_left,
+                        color: AppColors.secondaryDark,
+                        size: 26,
                       ),
+                      onPressed: _previousStep,
+                    )
+                  else
+                    const SizedBox(width: 40),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: StepProgress(
+                      current: _currentStep + 1,
+                      total: _totalSteps,
                     ),
-
-                  // 7 Capsule Pills Indicator
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(_totalSteps, (index) {
-                          final bool isCurrent = index == _currentStep;
-                          return Container(
-                            width: 32,
-                            height: 8,
-                            margin: const EdgeInsets.symmetric(horizontal: 3),
-                            decoration: BoxDecoration(
-                              color: isCurrent ? AppColors.secondaryDark : Colors.transparent,
-                              borderRadius: BorderRadius.circular(999),
-                              border: Border.all(
-                                color: AppColors.secondaryDark,
-                                width: 1.5,
-                              ),
-                            ),
-                          );
-                        }),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        '${_currentStep + 1}/$_totalSteps',
-                        style: GoogleFonts.urbanist(
-                          color: AppColors.secondaryDark,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
                   ),
+                  const SizedBox(width: 48),
                 ],
               ),
             ),
@@ -201,14 +182,16 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
             // Main Step Content
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 4.0),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24.0, vertical: 4.0),
                 child: _buildCurrentStepContent(),
               ),
             ),
 
             // Bottom Navigation CTA
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
               child: AppButton(
                 text: _currentStep == _totalSteps - 1 ? 'Finish' : 'Next',
                 variant: AppButtonVariant.primaryNavy,
@@ -434,7 +417,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
         color: AppColors.secondaryLight,
         borderRadius: BorderRadius.circular(20.0),
         border: Border.all(
-          color: AppColors.secondaryDark.withValues(alpha: 0.5),
+          color: AppColors.secondaryDark,
           width: 2.0,
         ),
       ),
@@ -613,7 +596,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
             color: AppColors.secondaryLight,
             borderRadius: BorderRadius.circular(20.0),
             border: Border.all(
-              color: AppColors.secondaryDark.withValues(alpha: 0.5),
+              color: AppColors.secondaryDark,
               width: 2.0,
             ),
           ),

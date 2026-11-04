@@ -7,7 +7,7 @@ import '../../../../core/utils/app_responsive.dart';
 import '../../../../components/atoms/app_button.dart';
 import '../../../../components/atoms/app_icon.dart';
 import '../../../../components/atoms/app_input_field.dart';
-import '../widgets/shield_check_icon.dart';
+import '../../../../components/molecules/step_progress.dart';
 
 class CreateGroupFlowScreen extends StatefulWidget {
   const CreateGroupFlowScreen({super.key});
@@ -84,25 +84,28 @@ class _CreateGroupFlowScreenState extends State<CreateGroupFlowScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Fixed Top Bar with Back Arrow and 3-Pill Capsule Indicator
+            // Fixed Top Bar with Back Arrow and StepProgress Molecule
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Stack(
-                alignment: Alignment.center,
+              child: Row(
                 children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: IconButton(
-                      icon: const Icon(
-                        Iconsax.arrow_left,
-                        color: AppColors.secondaryDark,
-                        size: 24,
-                      ),
-                      onPressed: _previousStep,
-                      splashRadius: 24,
+                  IconButton(
+                    icon: const Icon(
+                      Iconsax.arrow_left,
+                      color: AppColors.secondaryDark,
+                      size: 24,
+                    ),
+                    onPressed: _previousStep,
+                    splashRadius: 24,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: StepProgress(
+                      current: _currentStep,
+                      total: 3,
                     ),
                   ),
-                  _buildProgressIndicator(),
+                  const SizedBox(width: 16),
                 ],
               ),
             ),
@@ -123,44 +126,6 @@ class _CreateGroupFlowScreenState extends State<CreateGroupFlowScreen> {
           ],
         ),
       ),
-    );
-  }
-
-  // 3-Pill Capsule Indicator matching Figma: active step solid #0F0331, inactive outlined
-  Widget _buildProgressIndicator() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: List.generate(3, (index) {
-            final stepNum = index + 1;
-            final isActive = _currentStep == stepNum;
-            return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              width: 32,
-              height: 7,
-              decoration: BoxDecoration(
-                color: isActive ? AppColors.secondaryDark : Colors.transparent,
-                borderRadius: BorderRadius.circular(4),
-                border: Border.all(
-                  color: AppColors.secondaryDark,
-                  width: 1.5,
-                ),
-              ),
-            );
-          }),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          '$_currentStep/3',
-          style: AppTypography.caption.copyWith(
-            color: AppColors.secondaryDark,
-            fontWeight: FontWeight.w600,
-            fontSize: 11,
-          ),
-        ),
-      ],
     );
   }
 
@@ -247,7 +212,8 @@ class _CreateGroupFlowScreenState extends State<CreateGroupFlowScreen> {
                     decoration: BoxDecoration(
                       color: AppColors.secondaryLight,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppColors.secondaryDark, width: 2.0),
+                      border:
+                          Border.all(color: AppColors.secondaryDark, width: 2.0),
                       boxShadow: const [
                         BoxShadow(
                           color: AppColors.secondaryDark,
@@ -274,7 +240,7 @@ class _CreateGroupFlowScreenState extends State<CreateGroupFlowScreen> {
         ),
         const SizedBox(height: 20),
 
-        // Group Name Field - uses clean atom without double-border
+        // Group Name Field
         AppInputField(
           label: 'Group Name*',
           hint: 'e.g. Weekend Wanderers',
@@ -282,7 +248,7 @@ class _CreateGroupFlowScreenState extends State<CreateGroupFlowScreen> {
         ),
         const SizedBox(height: 16),
 
-        // Description Field - uses clean atom without double-border
+        // Description Field
         AppInputField(
           label: 'Description (optional)',
           hint: 'What brings your group together?',
@@ -307,11 +273,16 @@ class _CreateGroupFlowScreenState extends State<CreateGroupFlowScreen> {
   Widget _buildStep2Invite() {
     final filteredMembers = _allMembers.where((m) {
       if (_searchQuery.isEmpty) return true;
-      return (m['name'] as String).toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          (m['email'] as String).toLowerCase().contains(_searchQuery.toLowerCase());
+      return (m['name'] as String)
+              .toLowerCase()
+              .contains(_searchQuery.toLowerCase()) ||
+          (m['email'] as String)
+              .toLowerCase()
+              .contains(_searchQuery.toLowerCase());
     }).toList();
 
-    final selectedCount = _allMembers.where((m) => m['selected'] == true).length;
+    final selectedCount =
+        _allMembers.where((m) => m['selected'] == true).length;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -334,7 +305,7 @@ class _CreateGroupFlowScreenState extends State<CreateGroupFlowScreen> {
         ),
         const SizedBox(height: 20),
 
-        // Clean Search Bar without inner double-border
+        // Clean Search Bar
         Container(
           height: 52,
           decoration: BoxDecoration(
@@ -355,10 +326,12 @@ class _CreateGroupFlowScreenState extends State<CreateGroupFlowScreen> {
                 child: TextField(
                   controller: _searchController,
                   onChanged: (val) => setState(() => _searchQuery = val),
-                  style: AppTypography.bodyMedium.copyWith(color: AppColors.secondaryDark),
+                  style: AppTypography.bodyMedium
+                      .copyWith(color: AppColors.secondaryDark),
                   decoration: const InputDecoration(
                     hintText: 'Search name or email...',
-                    hintStyle: TextStyle(color: AppColors.carla, fontSize: 13.5),
+                    hintStyle:
+                        TextStyle(color: AppColors.carla, fontSize: 13.5),
                     isDense: true,
                     border: InputBorder.none,
                     enabledBorder: InputBorder.none,
@@ -522,7 +495,8 @@ class _CreateGroupFlowScreenState extends State<CreateGroupFlowScreen> {
                     decoration: BoxDecoration(
                       color: AppColors.primaryOrange,
                       shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.secondaryDark, width: 2.0),
+                      border:
+                          Border.all(color: AppColors.secondaryDark, width: 2.0),
                     ),
                     child: const Center(
                       child: AppIcon(
@@ -547,7 +521,7 @@ class _CreateGroupFlowScreenState extends State<CreateGroupFlowScreen> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'You ┬╖ Organizer',
+                          'You · Organizer',
                           style: AppTypography.caption.copyWith(
                             color: AppColors.secondaryDark,
                             fontWeight: FontWeight.w600,
@@ -754,12 +728,20 @@ class _CreateGroupFlowScreenState extends State<CreateGroupFlowScreen> {
               Container(
                 width: 155,
                 height: 155,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: AppColors.primaryOrange,
                   shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppColors.secondaryDark,
+                    width: 2.0,
+                  ),
                 ),
                 child: const Center(
-                  child: ShieldCheckIcon(size: 78),
+                  child: Icon(
+                    Iconsax.shield_tick5,
+                    color: AppColors.white,
+                    size: 78,
+                  ),
                 ),
               ),
               const SizedBox(height: 28),

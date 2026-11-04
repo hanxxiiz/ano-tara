@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax/iconsax.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_typography.dart';
-import 'app_pressable.dart';
 
 enum AppCheckboxSize {
   standard,
@@ -9,11 +9,11 @@ enum AppCheckboxSize {
 }
 
 /// Checkbox atom matching the Atomic Design specification (Atoms.png):
-/// - Clean white rounded square with 2.0px Ink border
-/// - Checked state shows a bold Ink checkmark with smooth pop/fade animation
+/// - Clean white rounded square with 2.0px Ink (#0F0331) border
+/// - Checked state shows an Iconsax tick icon with smooth pop/fade animation
 /// - Supports Standard (28x28) and Mini (20x20) visual sizes while ensuring >= 44x44px touch target
-/// - Smooth tactile press feedback via AppPressable
-class AppCheckbox extends StatelessWidget {
+/// - Smooth tactile press feedback
+class AppCheckbox extends StatefulWidget {
   final bool value;
   final ValueChanged<bool>? onChanged;
   final String? label;
@@ -34,16 +34,46 @@ class AppCheckbox extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final isMini = size == AppCheckboxSize.mini;
-    final double boxSize = isMini ? 20.0 : 28.0;
-    final double borderWidth = 2.0;
-    final double borderRadius = isMini ? 5.5 : 8.0;
-    final double checkIconSize = isMini ? 15.0 : 20.0;
+  State<AppCheckbox> createState() => _AppCheckboxState();
+}
 
-    final Color borderColor = isEnabled
-        ? activeBorderColor
-        : AppColors.shayne;
+class _AppCheckboxState extends State<AppCheckbox> {
+  bool _isPressed = false;
+
+  bool get _canInteract => widget.isEnabled && widget.onChanged != null;
+
+  void _handleTapDown(TapDownDetails details) {
+    if (!_canInteract) return;
+    setState(() => _isPressed = true);
+  }
+
+  void _handleTapCancel() {
+    if (!_isPressed) return;
+    setState(() => _isPressed = false);
+  }
+
+  Future<void> _handleTapUp(TapUpDetails details) async {
+    if (!_canInteract) return;
+    if (!_isPressed) {
+      setState(() => _isPressed = true);
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 90));
+    if (mounted) {
+      setState(() => _isPressed = false);
+    }
+    widget.onChanged?.call(!widget.value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isMini = widget.size == AppCheckboxSize.mini;
+    final double boxSize = isMini ? 20.0 : 28.0;
+    const double borderWidth = 2.0;
+    final double borderRadius = isMini ? 5.5 : 8.0;
+    final double checkIconSize = isMini ? 14.0 : 18.0;
+
+    final Color borderColor =
+        widget.isEnabled ? widget.activeBorderColor : AppColors.shayne;
 
     final box = AnimatedContainer(
       duration: const Duration(milliseconds: 180),
@@ -51,7 +81,7 @@ class AppCheckbox extends StatelessWidget {
       width: boxSize,
       height: boxSize,
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: _isPressed ? const Color(0xFFE8EEF5) : AppColors.white,
         borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(
           color: borderColor,
@@ -71,46 +101,56 @@ class AppCheckbox extends StatelessWidget {
             ),
           );
         },
-        child: value
+        child: widget.value
             ? Center(
                 key: const ValueKey('checked'),
                 child: Icon(
-                  Icons.check_rounded,
+                  Iconsax.tick_square,
                   size: checkIconSize,
-                  color: isEnabled ? checkColor : AppColors.shayne,
+                  color: widget.isEnabled ? widget.checkColor : AppColors.shayne,
                 ),
               )
             : const SizedBox.shrink(key: ValueKey('unchecked')),
       ),
     );
 
-    if (label != null) {
-      return AppPressable(
-        onTap: isEnabled ? () => onChanged?.call(!value) : null,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            box,
-            const SizedBox(width: 10),
-            Flexible(
-              child: Text(
-                label!,
-                style: AppTypography.bodySmall.copyWith(
-                  color: isEnabled ? AppColors.secondaryDark : AppColors.shayne,
-                  fontWeight: FontWeight.w600,
-                  fontSize: isMini ? 12.0 : 13.5,
+    final Widget content = widget.label != null
+        ? Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              box,
+              const SizedBox(width: 10),
+              Flexible(
+                child: Text(
+                  widget.label!,
+                  style: AppTypography.bodySmall.copyWith(
+                    color: widget.isEnabled
+                        ? AppColors.secondaryDark
+                        : AppColors.shayne,
+                    fontWeight: FontWeight.w600,
+                    fontSize: isMini ? 12.0 : 13.5,
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-      );
-    }
+            ],
+          )
+        : Center(child: box);
 
-    return AppPressable(
-      onTap: isEnabled ? () => onChanged?.call(!value) : null,
-      child: Center(child: box),
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTapDown: _canInteract ? _handleTapDown : null,
+      onTapUp: _canInteract ? _handleTapUp : null,
+      onTapCancel: _canInteract ? _handleTapCancel : null,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minWidth: 44.0, minHeight: 44.0),
+        child: AnimatedScale(
+          scale: _isPressed ? 0.94 : 1.0,
+          duration: Duration(milliseconds: _isPressed ? 80 : 180),
+          curve: _isPressed ? Curves.easeOutQuad : Curves.easeOutBack,
+          child: content,
+        ),
+      ),
     );
   }
 }

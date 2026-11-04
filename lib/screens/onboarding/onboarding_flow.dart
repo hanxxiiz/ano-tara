@@ -1,16 +1,92 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax/iconsax.dart';
 
+import '../../components/atoms/app_button.dart';
+import '../../components/atoms/app_input_field.dart';
+import '../../components/molecules/app_availability_pill.dart';
+import '../../components/molecules/app_budget_slider.dart';
+import '../../components/molecules/app_option_card.dart';
+import '../../components/molecules/app_pace_card.dart';
+import '../../components/molecules/step_progress.dart';
+import '../../core/constants/app_colors.dart';
+import '../../core/constants/app_typography.dart';
 import '../../models/member_preferences.dart';
 import '../../services/preferences_service.dart';
-import '../../theme/app_theme.dart';
-import '../../widgets/auth_widgets.dart';
-import '../../widgets/onboarding_widgets.dart';
-import 'onboarding_steps.dart';
 
-/// The 7-step onboarding questionnaire.
-///
-/// After sign up it ends at Home. With [editing] set, it loads the saved
-/// answers first and pops back with `true` once they are saved.
+const String _othersLabel = 'Others';
+
+class _ChoiceItem {
+  final String label;
+  final IconData icon;
+  const _ChoiceItem(this.label, this.icon);
+}
+
+const List<_ChoiceItem> _activityOptions = [
+  _ChoiceItem('Beaches & Islands', Iconsax.sun_1),
+  _ChoiceItem('Nature', Iconsax.tree),
+  _ChoiceItem('Cafes', Iconsax.coffee),
+  _ChoiceItem('Local Food & Markets', Iconsax.shop),
+  _ChoiceItem('Shopping', Iconsax.shopping_bag),
+  _ChoiceItem('Nightlife & Bars', Iconsax.music),
+  _ChoiceItem('Cultural & Historical Sites', Iconsax.bank),
+  _ChoiceItem('Museums', Iconsax.courthouse),
+  _ChoiceItem('Adventure', Iconsax.flash_1),
+  _ChoiceItem('Hiking', Iconsax.routing_2),
+  _ChoiceItem('Relaxation & Wellness', Iconsax.heart),
+  _ChoiceItem('Scenic Spots', Iconsax.camera),
+  _ChoiceItem('Theme Parks', Iconsax.ticket_star),
+  _ChoiceItem('Water Activities', Iconsax.wind_2),
+  _ChoiceItem(_othersLabel, Iconsax.more_circle),
+];
+
+const List<_ChoiceItem> _dietaryOptions = [
+  _ChoiceItem('Halal', Iconsax.verify),
+  _ChoiceItem('Vegetarian', Iconsax.unlimited),
+  _ChoiceItem('Vegan', Iconsax.tree),
+  _ChoiceItem('Pescatarian', Iconsax.drop),
+  _ChoiceItem('No Pork', Iconsax.slash),
+  _ChoiceItem('No Beef', Iconsax.slash),
+  _ChoiceItem('Gluten-Free', Iconsax.forbidden_2),
+  _ChoiceItem('Dairy-Free', Iconsax.milk),
+  _ChoiceItem(_othersLabel, Iconsax.more_circle),
+];
+
+const List<_ChoiceItem> _allergyOptions = [
+  _ChoiceItem('Peanuts', Iconsax.danger),
+  _ChoiceItem('Tree Nuts', Iconsax.tree),
+  _ChoiceItem('Seafood', Iconsax.drop),
+  _ChoiceItem('Shellfish', Iconsax.warning_2),
+  _ChoiceItem('Eggs', Iconsax.record_circle),
+  _ChoiceItem('Milk', Iconsax.milk),
+  _ChoiceItem('Soy', Iconsax.cup),
+  _ChoiceItem('Wheat', Iconsax.forbidden_2),
+  _ChoiceItem(_othersLabel, Iconsax.more_circle),
+];
+
+const List<int> _budgetStops = [500, 1000, 2000, 5000, 10000];
+
+const List<String> _weekDays = [
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday',
+];
+
+enum _TravelPace {
+  relaxed('Relaxed', 'Slow days, plenty of downtime, 1-2 main activities', Iconsax.coffee),
+  balanced('Balanced', 'A mix of planned activities and free time', Iconsax.weight),
+  packed('Packed', 'Full days, see and do as much as possible', Iconsax.flash_1);
+
+  const _TravelPace(this.title, this.subtitle, this.icon);
+  final String title;
+  final String subtitle;
+  final IconData icon;
+}
+
+/// The 7-step onboarding questionnaire using Atomic Design components.
 class OnboardingFlow extends StatefulWidget {
   const OnboardingFlow({super.key, this.editing = false, this.service});
 
@@ -36,7 +112,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   final _allergies = <String>{};
   final _days = <String>{};
   int _budget = 2000;
-  TravelPace? _pace;
+  _TravelPace? _pace;
 
   final _activitiesOther = TextEditingController();
   final _dietaryOther = TextEditingController();
@@ -73,52 +149,51 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   void _apply(MemberPreferences p) {
     _restoreChoices(
       p.activities,
-      activityOptions.map((o) => o.label),
+      _activityOptions.map((o) => o.label),
       _activities,
       _activitiesOther,
     );
     _restoreChoices(
       p.dietaryPreferences,
-      dietaryOptions.map((o) => o.label),
+      _dietaryOptions.map((o) => o.label),
       _dietary,
       _dietaryOther,
     );
     _restoreChoices(
       p.allergies,
-      allergyOptions.map((o) => o.label),
+      _allergyOptions.map((o) => o.label),
       _allergies,
       _allergiesOther,
     );
-    _budget = budgetStops.contains(p.budget) ? p.budget : 2000;
-    _pace = TravelPace.values.where((v) => v.name == p.travelPace).firstOrNull;
+    _budget = _budgetStops.contains(p.budget) ? p.budget : 2000;
+    _pace = _TravelPace.values.where((v) => v.name == p.travelPace).firstOrNull;
     _days
       ..clear()
-      ..addAll(p.availableDays.where(weekDays.contains));
+      ..addAll(p.availableDays.where(_weekDays.contains));
     _notes.text = p.notes;
   }
 
-  /// Saved values that aren't one of the preset labels came from "Others".
   void _restoreChoices(
     List<String> saved,
     Iterable<String> labels,
     Set<String> target,
     TextEditingController other,
   ) {
-    final known = labels.toSet()..remove(othersLabel);
+    final known = labels.toSet()..remove(_othersLabel);
     final custom = saved.where((v) => !known.contains(v)).toList();
     target
       ..clear()
       ..addAll(saved.where(known.contains));
     if (custom.isNotEmpty) {
-      target.add(othersLabel);
+      target.add(_othersLabel);
       other.text = custom.join(', ');
     }
   }
 
   List<String> _collect(Set<String> selected, TextEditingController other) {
-    final values = selected.where((v) => v != othersLabel).toList();
+    final values = selected.where((v) => v != _othersLabel).toList();
     final custom = other.text.trim();
-    if (selected.contains(othersLabel) && custom.isNotEmpty) values.add(custom);
+    if (selected.contains(_othersLabel) && custom.isNotEmpty) values.add(custom);
     return values;
   }
 
@@ -128,7 +203,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     allergies: _collect(_allergies, _allergiesOther),
     budget: _budget,
     travelPace: _pace?.name,
-    availableDays: weekDays.where(_days.contains).toList(),
+    availableDays: _weekDays.where(_days.contains).toList(),
     notes: _notes.text.trim(),
   );
 
@@ -136,7 +211,6 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     setState(() => set.contains(value) ? set.remove(value) : set.add(value));
   }
 
-  /// Returns an error message if the current step can't be left yet.
   String? _stepError() {
     switch (_step) {
       case 0:
@@ -174,32 +248,24 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
 
   Future<void> _finish() async {
     setState(() => _saving = true);
-    debugPrint('SENDING: ${_answers().toMap()}');
     try {
       await _service.save(_answers());
     } on NotSignedInException {
       _showMessage('Log in again to save your preferences.');
       if (mounted) setState(() => _saving = false);
       return;
-    } catch (e) {
-      debugPrint('SAVE FAILED: $e');
+    } catch (_) {
       _showMessage("Couldn't save your answers. Please try again.");
       if (mounted) setState(() => _saving = false);
       return;
     }
-    // catch (_) {
-    //   _showMessage("Couldn't save your answers. Please try again.");
-    //   if (mounted) setState(() => _saving = false);
-    //   return;
-    // }
 
     if (!mounted) return;
     if (widget.editing) {
       _showMessage('Preferences updated.');
       Navigator.of(context).pop(true);
     } else {
-      // Rebuilds AuthGate, which now finds saved preferences and shows Home.
-      Navigator.of(context).pushNamedAndRemoveUntil('/', (_) => false);
+      Navigator.of(context).pushNamedAndRemoveUntil('/home', (_) => false);
     }
   }
 
@@ -207,7 +273,6 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     if (!mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      // Floats above the Next button so it never blocks it.
       ..showSnackBar(
         SnackBar(
           content: Text(text),
@@ -217,30 +282,179 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
       );
   }
 
+  Widget _buildHeader(String title, String subtitle) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: AppTypography.h2.copyWith(color: AppColors.secondaryDark),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          subtitle,
+          style: AppTypography.bodyMedium.copyWith(color: AppColors.secondaryDark),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildChoiceStep({
+    required String title,
+    required String subtitle,
+    required List<_ChoiceItem> options,
+    required Set<String> selected,
+    required ValueChanged<String> onToggle,
+    required TextEditingController otherController,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildHeader(title, subtitle),
+        const SizedBox(height: 22),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: options.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            mainAxisSpacing: 14,
+            crossAxisSpacing: 12,
+            mainAxisExtent: 92,
+          ),
+          itemBuilder: (_, index) {
+            final item = options[index];
+            return AppOptionCard(
+              label: item.label,
+              icon: item.icon,
+              isSelected: selected.contains(item.label),
+              onTap: () => onToggle(item.label),
+            );
+          },
+        ),
+        if (selected.contains(_othersLabel)) ...[
+          const SizedBox(height: 16),
+          AppInputField(
+            label: 'Please specify',
+            controller: otherController,
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildBudgetStep() {
+    final stepIndex = _budgetStops.indexOf(_budget).clamp(0, _budgetStops.length - 1);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildHeader(
+          "What's your comfortable per-trip budget?",
+          'Drag the slider or tap a preset amount.',
+        ),
+        const SizedBox(height: 24),
+        AppBudgetSlider(
+          selectedIndex: stepIndex,
+          onIndexChanged: (idx) {
+            setState(() => _budget = _budgetStops[idx]);
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPaceStep() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildHeader(
+          'What travel pace do you prefer?',
+          'Choose how you like your days structured.',
+        ),
+        const SizedBox(height: 22),
+        for (final p in _TravelPace.values) ...[
+          AppPaceCard(
+            title: p.title,
+            description: p.subtitle,
+            icon: p.icon,
+            isSelected: _pace == p,
+            onTap: () => setState(() => _pace = p),
+          ),
+          const SizedBox(height: 14),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildDaysStep() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildHeader(
+          'Which days are you usually free to travel?',
+          'Select all days that generally work for you.',
+        ),
+        const SizedBox(height: 22),
+        for (final day in _weekDays) ...[
+          AppAvailabilityPill(
+            day: day,
+            isSelected: _days.contains(day),
+            onTap: () => _toggle(_days, day),
+          ),
+          const SizedBox(height: 12),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildNotesStep() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildHeader(
+          'Anything else your group should know?',
+          'Share preferences, constraints, or travel notes (optional).',
+        ),
+        const SizedBox(height: 22),
+        AppInputField(
+          controller: _notes,
+          hint: 'Write your notes here...',
+          maxLines: 5,
+        ),
+      ],
+    );
+  }
+
   Widget _currentStep() {
     return switch (_step) {
-      0 => ChoiceStep.activities(
-        selected: _activities,
-        onToggle: (v) => _toggle(_activities, v),
-        otherController: _activitiesOther,
-      ),
-      1 => ChoiceStep.dietary(
-        selected: _dietary,
-        onToggle: (v) => _toggle(_dietary, v),
-        otherController: _dietaryOther,
-      ),
-      2 => ChoiceStep.allergies(
-        selected: _allergies,
-        onToggle: (v) => _toggle(_allergies, v),
-        otherController: _allergiesOther,
-      ),
-      3 => BudgetStep(
-        budget: _budget,
-        onChanged: (v) => setState(() => _budget = v),
-      ),
-      4 => PaceStep(pace: _pace, onChanged: (v) => setState(() => _pace = v)),
-      5 => DaysStep(selected: _days, onToggle: (v) => _toggle(_days, v)),
-      _ => NotesStep(controller: _notes),
+      0 => _buildChoiceStep(
+          title: 'What kind of activities do you enjoy on trips?',
+          subtitle: 'Pick all that apply so we can tailor recommendations.',
+          options: _activityOptions,
+          selected: _activities,
+          onToggle: (v) => _toggle(_activities, v),
+          otherController: _activitiesOther,
+        ),
+      1 => _buildChoiceStep(
+          title: 'Do you have any dietary preferences?',
+          subtitle: 'Select any that apply (optional).',
+          options: _dietaryOptions,
+          selected: _dietary,
+          onToggle: (v) => _toggle(_dietary, v),
+          otherController: _dietaryOther,
+        ),
+      2 => _buildChoiceStep(
+          title: 'Do you have any food allergies?',
+          subtitle: 'Let your group know ahead of time (optional).',
+          options: _allergyOptions,
+          selected: _allergies,
+          onToggle: (v) => _toggle(_allergies, v),
+          otherController: _allergiesOther,
+        ),
+      3 => _buildBudgetStep(),
+      4 => _buildPaceStep(),
+      5 => _buildDaysStep(),
+      _ => _buildNotesStep(),
     };
   }
 
@@ -250,16 +464,16 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     final isLast = _step == _stepCount - 1;
 
     return PopScope(
-      // System back moves to the previous question instead of leaving.
       canPop: _step == 0,
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) _back();
       },
       child: Scaffold(
+        backgroundColor: AppColors.background,
         body: SafeArea(
           child: _loading
               ? const Center(
-                  child: CircularProgressIndicator(color: AppColors.ink),
+                  child: CircularProgressIndicator(color: AppColors.secondaryDark),
                 )
               : Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -273,8 +487,8 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                                 tooltip: 'Back',
                                 onPressed: _back,
                                 icon: const Icon(
-                                  Icons.arrow_back,
-                                  color: AppColors.ink,
+                                  Iconsax.arrow_left,
+                                  color: AppColors.secondaryDark,
                                 ),
                               )
                             : null,
@@ -302,8 +516,8 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                     Padding(
                       padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
                       child: AppButton(
-                        label: isLast ? 'Finish' : 'Next',
-                        loading: _saving,
+                        text: isLast ? 'Finish' : 'Next',
+                        isLoading: _saving,
                         onPressed: _next,
                       ),
                     ),

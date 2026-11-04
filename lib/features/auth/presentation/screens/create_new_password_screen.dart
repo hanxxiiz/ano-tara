@@ -1,5 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:iconsax/iconsax.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../components/atoms/app_button.dart';
 import '../../../../components/atoms/app_input_field.dart';
@@ -51,7 +52,7 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                   icon: const Icon(
-                    Icons.arrow_back,
+                    Iconsax.arrow_left,
                     color: AppColors.secondaryDark,
                     size: 26,
                   ),

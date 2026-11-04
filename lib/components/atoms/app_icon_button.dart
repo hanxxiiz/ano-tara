@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_typography.dart';
 
@@ -11,8 +11,9 @@ enum AppIconButtonVariant {
 /// Icon button atom matching Figma "Icon buttons" specification:
 /// Circular button with 2.0px Dark Ink (#0F0331) outline and (0, 3) hard shadow.
 /// Variants: Primary (Deep Navy), Secondary (Neutral), Destructive (Orange).
-/// Supports default, disabled, and loading states with >= 44x44px tap target.
-class AppIconButton extends StatelessWidget {
+/// Supports default, pressed (scale + 2px translation + shadow reduction + color transition),
+/// disabled, and loading states with >= 44x44px tap target.
+class AppIconButton extends StatefulWidget {
   final IconData icon;
   final VoidCallback? onPressed;
   final AppIconButtonVariant variant;
@@ -35,68 +36,120 @@ class AppIconButton extends StatelessWidget {
   });
 
   @override
+  State<AppIconButton> createState() => _AppIconButtonState();
+}
+
+class _AppIconButtonState extends State<AppIconButton> {
+  bool _isPressed = false;
+
+  bool get _effectivelyDisabled =>
+      widget.isDisabled || widget.isLoading || widget.onPressed == null;
+
+  void _handleTapDown(TapDownDetails details) {
+    if (_effectivelyDisabled) return;
+    setState(() => _isPressed = true);
+  }
+
+  void _handleTapCancel() {
+    if (!_isPressed) return;
+    setState(() => _isPressed = false);
+  }
+
+  Future<void> _handleTapUp(TapUpDetails details) async {
+    if (_effectivelyDisabled) return;
+    if (!_isPressed) {
+      setState(() => _isPressed = true);
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 110));
+    if (mounted) {
+      setState(() => _isPressed = false);
+    }
+    widget.onPressed?.call();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final bool effectivelyDisabled = isDisabled || isLoading;
+    final bool effectivelyDisabled =
+        widget.isDisabled || widget.isLoading || widget.onPressed == null;
     Color backgroundColor;
     Color iconColor;
 
-    switch (variant) {
+    switch (widget.variant) {
       case AppIconButtonVariant.primary:
-        backgroundColor = effectivelyDisabled
-            ? const Color(0xFF8B9CB2)
-            : AppColors.primaryNavy;
+        if (effectivelyDisabled) {
+          backgroundColor = const Color(0xFF8B9CB2);
+        } else if (_isPressed) {
+          backgroundColor = const Color(0xFF7D99BA);
+        } else {
+          backgroundColor = AppColors.primaryNavy;
+        }
         iconColor = AppColors.white;
         break;
       case AppIconButtonVariant.secondary:
-        backgroundColor = effectivelyDisabled
-            ? const Color(0xFFDCDAD5)
-            : AppColors.secondaryLight;
+        if (effectivelyDisabled) {
+          backgroundColor = const Color(0xFFDCDAD5);
+        } else if (_isPressed) {
+          backgroundColor = const Color(0xFFC5D1E0);
+        } else {
+          backgroundColor = AppColors.secondaryLight;
+        }
         iconColor = AppColors.secondaryDark;
         break;
       case AppIconButtonVariant.destructive:
-        backgroundColor = effectivelyDisabled
-            ? const Color(0xFFEAA697)
-            : AppColors.primaryOrange;
+        if (effectivelyDisabled) {
+          backgroundColor = const Color(0xFFEAA697);
+        } else if (_isPressed) {
+          backgroundColor = const Color(0xFFEAA697);
+        } else {
+          backgroundColor = AppColors.primaryOrange;
+        }
         iconColor = AppColors.white;
         break;
     }
 
-    final circleButton = Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: effectivelyDisabled ? null : onPressed,
-        borderRadius: BorderRadius.circular(size / 2),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minWidth: 44.0, minHeight: 44.0),
-          child: Container(
-            width: size,
-            height: size,
+    final circleButton = GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTapDown: effectivelyDisabled ? null : _handleTapDown,
+      onTapUp: effectivelyDisabled ? null : _handleTapUp,
+      onTapCancel: effectivelyDisabled ? null : _handleTapCancel,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minWidth: 44.0, minHeight: 44.0),
+        child: AnimatedScale(
+          scale: _isPressed ? 0.93 : 1.0,
+          duration: Duration(milliseconds: _isPressed ? 90 : 240),
+          curve: _isPressed ? Curves.easeOutQuad : Curves.elasticOut,
+          child: AnimatedContainer(
+            duration: Duration(milliseconds: _isPressed ? 80 : 200),
+            curve: Curves.easeOutBack,
+            transform: Matrix4.translationValues(0, _isPressed ? 2.0 : 0.0, 0),
+            width: widget.size,
+            height: widget.size,
             decoration: BoxDecoration(
               color: backgroundColor,
               shape: BoxShape.circle,
               border: Border.all(color: AppColors.secondaryDark, width: 2.0),
-              boxShadow: const [
+              boxShadow: [
                 BoxShadow(
                   color: AppColors.secondaryDark,
-                  offset: Offset(0, 3),
+                  offset: Offset(0, _isPressed ? 1 : 3),
                   blurRadius: 0,
                 ),
               ],
             ),
             child: Center(
-              child: isLoading
+              child: widget.isLoading
                   ? SizedBox(
-                      width: iconSize,
-                      height: iconSize,
+                      width: widget.iconSize,
+                      height: widget.iconSize,
                       child: CircularProgressIndicator(
                         strokeWidth: 2.0,
                         color: iconColor,
                       ),
                     )
                   : Icon(
-                      icon,
+                      widget.icon,
                       color: iconColor,
-                      size: iconSize,
+                      size: widget.iconSize,
                     ),
             ),
           ),
@@ -104,14 +157,14 @@ class AppIconButton extends StatelessWidget {
       ),
     );
 
-    if (label != null) {
+    if (widget.label != null) {
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           circleButton,
           const SizedBox(height: 6),
           Text(
-            label!,
+            widget.label!,
             style: AppTypography.caption.copyWith(
               color: AppColors.secondaryDark,
               fontSize: 10.5,

@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:iconsax/iconsax.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_typography.dart';
 
@@ -67,7 +68,7 @@ class AppButton extends StatefulWidget {
       isLoading: isLoading,
       isDisabled: isDisabled,
       iconLeading: const Icon(
-        Icons.person,
+        Iconsax.user,
         size: 22,
         color: AppColors.secondaryDark,
       ),
@@ -132,8 +133,8 @@ class _AppButtonState extends State<AppButton> {
   @override
   Widget build(BuildContext context) {
     final bool effectivelyDisabled = _effectivelyDisabled;
-    final double height =
-        widget.customHeight ?? (widget.size == AppButtonSize.small ? 44.0 : 52.0);
+    final double height = widget.customHeight ??
+        (widget.size == AppButtonSize.small ? 44.0 : 52.0);
 
     Color backgroundColor;
     Color foregroundColor;

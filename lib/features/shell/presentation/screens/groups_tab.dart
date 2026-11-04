@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_radii.dart';
@@ -72,7 +72,14 @@ class GroupsTab extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.surfaceLight,
                   borderRadius: AppRadii.radiusXl,
-                  border: Border.all(color: AppColors.borderLight, width: 1.0),
+                  border: Border.all(color: AppColors.secondaryDark, width: 2.0),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: AppColors.secondaryDark,
+                      offset: Offset(0, 4),
+                      blurRadius: 0,
+                    ),
+                  ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -82,7 +89,8 @@ class GroupsTab extends StatelessWidget {
                       children: [
                         Text(
                           'Bantayan Squad',
-                          style: AppTypography.titleLarge.copyWith(color: AppColors.chucky),
+                          style: AppTypography.titleLarge
+                              .copyWith(color: AppColors.chucky),
                         ),
                         const AppAvatarGroup(
                           names: ['Louie', 'Carla', 'Ann', 'Shayne'],
@@ -94,7 +102,11 @@ class GroupsTab extends StatelessWidget {
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        const Icon(Iconsax.calendar, size: 14, color: AppColors.primaryOrange),
+                        const Icon(
+                          Iconsax.calendar,
+                          size: 14,
+                          color: AppColors.primaryOrange,
+                        ),
                         const SizedBox(width: 6),
                         Text(
                           'Next: Bantayan Trip',
@@ -106,7 +118,7 @@ class GroupsTab extends StatelessWidget {
                         const Spacer(),
                         const AppBadge(
                           label: 'Organizer: Louie',
-                          variant: AppBadgeVariant.neutralCarla,
+                          variant: AppBadgeVariant.primaryNavy,
                         ),
                       ],
                     ),
@@ -134,13 +146,18 @@ class GroupsTab extends StatelessWidget {
                 children: [
                   Text(
                     'Squad Members (4)',
-                    style: AppTypography.titleLarge.copyWith(color: AppColors.chucky),
+                    style:
+                        AppTypography.titleLarge.copyWith(color: AppColors.chucky),
                   ),
                   TextButton.icon(
                     onPressed: () {
                       Navigator.pushNamed(context, AppRoutes.createGroup);
                     },
-                    icon: const Icon(Iconsax.add, size: 16, color: AppColors.primaryOrange),
+                    icon: const Icon(
+                      Iconsax.add,
+                      size: 16,
+                      color: AppColors.primaryOrange,
+                    ),
                     label: Text(
                       'Invite',
                       style: AppTypography.caption.copyWith(

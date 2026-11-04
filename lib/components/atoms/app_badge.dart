@@ -8,11 +8,6 @@ enum AppBadgeVariant {
   primaryNavy,
   primaryOrange,
   tierYellow,
-  neutralCarla,
-  neutralLight,
-  semanticRed,
-  semanticGreen,
-  organizer,
 }
 
 enum RsvpStatus {
@@ -23,7 +18,7 @@ enum RsvpStatus {
 }
 
 /// Badge atom matching Figma "Badges & status" specification:
-/// Supports organizer pill, counters, tier badges, and RSVP status tiles.
+/// Supports Navy, Orange, and Tier Yellow badges (black, gray, semantic red, and semantic green removed).
 class AppBadge extends StatelessWidget {
   final String label;
   final AppBadgeVariant variant;
@@ -33,7 +28,7 @@ class AppBadge extends StatelessWidget {
   const AppBadge({
     super.key,
     required this.label,
-    this.variant = AppBadgeVariant.neutralLight,
+    this.variant = AppBadgeVariant.primaryNavy,
     this.icon,
     this.onTap,
   });
@@ -41,7 +36,7 @@ class AppBadge extends StatelessWidget {
   factory AppBadge.organizer() {
     return const AppBadge(
       label: 'Organizer',
-      variant: AppBadgeVariant.organizer,
+      variant: AppBadgeVariant.primaryNavy,
     );
   }
 
@@ -55,7 +50,7 @@ class AppBadge extends StatelessWidget {
   factory AppBadge.counter(String count) {
     return AppBadge(
       label: count,
-      variant: AppBadgeVariant.neutralCarla,
+      variant: AppBadgeVariant.primaryOrange,
     );
   }
 
@@ -63,13 +58,8 @@ class AppBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     Color bg;
     Color fg;
-    BorderSide border = BorderSide.none;
 
     switch (variant) {
-      case AppBadgeVariant.organizer:
-        bg = AppColors.secondaryDark;
-        fg = AppColors.white;
-        break;
       case AppBadgeVariant.primaryNavy:
         bg = AppColors.primaryNavy;
         fg = AppColors.white;
@@ -80,24 +70,7 @@ class AppBadge extends StatelessWidget {
         break;
       case AppBadgeVariant.tierYellow:
         bg = AppColors.semanticYellow;
-        fg = AppColors.chucky;
-        break;
-      case AppBadgeVariant.neutralCarla:
-        bg = AppColors.carla;
-        fg = AppColors.white;
-        break;
-      case AppBadgeVariant.neutralLight:
-        bg = AppColors.surfaceMuted;
-        fg = AppColors.carla;
-        border = const BorderSide(color: AppColors.borderLight, width: 1);
-        break;
-      case AppBadgeVariant.semanticRed:
-        bg = AppColors.semanticRedLight;
-        fg = AppColors.semanticRed;
-        break;
-      case AppBadgeVariant.semanticGreen:
-        bg = AppColors.semanticGreenLight;
-        fg = AppColors.semanticGreen;
+        fg = AppColors.secondaryDark;
         break;
     }
 
@@ -106,7 +79,6 @@ class AppBadge extends StatelessWidget {
       decoration: BoxDecoration(
         color: bg,
         borderRadius: AppRadii.radiusPill,
-        border: border != BorderSide.none ? Border.fromBorderSide(border) : null,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

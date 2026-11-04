@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
-import '../atoms/app_pressable.dart';
 
 /// Availability pill molecule matching Figma Step 6:
 /// Wide rounded button with 2px Dark Ink (#0F0331) border and hard drop shadow (0, 4).
 /// Selected: solid Orange (#E24B27) with white text.
 /// Unselected: peach/coral (#F1A591) with white text.
 /// Includes smooth tactile press and selection animations.
-class AppAvailabilityPill extends StatelessWidget {
+class AppAvailabilityPill extends StatefulWidget {
   final String day;
   final bool isSelected;
   final VoidCallback onTap;
@@ -21,40 +20,78 @@ class AppAvailabilityPill extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    // When selected: Primary Orange #E24B27
-    // When unselected: Soft peach/coral tone #F1A591 (as seen in Figma 6/7)
-    final Color bgColor = isSelected ? AppColors.primaryOrange : const Color(0xFFF1A591);
+  State<AppAvailabilityPill> createState() => _AppAvailabilityPillState();
+}
 
-    return AppPressable(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOutCubic,
-        width: 154.0,
-        height: 60.0,
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(20.0),
-          border: Border.all(
-            color: AppColors.secondaryDark,
-            width: 2.0,
-          ),
-          boxShadow: const [
-            BoxShadow(
+class _AppAvailabilityPillState extends State<AppAvailabilityPill> {
+  bool _isPressed = false;
+
+  void _handleTapDown(TapDownDetails details) {
+    setState(() => _isPressed = true);
+  }
+
+  void _handleTapCancel() {
+    if (!_isPressed) return;
+    setState(() => _isPressed = false);
+  }
+
+  Future<void> _handleTapUp(TapUpDetails details) async {
+    if (!_isPressed) {
+      setState(() => _isPressed = true);
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 110));
+    if (mounted) {
+      setState(() => _isPressed = false);
+    }
+    widget.onTap();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final Color bgColor = _isPressed
+        ? const Color(0xFFC73D1C)
+        : (widget.isSelected
+            ? AppColors.primaryOrange
+            : const Color(0xFFF1A591));
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTapDown: _handleTapDown,
+      onTapUp: _handleTapUp,
+      onTapCancel: _handleTapCancel,
+      child: AnimatedScale(
+        scale: _isPressed ? 0.96 : 1.0,
+        duration: Duration(milliseconds: _isPressed ? 90 : 240),
+        curve: _isPressed ? Curves.easeOutQuad : Curves.elasticOut,
+        child: AnimatedContainer(
+          duration: Duration(milliseconds: _isPressed ? 80 : 180),
+          curve: Curves.easeOutCubic,
+          transform: Matrix4.translationValues(0, _isPressed ? 2.0 : 0.0, 0),
+          width: 154.0,
+          height: 60.0,
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(20.0),
+            border: Border.all(
               color: AppColors.secondaryDark,
-              offset: Offset(0, 4),
-              blurRadius: 0,
+              width: 2.0,
             ),
-          ],
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          day,
-          style: GoogleFonts.urbanist(
-            color: AppColors.white,
-            fontWeight: FontWeight.w800,
-            fontSize: 16,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.secondaryDark,
+                offset: Offset(0, _isPressed ? 2 : 4),
+                blurRadius: 0,
+              ),
+            ],
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            widget.day,
+            style: GoogleFonts.urbanist(
+              color: AppColors.white,
+              fontWeight: FontWeight.w800,
+              fontSize: 16,
+            ),
           ),
         ),
       ),

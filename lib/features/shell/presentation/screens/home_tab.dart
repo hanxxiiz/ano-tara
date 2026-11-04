@@ -6,10 +6,8 @@ import '../../../../core/constants/app_typography.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../components/atoms/app_button.dart';
 import '../../../../components/atoms/app_icon.dart';
-import '../../../../components/atoms/app_pressable.dart';
 import '../../../../components/organisms/app_main_top_bar.dart';
 import '../../../../components/organisms/trip_summary_card.dart';
-import '../widgets/hero_banner_trio.dart';
 
 class HomeTab extends StatefulWidget {
   final VoidCallback? onNavigateToTrips;
@@ -85,11 +83,17 @@ class _HomeTabState extends State<HomeTab> {
                 clipBehavior: Clip.antiAlias,
                 child: Stack(
                   children: [
-                    const Positioned(
+                    Positioned(
                       right: 4,
                       bottom: 0,
                       top: 0,
-                      child: HeroBannerTrio(),
+                      child: SizedBox(
+                        width: 145,
+                        height: 150,
+                        child: CustomPaint(
+                          painter: _TrioIllustrationPainter(),
+                        ),
+                      ),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(
@@ -323,8 +327,9 @@ class _HomeTabState extends State<HomeTab> {
     required Color color,
     required VoidCallback onTap,
   }) {
-    return AppPressable(
+    return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque,
       child: Column(
         children: [
           Container(
@@ -365,8 +370,9 @@ class _HomeTabState extends State<HomeTab> {
   }
 
   Widget _buildAddGroupItem({required VoidCallback onTap}) {
-    return AppPressable(
+    return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque,
       child: Column(
         children: [
           Container(
@@ -413,8 +419,9 @@ class _HomeTabState extends State<HomeTab> {
     required IconData badgeIcon,
     required VoidCallback onTap,
   }) {
-    return AppPressable(
+    return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         decoration: BoxDecoration(
@@ -482,4 +489,78 @@ class _HomeTabState extends State<HomeTab> {
       ),
     );
   }
+}
+
+class _TrioIllustrationPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final stroke = Paint()
+      ..color = AppColors.secondaryDark
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final yellowFill = Paint()..color = AppColors.semanticYellow;
+    final creamFill = Paint()..color = AppColors.creamYellow;
+    final navyFill = Paint()..color = AppColors.primaryNavy;
+    final whiteFill = Paint()..color = AppColors.white;
+    final darkFill = Paint()..color = AppColors.secondaryDark;
+
+    final leftBody = RRect.fromRectAndCorners(
+      Rect.fromLTWH(size.width * 0.12, size.height * 0.44, 34, 48),
+      topLeft: const Radius.circular(16),
+      topRight: const Radius.circular(16),
+    );
+    canvas.drawRRect(leftBody, creamFill);
+    canvas.drawRRect(leftBody, stroke);
+    canvas.drawCircle(
+        Offset(size.width * 0.24, size.height * 0.34), 12, creamFill);
+    canvas.drawCircle(
+        Offset(size.width * 0.24, size.height * 0.34), 12, stroke);
+
+    final rightBody = RRect.fromRectAndCorners(
+      Rect.fromLTWH(size.width * 0.62, size.height * 0.46, 36, 48),
+      topLeft: const Radius.circular(16),
+      topRight: const Radius.circular(16),
+    );
+    canvas.drawRRect(rightBody, navyFill);
+    canvas.drawRRect(rightBody, stroke);
+    canvas.drawCircle(
+        Offset(size.width * 0.74, size.height * 0.36), 12, whiteFill);
+    canvas.drawCircle(
+        Offset(size.width * 0.74, size.height * 0.36), 12, stroke);
+
+    final centerBody = RRect.fromRectAndCorners(
+      Rect.fromLTWH(size.width * 0.33, size.height * 0.40, 44, 56),
+      topLeft: const Radius.circular(20),
+      topRight: const Radius.circular(20),
+    );
+    canvas.drawRRect(centerBody, yellowFill);
+    canvas.drawRRect(centerBody, stroke);
+    canvas.drawCircle(
+        Offset(size.width * 0.49, size.height * 0.28), 14, whiteFill);
+    canvas.drawCircle(
+        Offset(size.width * 0.49, size.height * 0.28), 14, stroke);
+
+    final glassL = RRect.fromRectAndRadius(
+      Rect.fromCenter(
+          center: Offset(size.width * 0.45, size.height * 0.27),
+          width: 7,
+          height: 5),
+      const Radius.circular(1.5),
+    );
+    final glassR = RRect.fromRectAndRadius(
+      Rect.fromCenter(
+          center: Offset(size.width * 0.53, size.height * 0.27),
+          width: 7,
+          height: 5),
+      const Radius.circular(1.5),
+    );
+    canvas.drawRRect(glassL, darkFill);
+    canvas.drawRRect(glassR, darkFill);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

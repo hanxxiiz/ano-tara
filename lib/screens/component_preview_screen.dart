@@ -15,27 +15,27 @@
 //  9. _AppIconButtonSection          (lib/components/atoms/app_icon_button.dart)
 // 10. _AppInputFieldSection          (lib/components/atoms/app_input_field.dart)
 // 11. _AppOtpFieldSection            (lib/components/atoms/app_otp_field.dart)
-// 12. _AppPressableSection           (lib/components/atoms/app_pressable.dart)
-// 13. _AppSwitchSection              (lib/components/atoms/app_switch.dart)
-// 14. _AppTextSection                (lib/components/atoms/app_text.dart)
+// 12. _AppSwitchSection              (lib/components/atoms/app_switch.dart)
+// 13. _AppTextSection                (lib/components/atoms/app_text.dart)
 //
 // --- 02. MOLECULES (lib/components/molecules/) ---
-// 15. _AppAvailabilityPillSection    (lib/components/molecules/app_availability_pill.dart)
-// 16. _AppAvailabilityRowSection     (lib/components/molecules/app_availability_row.dart)
-// 17. _AppBudgetSliderSection        (lib/components/molecules/app_budget_slider.dart)
-// 18. _AppChatMessageSection         (lib/components/molecules/app_chat_message.dart)
-// 19. _AppDropdownFieldSection       (lib/components/molecules/app_dropdown_field.dart)
-// 20. _AppLabeledFormFieldSection    (lib/components/molecules/app_labeled_form_field.dart)
-// 21. _AppMemberActionRowSection     (lib/components/molecules/app_member_action_row.dart)
-// 22. _AppMessageComposerSection     (lib/components/molecules/app_message_composer.dart)
-// 23. _AppNavigationItemSection      (lib/components/molecules/app_navigation_item.dart)
-// 24. _AppOptionCardSection          (lib/components/molecules/app_option_card.dart)
-// 25. _AppPaceCardSection            (lib/components/molecules/app_pace_card.dart)
-// 26. _AppPreferenceChoiceSection    (lib/components/molecules/app_preference_choice.dart)
-// 27. _AppSearchBarSection           (lib/components/molecules/app_search_bar.dart)
-// 28. _AppSearchFilterBarSection     (lib/components/molecules/app_search_filter_bar.dart)
-// 29. _AppSegmentedTabsSection       (lib/components/molecules/app_segmented_tabs.dart)
-// 30. _AppTripMetadataSection        (lib/components/molecules/app_trip_metadata.dart)
+// 14. _AppAvailabilityPillSection    (lib/components/molecules/app_availability_pill.dart)
+// 15. _AppAvailabilityRowSection     (lib/components/molecules/app_availability_row.dart)
+// 16. _AppBudgetSliderSection        (lib/components/molecules/app_budget_slider.dart)
+// 17. _AppChatMessageSection         (lib/components/molecules/app_chat_message.dart)
+// 18. _AppDropdownFieldSection       (lib/components/molecules/app_dropdown_field.dart)
+// 19. _AppLabeledFormFieldSection    (lib/components/molecules/app_labeled_form_field.dart)
+// 20. _AppMemberActionRowSection     (lib/components/molecules/app_member_action_row.dart)
+// 21. _AppMessageComposerSection     (lib/components/molecules/app_message_composer.dart)
+// 22. _AppNavigationItemSection      (lib/components/molecules/app_navigation_item.dart)
+// 23. _AppOptionCardSection          (lib/components/molecules/app_option_card.dart)
+// 24. _AppPaceCardSection            (lib/components/molecules/app_pace_card.dart)
+// 25. _AppPreferenceChoiceSection    (lib/components/molecules/app_preference_choice.dart)
+// 26. _AppSearchBarSection           (lib/components/molecules/app_search_bar.dart)
+// 27. _AppSearchFilterBarSection     (lib/components/molecules/app_search_filter_bar.dart)
+// 28. _AppSegmentedTabsSection       (lib/components/molecules/app_segmented_tabs.dart)
+// 29. _AppTripMetadataSection        (lib/components/molecules/app_trip_metadata.dart)
+// 30. _StepProgressSection           (lib/components/molecules/step_progress.dart)
 //
 // --- 03. ORGANISMS (lib/components/organisms/) ---
 // 31. _AppBottomNavigationSection    (lib/components/organisms/app_bottom_navigation.dart)
@@ -46,25 +46,6 @@
 // 36. _MemberPanelSection            (lib/components/organisms/member_panel.dart)
 // 37. _OverviewSummaryPanelSection   (lib/components/organisms/overview_summary_panel.dart)
 // 38. _TripSummaryCardSection        (lib/components/organisms/trip_summary_card.dart)
-//
-// --- 04. FEATURE WIDGETS (lib/features/) ---
-// 39. _ShieldCheckIconSection        (lib/features/groups/presentation/widgets/shield_check_icon.dart)
-// 40. _HeroBannerTrioSection         (lib/features/shell/presentation/widgets/hero_banner_trio.dart)
-//
-// --- 05. AUTH & ONBOARDING WIDGETS (lib/widgets/ & lib/screens/onboarding/) ---
-// 41. _AuthScaffoldSection           (lib/widgets/auth_widgets.dart)
-// 42. _LogoBadgeSection              (lib/widgets/auth_widgets.dart)
-// 43. _AuthHeaderSection             (lib/widgets/auth_widgets.dart)
-// 44. _LegacyAuthAppButtonSection    (lib/widgets/auth_widgets.dart)
-// 45. _AppTextFieldSection           (lib/widgets/auth_widgets.dart)
-// 46. _OrDividerSection              (lib/widgets/auth_widgets.dart)
-// 47. _FooterPromptSection           (lib/widgets/auth_widgets.dart)
-// 48. _OtpInputSection               (lib/widgets/auth_widgets.dart)
-// 49. _StepProgressSection           (lib/widgets/onboarding_widgets.dart)
-// 50. _QuestionHeaderSection         (lib/widgets/onboarding_widgets.dart)
-// 51. _ChoiceGridSection             (lib/widgets/onboarding_widgets.dart)
-// 52. _NotesFieldSection             (lib/widgets/onboarding_widgets.dart)
-// 53. _OnboardingStepsSection        (lib/screens/onboarding/onboarding_steps.dart)
 // ============================================================================
 
 import 'package:flutter/material.dart';
@@ -83,7 +64,6 @@ import '../components/atoms/app_icon.dart';
 import '../components/atoms/app_icon_button.dart';
 import '../components/atoms/app_input_field.dart';
 import '../components/atoms/app_otp_field.dart';
-import '../components/atoms/app_pressable.dart';
 import '../components/atoms/app_switch.dart';
 import '../components/atoms/app_text.dart';
 
@@ -104,6 +84,7 @@ import '../components/molecules/app_search_bar.dart';
 import '../components/molecules/app_search_filter_bar.dart';
 import '../components/molecules/app_segmented_tabs.dart';
 import '../components/molecules/app_trip_metadata.dart';
+import '../components/molecules/step_progress.dart';
 
 // 03. Organisms
 import '../components/organisms/app_bottom_navigation.dart';
@@ -114,16 +95,6 @@ import '../components/organisms/group_header_organism.dart';
 import '../components/organisms/member_panel.dart';
 import '../components/organisms/overview_summary_panel.dart';
 import '../components/organisms/trip_summary_card.dart';
-
-// 04. Feature Widgets
-import '../features/groups/presentation/widgets/shield_check_icon.dart';
-import '../features/shell/presentation/widgets/hero_banner_trio.dart';
-
-// 05. Auth & Onboarding Widgets
-import '../models/member_preferences.dart';
-import '../screens/onboarding/onboarding_steps.dart';
-import '../widgets/auth_widgets.dart' as auth_widgets;
-import '../widgets/onboarding_widgets.dart';
 
 /// Helper to show quick SnackBar + console feedback when an interactive widget responds.
 void _notifyInteraction(BuildContext context, String message) {
@@ -182,7 +153,6 @@ class ComponentPreviewScreen extends StatelessWidget {
             _AppIconButtonSection(),
             _AppInputFieldSection(),
             _AppOtpFieldSection(),
-            _AppPressableSection(),
             _AppSwitchSection(),
             _AppTextSection(),
 
@@ -207,6 +177,7 @@ class ComponentPreviewScreen extends StatelessWidget {
             _AppSearchFilterBarSection(),
             _AppSegmentedTabsSection(),
             _AppTripMetadataSection(),
+            _StepProgressSection(),
 
             SizedBox(height: 12),
             _CategoryBanner(
@@ -221,33 +192,6 @@ class ComponentPreviewScreen extends StatelessWidget {
             _MemberPanelSection(),
             _OverviewSummaryPanelSection(),
             _TripSummaryCardSection(),
-
-            SizedBox(height: 12),
-            _CategoryBanner(
-              title: '04. Feature Widgets',
-              subtitle: 'lib/features/*/presentation/widgets/',
-            ),
-            _ShieldCheckIconSection(),
-            _HeroBannerTrioSection(),
-
-            SizedBox(height: 12),
-            _CategoryBanner(
-              title: '05. Auth & Onboarding Widgets',
-              subtitle: 'lib/widgets/ & lib/screens/onboarding/',
-            ),
-            _AuthScaffoldSection(),
-            _LogoBadgeSection(),
-            _AuthHeaderSection(),
-            _LegacyAuthAppButtonSection(),
-            _AppTextFieldSection(),
-            _OrDividerSection(),
-            _FooterPromptSection(),
-            _OtpInputSection(),
-            _StepProgressSection(),
-            _QuestionHeaderSection(),
-            _ChoiceGridSection(),
-            _NotesFieldSection(),
-            _OnboardingStepsSection(),
             SizedBox(height: 40),
           ],
         ),
@@ -480,7 +424,7 @@ class _AppAvatarGroupSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _VariantLabel('With +N overflow (5 members, maxVisible: 3) & exact fit (2 members)'),
+          _VariantLabel('Overlapping stack with +N overflow (similar to AppMemberTokenCluster)'),
           Wrap(
             spacing: 24,
             runSpacing: 12,
@@ -516,12 +460,11 @@ class _AppBadgeSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _VariantLabel('All AppBadgeVariant values + factories + interactive badge'),
+          const _VariantLabel('AppBadgeVariant values (primaryNavy, primaryOrange, tierYellow) + interactive badge'),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
-              AppBadge.organizer(),
               AppBadge.tierPlus(),
               AppBadge.counter('12'),
               const AppBadge(
@@ -533,16 +476,8 @@ class _AppBadgeSection extends StatelessWidget {
                 variant: AppBadgeVariant.primaryOrange,
               ),
               const AppBadge(
-                label: 'Neutral Light',
-                variant: AppBadgeVariant.neutralLight,
-              ),
-              const AppBadge(
-                label: 'Semantic Red',
-                variant: AppBadgeVariant.semanticRed,
-              ),
-              const AppBadge(
-                label: 'Semantic Green',
-                variant: AppBadgeVariant.semanticGreen,
+                label: 'Tier Yellow',
+                variant: AppBadgeVariant.tierYellow,
               ),
               AppBadge(
                 label: 'Tap Me (With Icon)',
@@ -818,7 +753,7 @@ class _AppIconButtonSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _VariantLabel('Primary, Secondary, Destructive, Loading, and Disabled'),
+          const _VariantLabel('Primary, Secondary, Destructive, Loading, and Disabled (with pressed transition)'),
           Wrap(
             spacing: 16,
             runSpacing: 12,
@@ -965,71 +900,6 @@ class _AppOtpFieldSectionState extends State<_AppOtpFieldSection> {
             hasError: _hasError,
             onChanged: (code) => setState(() => _currentCode = code),
             onCompleted: (code) => _notifyInteraction(context, 'OTP Completed: $code'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ===== AppPressable =====  (source: lib/components/atoms/app_pressable.dart)
-class _AppPressableSection extends StatefulWidget {
-  const _AppPressableSection();
-
-  @override
-  State<_AppPressableSection> createState() => _AppPressableSectionState();
-}
-
-class _AppPressableSectionState extends State<_AppPressableSection> {
-  int _tapCount = 0;
-
-  @override
-  Widget build(BuildContext context) {
-    return _PreviewSectionCard(
-      widgetName: 'AppPressable',
-      sourcePath: 'lib/components/atoms/app_pressable.dart',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const _VariantLabel('Interactive scale-bounce wrapper vs non-interactive (onTap: null)'),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              AppPressable(
-                onTap: () {
-                  setState(() => _tapCount++);
-                  _notifyInteraction(context, 'AppPressable tapped ($_tapCount)');
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: AppColors.semanticYellow,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: AppColors.secondaryDark, width: 2),
-                  ),
-                  child: Text(
-                    'Tap Me (Count: $_tapCount)',
-                    style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.w800),
-                  ),
-                ),
-              ),
-              AppPressable(
-                onTap: null,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceMuted,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: AppColors.ann, width: 2),
-                  ),
-                  child: Text(
-                    'Disabled (onTap: null)',
-                    style: AppTypography.titleMedium.copyWith(color: AppColors.shayne),
-                  ),
-                ),
-              ),
-            ],
           ),
         ],
       ),
@@ -1259,7 +1129,7 @@ class _AppBudgetSliderSectionState extends State<_AppBudgetSliderSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _VariantLabel('Drag the slider to change budget stop'),
+          const _VariantLabel('Drag the slider or tap a stop to change budget (#0F0331 aligned with field)'),
           AppBudgetSlider(
             selectedIndex: _selectedIndex,
             onIndexChanged: (idx) {
@@ -1379,7 +1249,7 @@ class _AppMemberActionRowSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _VariantLabel('Tap the orange action icon on the right'),
+          const _VariantLabel('Tap the orange action icon on the right (with press transition)'),
           AppMemberActionRow(
             name: 'Hannah S. Labandero',
             onActionTap: () => _notifyInteraction(context, 'Action tapped for Hannah S. Labandero'),
@@ -1516,9 +1386,9 @@ class _AppOptionCardSectionState extends State<_AppOptionCardSection> {
   @override
   Widget build(BuildContext context) {
     final items = [
-      ('Beaches', Icons.beach_access_rounded, AppColors.secondaryDark),
-      ('Vegetarian', Icons.eco_rounded, AppColors.primaryNavy),
-      ('Seafood', Icons.set_meal_rounded, AppColors.primaryOrange),
+      ('Beaches', Iconsax.sun_1, AppColors.secondaryDark),
+      ('Vegetarian', Iconsax.tree, AppColors.primaryNavy),
+      ('Seafood', Iconsax.drop, AppColors.primaryOrange),
     ];
 
     return _PreviewSectionCard(
@@ -1577,11 +1447,11 @@ class _AppPaceCardSectionState extends State<_AppPaceCardSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _VariantLabel('Tap to switch between Selected & Unselected pace cards'),
+          const _VariantLabel('Tap to switch between Selected & Unselected pace cards (non-red pressed/selected colors)'),
           AppPaceCard(
             title: 'Relaxed',
             description: 'Slow mornings, spontaneous stops, and plenty of time to just vibe.',
-            icon: Icons.air_rounded,
+            icon: Iconsax.wind_2,
             isSelected: _selectedPace == 'Relaxed',
             onTap: () {
               setState(() => _selectedPace = 'Relaxed');
@@ -1592,7 +1462,7 @@ class _AppPaceCardSectionState extends State<_AppPaceCardSection> {
           AppPaceCard(
             title: 'Balanced',
             description: 'A little adventure, a little chill — the sweet spot for your trip.',
-            icon: Icons.hourglass_bottom_rounded,
+            icon: Iconsax.timer_pause,
             isSelected: _selectedPace == 'Balanced',
             onTap: () {
               setState(() => _selectedPace = 'Balanced');
@@ -1603,7 +1473,7 @@ class _AppPaceCardSectionState extends State<_AppPaceCardSection> {
           AppPaceCard(
             title: 'Packed',
             description: 'Go, go, go! Max out the day and squeeze in as much fun as possible.',
-            icon: Icons.timer_rounded,
+            icon: Iconsax.timer_1,
             isSelected: _selectedPace == 'Packed',
             onTap: () {
               setState(() => _selectedPace = 'Packed');
@@ -1630,9 +1500,9 @@ class _AppPreferenceChoiceSectionState extends State<_AppPreferenceChoiceSection
   @override
   Widget build(BuildContext context) {
     const items = [
-      ('Nature', Icons.park_rounded),
-      ('Dining', Icons.restaurant_rounded),
-      ('Museums', Icons.museum_rounded),
+      ('Nature', Iconsax.tree),
+      ('Dining', Iconsax.coffee),
+      ('Museums', Iconsax.courthouse),
     ];
 
     return _PreviewSectionCard(
@@ -1746,7 +1616,9 @@ class _AppSegmentedTabsSection extends StatefulWidget {
 }
 
 class _AppSegmentedTabsSectionState extends State<_AppSegmentedTabsSection> {
-  String _selectedTab = 'Overview';
+  String _selected4Tab = 'Overview';
+  String _selected3Tab = 'Upcoming';
+  String _selected2Tab = 'Trips';
 
   @override
   Widget build(BuildContext context) {
@@ -1756,14 +1628,36 @@ class _AppSegmentedTabsSectionState extends State<_AppSegmentedTabsSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _VariantLabel('Active Tab: $_selectedTab'),
+          _VariantLabel('4 Items (Sliding Pill • Active: $_selected4Tab)'),
           AppSegmentedTabs<String>(
             tabs: const ['Overview', 'Availability', 'Members', 'Chat'],
-            selectedTab: _selectedTab,
+            selectedTab: _selected4Tab,
             labelBuilder: (t) => t,
             onTabChanged: (t) {
-              setState(() => _selectedTab = t);
-              _notifyInteraction(context, 'Switched segmented tab to $t');
+              setState(() => _selected4Tab = t);
+              _notifyInteraction(context, 'Switched 4-tab to $t');
+            },
+          ),
+          const SizedBox(height: 14),
+          _VariantLabel('3 Items (Sliding Pill • Active: $_selected3Tab)'),
+          AppSegmentedTabs<String>(
+            tabs: const ['Upcoming', 'Past', 'Drafts'],
+            selectedTab: _selected3Tab,
+            labelBuilder: (t) => t,
+            onTabChanged: (t) {
+              setState(() => _selected3Tab = t);
+              _notifyInteraction(context, 'Switched 3-tab to $t');
+            },
+          ),
+          const SizedBox(height: 14),
+          _VariantLabel('2 Items (Sliding Pill • Active: $_selected2Tab)'),
+          AppSegmentedTabs<String>(
+            tabs: const ['Trips', 'Expenses'],
+            selectedTab: _selected2Tab,
+            labelBuilder: (t) => t,
+            onTabChanged: (t) {
+              setState(() => _selected2Tab = t);
+              _notifyInteraction(context, 'Switched 2-tab to $t');
             },
           ),
         ],
@@ -1795,6 +1689,54 @@ class _AppTripMetadataSection extends StatelessWidget {
             location: 'El Nido, Palawan',
             dateRange: 'Nov 02 - Nov 06',
           ),
+        ],
+      ),
+    );
+  }
+}
+
+// ===== StepProgress =====  (source: lib/components/molecules/step_progress.dart)
+class _StepProgressSection extends StatefulWidget {
+  const _StepProgressSection();
+
+  @override
+  State<_StepProgressSection> createState() => _StepProgressSectionState();
+}
+
+class _StepProgressSectionState extends State<_StepProgressSection> {
+  int _step = 3;
+
+  @override
+  Widget build(BuildContext context) {
+    return _PreviewSectionCard(
+      widgetName: 'StepProgress',
+      sourcePath: 'lib/components/molecules/step_progress.dart',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              _VariantLabel('Step $_step of 7'),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Iconsax.minus_cirlce, size: 20, color: AppColors.secondaryDark),
+                    onPressed: _step > 1 ? () => setState(() => _step--) : null,
+                  ),
+                  IconButton(
+                    icon: const Icon(Iconsax.add_circle, size: 20, color: AppColors.secondaryDark),
+                    onPressed: _step < 7 ? () => setState(() => _step++) : null,
+                  ),
+                ],
+              ),
+            ],
+          ),
+          StepProgress(current: _step, total: 7),
         ],
       ),
     );
@@ -1853,7 +1795,7 @@ class _AppMainTopBarSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _VariantLabel('Default (Profile dot + unread notification dot)'),
+          const _VariantLabel('Default (Profile dot + unread notification dot with navbar-matching transitions)'),
           Container(
             decoration: BoxDecoration(
               border: Border.all(color: AppColors.borderLight),
@@ -1872,7 +1814,7 @@ class _AppMainTopBarSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          const _VariantLabel('With Back Button (showBackButton: true)'),
+          const _VariantLabel('With Back Button (showBackButton: true • press transition on back arrow)'),
           Container(
             decoration: BoxDecoration(
               border: Border.all(color: AppColors.borderLight),
@@ -2113,7 +2055,7 @@ class _TripSummaryCardSectionState extends State<_TripSummaryCardSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _VariantLabel('States: Default, Loading, Error'),
+          const _VariantLabel('States: Default (with pressed transition), Loading, Error'),
           AppSegmentedTabs<String>(
             tabs: const ['Default', 'Loading', 'Error'],
             selectedTab: _cardState,
@@ -2131,544 +2073,6 @@ class _TripSummaryCardSectionState extends State<_TripSummaryCardSection> {
             const TripSummaryCard(
               errorText: 'Failed to load trip details. Tap retry.',
             ),
-        ],
-      ),
-    );
-  }
-}
-
-// ============================================================================
-// 04. FEATURE WIDGETS
-// ============================================================================
-
-// ===== ShieldCheckIcon =====  (source: lib/features/groups/presentation/widgets/shield_check_icon.dart)
-class _ShieldCheckIconSection extends StatelessWidget {
-  const _ShieldCheckIconSection();
-
-  @override
-  Widget build(BuildContext context) {
-    return _PreviewSectionCard(
-      widgetName: 'ShieldCheckIcon',
-      sourcePath: 'lib/features/groups/presentation/widgets/shield_check_icon.dart',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const _VariantLabel('Custom-painted white shield with orange checkmark (56px & 80px)'),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.primaryOrange,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.secondaryDark, width: 2),
-            ),
-            child: const Wrap(
-              spacing: 24,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                ShieldCheckIcon(size: 56),
-                ShieldCheckIcon(size: 80),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ===== HeroBannerTrio =====  (source: lib/features/shell/presentation/widgets/hero_banner_trio.dart)
-class _HeroBannerTrioSection extends StatelessWidget {
-  const _HeroBannerTrioSection();
-
-  @override
-  Widget build(BuildContext context) {
-    return _PreviewSectionCard(
-      widgetName: 'HeroBannerTrio',
-      sourcePath: 'lib/features/shell/presentation/widgets/hero_banner_trio.dart',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const _VariantLabel('Custom-painted 3-friend hero illustration'),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.only(top: 12),
-            decoration: BoxDecoration(
-              color: AppColors.semanticYellow,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.secondaryDark, width: 2),
-            ),
-            alignment: Alignment.bottomCenter,
-            child: const HeroBannerTrio(),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ============================================================================
-// 05. AUTH & ONBOARDING WIDGETS
-// ============================================================================
-
-// ===== AuthScaffold =====  (source: lib/widgets/auth_widgets.dart)
-class _AuthScaffoldSection extends StatelessWidget {
-  const _AuthScaffoldSection();
-
-  @override
-  Widget build(BuildContext context) {
-    return _PreviewSectionCard(
-      widgetName: 'AuthScaffold',
-      sourcePath: 'lib/widgets/auth_widgets.dart',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const _VariantLabel('Constrained preview of AuthScaffold shell with back button'),
-          Container(
-            height: 190,
-            decoration: BoxDecoration(
-              border: Border.all(color: AppColors.secondaryDark, width: 2),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: MediaQuery.removePadding(
-              context: context,
-              removeTop: true,
-              removeBottom: true,
-              child: auth_widgets.AuthScaffold(
-                onBack: () => _notifyInteraction(context, 'AuthScaffold back button tapped'),
-                children: const [
-                  auth_widgets.AuthHeader(
-                    title: 'Inside AuthScaffold',
-                    subtitle: 'Scrollable body with back arrow on top.',
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ===== LogoBadge =====  (source: lib/widgets/auth_widgets.dart)
-class _LogoBadgeSection extends StatelessWidget {
-  const _LogoBadgeSection();
-
-  @override
-  Widget build(BuildContext context) {
-    return const _PreviewSectionCard(
-      widgetName: 'LogoBadge',
-      sourcePath: 'lib/widgets/auth_widgets.dart',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _VariantLabel('Plain logo circle & icon badge variants'),
-          Wrap(
-            spacing: 24,
-            runSpacing: 12,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              SizedBox(width: 72, child: auth_widgets.LogoBadge(size: 64)),
-              SizedBox(
-                width: 72,
-                child: auth_widgets.LogoBadge(size: 64, icon: Icons.lock_reset_rounded),
-              ),
-              SizedBox(
-                width: 72,
-                child: auth_widgets.LogoBadge(size: 64, icon: Icons.check_rounded),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ===== AuthHeader =====  (source: lib/widgets/auth_widgets.dart)
-class _AuthHeaderSection extends StatelessWidget {
-  const _AuthHeaderSection();
-
-  @override
-  Widget build(BuildContext context) {
-    return const _PreviewSectionCard(
-      widgetName: 'AuthHeader',
-      sourcePath: 'lib/widgets/auth_widgets.dart',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _VariantLabel('Title + Subtitle variant'),
-          auth_widgets.AuthHeader(
-            title: 'Welcome Back!',
-            subtitle: 'Log in to plan your next barkada getaway.',
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ===== AppButton (auth_widgets) =====  (source: lib/widgets/auth_widgets.dart)
-class _LegacyAuthAppButtonSection extends StatelessWidget {
-  const _LegacyAuthAppButtonSection();
-
-  @override
-  Widget build(BuildContext context) {
-    return _PreviewSectionCard(
-      widgetName: 'AppButton (auth_widgets)',
-      sourcePath: 'lib/widgets/auth_widgets.dart',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const _VariantLabel('Primary, Secondary with Icon, and Loading states'),
-          auth_widgets.AppButton(
-            label: 'Sign In (Primary)',
-            onPressed: () => _notifyInteraction(context, 'auth_widgets.AppButton Primary tapped'),
-          ),
-          const SizedBox(height: 12),
-          auth_widgets.AppButton(
-            label: 'Continue with Email (Secondary)',
-            variant: auth_widgets.AppButtonVariant.secondary,
-            icon: Icons.email_outlined,
-            onPressed: () => _notifyInteraction(context, 'auth_widgets.AppButton Secondary tapped'),
-          ),
-          const SizedBox(height: 12),
-          const auth_widgets.AppButton(
-            label: 'Loading',
-            loading: true,
-            onPressed: null,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ===== AppTextField =====  (source: lib/widgets/auth_widgets.dart)
-class _AppTextFieldSection extends StatelessWidget {
-  const _AppTextFieldSection();
-
-  @override
-  Widget build(BuildContext context) {
-    return const _PreviewSectionCard(
-      widgetName: 'AppTextField',
-      sourcePath: 'lib/widgets/auth_widgets.dart',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _VariantLabel('Standard Text Field & Password Field (with show/hide toggle)'),
-          auth_widgets.AppTextField(
-            label: 'Email Address',
-            keyboardType: TextInputType.emailAddress,
-          ),
-          SizedBox(height: 12),
-          auth_widgets.AppTextField(
-            label: 'Password',
-            obscureText: true,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ===== OrDivider =====  (source: lib/widgets/auth_widgets.dart)
-class _OrDividerSection extends StatelessWidget {
-  const _OrDividerSection();
-
-  @override
-  Widget build(BuildContext context) {
-    return const _PreviewSectionCard(
-      widgetName: 'OrDivider',
-      sourcePath: 'lib/widgets/auth_widgets.dart',
-      child: auth_widgets.OrDivider(),
-    );
-  }
-}
-
-// ===== FooterPrompt =====  (source: lib/widgets/auth_widgets.dart)
-class _FooterPromptSection extends StatelessWidget {
-  const _FooterPromptSection();
-
-  @override
-  Widget build(BuildContext context) {
-    return _PreviewSectionCard(
-      widgetName: 'FooterPrompt',
-      sourcePath: 'lib/widgets/auth_widgets.dart',
-      child: auth_widgets.FooterPrompt(
-        prompt: "Don't have an account?",
-        action: 'Sign Up',
-        onTap: () => _notifyInteraction(context, 'FooterPrompt Sign Up tapped!'),
-      ),
-    );
-  }
-}
-
-// ===== OtpInput =====  (source: lib/widgets/auth_widgets.dart)
-class _OtpInputSection extends StatefulWidget {
-  const _OtpInputSection();
-
-  @override
-  State<_OtpInputSection> createState() => _OtpInputSectionState();
-}
-
-class _OtpInputSectionState extends State<_OtpInputSection> {
-  String _code = '';
-
-  @override
-  Widget build(BuildContext context) {
-    return _PreviewSectionCard(
-      widgetName: 'OtpInput',
-      sourcePath: 'lib/widgets/auth_widgets.dart',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _VariantLabel('Entered code: ${_code.isEmpty ? "(empty)" : _code}'),
-          auth_widgets.OtpInput(
-            onChanged: (val) => setState(() => _code = val),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ===== StepProgress =====  (source: lib/widgets/onboarding_widgets.dart)
-class _StepProgressSection extends StatefulWidget {
-  const _StepProgressSection();
-
-  @override
-  State<_StepProgressSection> createState() => _StepProgressSectionState();
-}
-
-class _StepProgressSectionState extends State<_StepProgressSection> {
-  int _step = 3;
-
-  @override
-  Widget build(BuildContext context) {
-    return _PreviewSectionCard(
-      widgetName: 'StepProgress',
-      sourcePath: 'lib/widgets/onboarding_widgets.dart',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Flexible(child: _VariantLabel('Step $_step of 7')),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.remove_circle_outline),
-                    onPressed: _step > 1 ? () => setState(() => _step--) : null,
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.add_circle_outline),
-                    onPressed: _step < 7 ? () => setState(() => _step++) : null,
-                  ),
-                ],
-              ),
-            ],
-          ),
-          StepProgress(current: _step, total: 7),
-        ],
-      ),
-    );
-  }
-}
-
-// ===== QuestionHeader =====  (source: lib/widgets/onboarding_widgets.dart)
-class _QuestionHeaderSection extends StatelessWidget {
-  const _QuestionHeaderSection();
-
-  @override
-  Widget build(BuildContext context) {
-    return const _PreviewSectionCard(
-      widgetName: 'QuestionHeader',
-      sourcePath: 'lib/widgets/onboarding_widgets.dart',
-      child: QuestionHeader(
-        title: 'What kind of activities do you enjoy most when traveling?',
-        subtitle: 'Select all that apply.',
-      ),
-    );
-  }
-}
-
-// ===== ChoiceGrid =====  (source: lib/widgets/onboarding_widgets.dart)
-class _ChoiceGridSection extends StatefulWidget {
-  const _ChoiceGridSection();
-
-  @override
-  State<_ChoiceGridSection> createState() => _ChoiceGridSectionState();
-}
-
-class _ChoiceGridSectionState extends State<_ChoiceGridSection> {
-  final Set<String> _selected = {'Beaches', 'Hiking'};
-
-  @override
-  Widget build(BuildContext context) {
-    return _PreviewSectionCard(
-      widgetName: 'ChoiceGrid',
-      sourcePath: 'lib/widgets/onboarding_widgets.dart',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _VariantLabel('Selected: ${_selected.join(", ")}'),
-          ChoiceGrid(
-            options: activityOptions.take(6).toList(),
-            selected: _selected,
-            selectedColor: AppColors.primaryNavy,
-            onToggle: (label) {
-              setState(() {
-                if (_selected.contains(label)) {
-                  _selected.remove(label);
-                } else {
-                  _selected.add(label);
-                }
-              });
-              _notifyInteraction(context, 'ChoiceGrid toggled: $label');
-            },
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ===== NotesField =====  (source: lib/widgets/onboarding_widgets.dart)
-class _NotesFieldSection extends StatefulWidget {
-  const _NotesFieldSection();
-
-  @override
-  State<_NotesFieldSection> createState() => _NotesFieldSectionState();
-}
-
-class _NotesFieldSectionState extends State<_NotesFieldSection> {
-  final _notesCtrl = TextEditingController();
-
-  @override
-  void dispose() {
-    _notesCtrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return _PreviewSectionCard(
-      widgetName: 'NotesField',
-      sourcePath: 'lib/widgets/onboarding_widgets.dart',
-      child: NotesField(
-        controller: _notesCtrl,
-        minLines: 3,
-        hint: 'I prefer morning activities, avoid long travel times...',
-      ),
-    );
-  }
-}
-
-// ===== ChoiceStep, BudgetStep, PaceStep, DaysStep, NotesStep =====  (source: lib/screens/onboarding/onboarding_steps.dart)
-class _OnboardingStepsSection extends StatefulWidget {
-  const _OnboardingStepsSection();
-
-  @override
-  State<_OnboardingStepsSection> createState() => _OnboardingStepsSectionState();
-}
-
-class _OnboardingStepsSectionState extends State<_OnboardingStepsSection> {
-  String _activeStep = 'Activities';
-  final Set<String> _activities = {'Beaches', 'Food Trips'};
-  final Set<String> _dietary = {'Vegetarian'};
-  final Set<String> _allergies = {'Peanuts'};
-  final _otherCtrl = TextEditingController();
-  int _budget = 2000;
-  TravelPace? _pace = TravelPace.balanced;
-  final Set<String> _days = {'Saturday', 'Sunday'};
-  final _notesCtrl = TextEditingController();
-
-  @override
-  void dispose() {
-    _otherCtrl.dispose();
-    _notesCtrl.dispose();
-    super.dispose();
-  }
-
-  void _toggleSet(Set<String> target, String value) {
-    setState(() {
-      if (target.contains(value)) {
-        target.remove(value);
-      } else {
-        target.add(value);
-      }
-    });
-    _notifyInteraction(context, 'Toggled $value');
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return _PreviewSectionCard(
-      widgetName: 'Onboarding Steps',
-      sourcePath: 'lib/screens/onboarding/onboarding_steps.dart',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const _VariantLabel('ChoiceStep, BudgetStep, PaceStep, DaysStep, NotesStep:'),
-          AppSegmentedTabs<String>(
-            tabs: const ['Activities', 'Dietary', 'Allergies', 'Budget'],
-            selectedTab: _activeStep,
-            labelBuilder: (s) => s,
-            onTabChanged: (s) => setState(() => _activeStep = s),
-          ),
-          const SizedBox(height: 8),
-          AppSegmentedTabs<String>(
-            tabs: const ['Pace', 'Days', 'Notes'],
-            selectedTab: _activeStep,
-            labelBuilder: (s) => s,
-            onTabChanged: (s) => setState(() => _activeStep = s),
-          ),
-          const SizedBox(height: 18),
-          if (_activeStep == 'Activities')
-            ChoiceStep.activities(
-              selected: _activities,
-              onToggle: (v) => _toggleSet(_activities, v),
-              otherController: _otherCtrl,
-            )
-          else if (_activeStep == 'Dietary')
-            ChoiceStep.dietary(
-              selected: _dietary,
-              onToggle: (v) => _toggleSet(_dietary, v),
-              otherController: _otherCtrl,
-            )
-          else if (_activeStep == 'Allergies')
-            ChoiceStep.allergies(
-              selected: _allergies,
-              onToggle: (v) => _toggleSet(_allergies, v),
-              otherController: _otherCtrl,
-            )
-          else if (_activeStep == 'Budget')
-            BudgetStep(
-              budget: _budget,
-              onChanged: (v) {
-                setState(() => _budget = v);
-                _notifyInteraction(context, 'BudgetStep: $v');
-              },
-            )
-          else if (_activeStep == 'Pace')
-            PaceStep(
-              pace: _pace,
-              onChanged: (v) {
-                setState(() => _pace = v);
-                _notifyInteraction(context, 'PaceStep: ${v.name}');
-              },
-            )
-          else if (_activeStep == 'Days')
-            DaysStep(
-              selected: _days,
-              onToggle: (v) => _toggleSet(_days, v),
-            )
-          else
-            NotesStep(controller: _notesCtrl),
         ],
       ),
     );

@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:anotara/main.dart';
-import '../../widgets/auth_widgets.dart';
+import '../../components/atoms/app_button.dart';
+import '../../components/atoms/app_input_field.dart';
+import '../../core/constants/app_colors.dart';
+import '../../core/constants/app_typography.dart';
 import 'password_updated_screen.dart';
 import 'validators.dart';
 
@@ -14,7 +18,6 @@ class NewPasswordScreen extends StatefulWidget {
 }
 
 class _NewPasswordScreenState extends State<NewPasswordScreen> {
-  final _formKey = GlobalKey<FormState>();
   final _password = TextEditingController();
   final _confirm = TextEditingController();
   bool _loading = false;
@@ -26,7 +29,6 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
     super.dispose();
   }
 
-  // temporary error message
   void _show(String msg) {
     if (!mounted) return;
     ScaffoldMessenger.of(context)
@@ -34,16 +36,19 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
       ..showSnackBar(SnackBar(content: Text(msg)));
   }
 
-  // update the password with Supabase.
   Future<void> _reset() async {
-    if (_loading || !_formKey.currentState!.validate()) return;
+    if (_loading) return;
+    final passErr = validatePassword(_password.text);
+    final confirmErr =
+        _confirm.text != _password.text ? 'Passwords do not match' : null;
+    if (passErr != null || confirmErr != null) {
+      _show(passErr ?? confirmErr!);
+      return;
+    }
     setState(() => _loading = true);
 
     try {
       await supabase.auth.updateUser(UserAttributes(password: _password.text));
-
-      // The code step signed the user in. Sign out so they log in with
-      // the new password.
       await supabase.auth.signOut();
       if (!mounted) return;
 
@@ -62,46 +67,71 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AuthScaffold(
-      children: [
-        const SizedBox(height: 12),
-        const LogoBadge(size: 140, icon: Icons.lock_rounded),
-        const SizedBox(height: 32),
-        const AuthHeader(
-          title: 'Create New Password',
-          subtitle: 'Set a new password for your account.',
-        ),
-        const SizedBox(height: 22),
-        Form(
-          key: _formKey,
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(26, 12, 26, 32),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              AppTextField(
+              Align(
+                alignment: Alignment.centerLeft,
+                child: IconButton(
+                  onPressed: () => Navigator.of(context).maybePop(),
+                  icon: const Icon(Iconsax.arrow_left, color: AppColors.secondaryDark),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Center(
+                child: Container(
+                  width: 140,
+                  height: 140,
+                  decoration: const BoxDecoration(
+                    color: AppColors.primaryOrange,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Iconsax.lock5,
+                    color: AppColors.white,
+                    size: 72,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
+              Text(
+                'Create New Password',
+                textAlign: TextAlign.center,
+                style: AppTypography.h2.copyWith(color: AppColors.secondaryDark),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Set a new password for your account.',
+                textAlign: TextAlign.center,
+                style: AppTypography.bodyMedium.copyWith(color: AppColors.secondaryDark),
+              ),
+              const SizedBox(height: 22),
+              AppInputField(
                 label: 'New Password',
                 controller: _password,
-                obscureText: true,
-                autofillHints: const [AutofillHints.newPassword],
-                validator: validatePassword,
+                isPassword: true,
               ),
               const SizedBox(height: 16),
-              AppTextField(
+              AppInputField(
                 label: 'Confirm Password',
                 controller: _confirm,
-                obscureText: true,
-                textInputAction: TextInputAction.done,
-                validator: (value) =>
-                    value != _password.text ? 'Passwords do not match' : null,
+                isPassword: true,
+              ),
+              const SizedBox(height: 40),
+              AppButton(
+                text: 'Reset Password',
+                isLoading: _loading,
+                onPressed: _reset,
               ),
             ],
           ),
         ),
-        const SizedBox(height: 40),
-        AppButton(
-          label: 'Reset Password',
-          loading: _loading,
-          onPressed: _reset,
-        ),
-      ],
+      ),
     );
   }
 }

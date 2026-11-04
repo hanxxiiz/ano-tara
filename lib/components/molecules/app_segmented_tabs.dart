@@ -1,9 +1,10 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_typography.dart';
 
 /// M05 Segmented tabs molecule:
 /// Recipe: A01 Labels + selectable tab controls.
+/// Supports variable numbers of items (2, 3, 4, 5+) with a smooth horizontal sliding pill transition.
 class AppSegmentedTabs<T> extends StatelessWidget {
   final List<T> tabs;
   final T selectedTab;
@@ -20,6 +21,14 @@ class AppSegmentedTabs<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (tabs.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final int count = tabs.length;
+    final int rawIndex = tabs.indexOf(selectedTab);
+    final int selectedIndex = rawIndex >= 0 ? rawIndex : 0;
+
     return Container(
       height: 46,
       decoration: BoxDecoration(
@@ -34,42 +43,73 @@ class AppSegmentedTabs<T> extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
-        children: tabs.map((tab) {
-          final isSelected = tab == selectedTab;
-          return Expanded(
-            child: GestureDetector(
-              onTap: () => onTabChanged(tab),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                decoration: BoxDecoration(
-                  color: isSelected ? AppColors.primaryNavy : Colors.transparent,
-                  borderRadius: BorderRadius.circular(11),
-                  border: isSelected
-                      ? Border.all(color: AppColors.secondaryDark, width: 1.5)
-                      : null,
-                ),
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        labelBuilder(tab),
-                        maxLines: 1,
-                        style: AppTypography.caption.copyWith(
-                          color: isSelected ? AppColors.white : AppColors.secondaryDark,
-                          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                          fontSize: 12.5,
-                        ),
-                      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final double tabWidth = constraints.maxWidth / count;
+
+          return Stack(
+            children: [
+              // Sliding active tab indicator pill
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 260),
+                curve: Curves.easeOutCubic,
+                left: selectedIndex * tabWidth,
+                top: 0,
+                bottom: 0,
+                width: tabWidth,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryNavy,
+                    borderRadius: BorderRadius.circular(11),
+                    border: Border.all(
+                      color: AppColors.secondaryDark,
+                      width: 1.5,
                     ),
                   ),
                 ),
               ),
-            ),
+              // Interactive tab labels row
+              Row(
+                children: List.generate(count, (index) {
+                  final T tab = tabs[index];
+                  final bool isSelected = index == selectedIndex;
+
+                  return Expanded(
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => onTabChanged(tab),
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 6),
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: AnimatedDefaultTextStyle(
+                              duration: const Duration(milliseconds: 200),
+                              curve: Curves.easeOutCubic,
+                              style: AppTypography.caption.copyWith(
+                                color: isSelected
+                                    ? AppColors.white
+                                    : AppColors.secondaryDark,
+                                fontWeight: isSelected
+                                    ? FontWeight.w800
+                                    : FontWeight.w600,
+                                fontSize: 12.5,
+                              ),
+                              child: Text(
+                                labelBuilder(tab),
+                                maxLines: 1,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ],
           );
-        }).toList(),
+        },
       ),
     );
   }

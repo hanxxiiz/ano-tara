@@ -5,6 +5,7 @@ import '../../core/constants/app_radii.dart';
 import '../../core/constants/app_typography.dart';
 
 /// Search bar molecule matching Figma "search box.pdf".
+/// Uses #0F0331 (AppColors.secondaryDark) for outline and outer shadow, and Iconsax icons.
 class AppSearchBar extends StatefulWidget {
   final String hintText;
   final ValueChanged<String>? onChanged;
@@ -60,7 +61,14 @@ class _AppSearchBarState extends State<AppSearchBar> {
       decoration: BoxDecoration(
         color: widget.isEnabled ? AppColors.surfaceMuted : AppColors.surfaceLight,
         borderRadius: AppRadii.radiusPill,
-        border: Border.all(color: AppColors.ann, width: 1.0),
+        border: Border.all(color: AppColors.secondaryDark, width: 2.0),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.secondaryDark,
+            offset: Offset(0, 3),
+            blurRadius: 0,
+          ),
+        ],
       ),
       child: Center(
         child: TextField(
@@ -77,7 +85,8 @@ class _AppSearchBarState extends State<AppSearchBar> {
             fillColor: Colors.transparent,
             hintText: widget.hintText,
             hintStyle: AppTypography.inputHint,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             border: InputBorder.none,
             enabledBorder: InputBorder.none,
             focusedBorder: InputBorder.none,
@@ -88,14 +97,19 @@ class _AppSearchBarState extends State<AppSearchBar> {
               padding: EdgeInsets.only(left: 14, right: 8),
               child: Icon(
                 Iconsax.search_normal,
-                color: AppColors.shayne,
+                color: AppColors.secondaryDark,
                 size: 20,
               ),
             ),
-            prefixIconConstraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+            prefixIconConstraints:
+                const BoxConstraints(minWidth: 44, minHeight: 44),
             suffixIcon: _showClear
                 ? IconButton(
-                    icon: const Icon(Icons.close, color: AppColors.shayne, size: 18),
+                    icon: const Icon(
+                      Iconsax.close_circle,
+                      color: AppColors.secondaryDark,
+                      size: 18,
+                    ),
                     onPressed: () {
                       _controller.clear();
                       widget.onClear?.call();
@@ -104,7 +118,8 @@ class _AppSearchBarState extends State<AppSearchBar> {
                     splashRadius: 20,
                   )
                 : null,
-            suffixIconConstraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+            suffixIconConstraints:
+                const BoxConstraints(minWidth: 44, minHeight: 44),
           ),
         ),
       ),

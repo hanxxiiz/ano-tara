@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 
-/// Custom thumb shape with white border ring matching Figma
+/// Custom thumb shape with white border ring and #0F0331 fill matching Figma.
 class _AnoTaraSliderThumbShape extends SliderComponentShape {
   final double thumbRadius;
 
@@ -30,28 +30,96 @@ class _AnoTaraSliderThumbShape extends SliderComponentShape {
   }) {
     final Canvas canvas = context.canvas;
 
-    // Outer white border ring
-    final Paint borderPaint = Paint()
-      ..color = AppColors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 4.0;
-
-    // Inner dark ink circle
-    final Paint fillPaint = Paint()
+    // Outer #0F0331 ring so the white ring has a crisp #0F0331 outline
+    final Paint outerInkPaint = Paint()
       ..color = AppColors.secondaryDark
       ..style = PaintingStyle.fill;
 
-    canvas.drawCircle(center, thumbRadius, fillPaint);
-    canvas.drawCircle(center, thumbRadius - 2.0, borderPaint);
+    // White inner border ring
+    final Paint borderPaint = Paint()
+      ..color = AppColors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.5;
+
+    canvas.drawCircle(center, thumbRadius, outerInkPaint);
+    canvas.drawCircle(center, thumbRadius - 3.0, borderPaint);
+  }
+}
+
+/// Custom track shape whose visual pill bar aligns 100% flush with the display field edges
+/// (0..parentBox.width), while keeping the thumb centers inset by [thumbRadius] so the thumb
+/// never overhangs outside the field boundaries.
+class _FlushSliderTrackShape extends SliderTrackShape {
+  final double thumbRadius;
+
+  const _FlushSliderTrackShape({this.thumbRadius = 18.0});
+
+  @override
+  Rect getPreferredRect({
+    required RenderBox parentBox,
+    Offset offset = Offset.zero,
+    required SliderThemeData sliderTheme,
+    bool isEnabled = false,
+    bool isDiscrete = false,
+  }) {
+    final double trackHeight = sliderTheme.trackHeight ?? 22.0;
+    final double trackLeft = offset.dx + thumbRadius;
+    final double trackTop =
+        offset.dy + (parentBox.size.height - trackHeight) / 2;
+    final double trackWidth = parentBox.size.width - (thumbRadius * 2);
+    return Rect.fromLTWH(trackLeft, trackTop, trackWidth, trackHeight);
+  }
+
+  @override
+  void paint(
+    PaintingContext context,
+    Offset offset, {
+    required RenderBox parentBox,
+    required SliderThemeData sliderTheme,
+    required Animation<double> enableAnimation,
+    required Offset thumbCenter,
+    Offset? secondaryOffset,
+    bool isEnabled = false,
+    bool isDiscrete = false,
+    required TextDirection textDirection,
+  }) {
+    final double trackHeight = sliderTheme.trackHeight ?? 22.0;
+    final double trackTop =
+        offset.dy + (parentBox.size.height - trackHeight) / 2;
+    final Rect fullTrackRect = Rect.fromLTWH(
+      offset.dx,
+      trackTop,
+      parentBox.size.width,
+      trackHeight,
+    );
+    final RRect trackRRect = RRect.fromRectAndRadius(
+      fullTrackRect,
+      Radius.circular(trackHeight / 2),
+    );
+
+    final Paint trackPaint = Paint()
+      ..color = AppColors.secondaryDark
+      ..style = PaintingStyle.fill;
+
+    context.canvas.drawRRect(trackRRect, trackPaint);
   }
 }
 
 /// Budget selector molecule featuring a prominent value card and step slider.
+/// Uses #0F0331 (AppColors.secondaryDark) throughout and aligns the slider track,
+/// thumb stops, and tick marks/labels flush with the display field above.
 class AppBudgetSlider extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onIndexChanged;
   static const List<int> budgetSteps = [500, 1000, 2000, 5000, 10000];
-  static const List<String> budgetLabels = ['500', '1,000', '2,000', '5,000', '10,000+'];
+  static const List<String> budgetLabels = [
+    '500',
+    '1,000',
+    '2,000',
+    '5,000',
+    '10,000+',
+  ];
+  static const double _thumbRadius = 18.0;
 
   const AppBudgetSlider({
     super.key,
@@ -71,8 +139,9 @@ class AppBudgetSlider extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Highlighted Display Card with 2px Ink outline & hard drop shadow
+        // Highlighted Display Card with 2px #0F0331 outline & hard drop shadow
         Container(
           width: double.infinity,
           height: 120,
@@ -106,67 +175,108 @@ class AppBudgetSlider extends StatelessWidget {
           ),
         ),
 
-        const SizedBox(height: 36),
+        const SizedBox(height: 28),
 
-        // Custom Slider with thick ink bar
-        SliderTheme(
-          data: SliderTheme.of(context).copyWith(
-            trackHeight: 22.0,
-            activeTrackColor: AppColors.secondaryDark,
-            inactiveTrackColor: AppColors.secondaryDark,
-            trackShape: const RoundedRectSliderTrackShape(),
-            thumbColor: AppColors.secondaryDark,
-            overlayColor: Colors.transparent,
-            thumbShape: const _AnoTaraSliderThumbShape(thumbRadius: 18.0),
-            tickMarkShape: SliderTickMarkShape.noTickMark,
-          ),
-          child: Slider(
-            value: selectedIndex.toDouble(),
-            min: 0,
-            max: (budgetSteps.length - 1).toDouble(),
-            divisions: budgetSteps.length - 1,
-            onChanged: (val) => onIndexChanged(val.round()),
+        // Custom Slider aligned flush with the display field above
+        SizedBox(
+          height: 36,
+          child: SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              trackHeight: 22.0,
+              activeTrackColor: AppColors.secondaryDark,
+              inactiveTrackColor: AppColors.secondaryDark,
+              trackShape:
+                  const _FlushSliderTrackShape(thumbRadius: _thumbRadius),
+              thumbColor: AppColors.secondaryDark,
+              overlayColor: Colors.transparent,
+              overlayShape: SliderComponentShape.noOverlay,
+              thumbShape:
+                  const _AnoTaraSliderThumbShape(thumbRadius: _thumbRadius),
+              tickMarkShape: SliderTickMarkShape.noTickMark,
+            ),
+            child: Slider(
+              padding: EdgeInsets.zero,
+              value: selectedIndex.clamp(0, budgetSteps.length - 1).toDouble(),
+              min: 0,
+              max: (budgetSteps.length - 1).toDouble(),
+              divisions: budgetSteps.length - 1,
+              onChanged: (val) => onIndexChanged(val.round()),
+            ),
           ),
         ),
 
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
 
-        // Vertical Tick Marks and Labels Below
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: List.generate(budgetLabels.length, (index) {
-              return Flexible(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 4,
-                      height: 14,
-                      decoration: BoxDecoration(
-                        color: AppColors.secondaryDark,
-                        borderRadius: BorderRadius.circular(2),
+        // Vertical Tick Marks and Labels positioned at exact stop coordinates
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final double totalWidth = constraints.maxWidth;
+            final double usableWidth = totalWidth - (_thumbRadius * 2);
+            final int count = budgetLabels.length;
+
+            return SizedBox(
+              height: 40,
+              width: totalWidth,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: List.generate(count, (index) {
+                  final double stopX =
+                      _thumbRadius + usableWidth * (index / (count - 1));
+                  const double itemWidth = 64.0;
+                  final double rawLeft = stopX - (itemWidth / 2);
+                  final double clampedLeft =
+                      rawLeft.clamp(0.0, totalWidth - itemWidth);
+
+                  return Positioned(
+                    left: clampedLeft,
+                    top: 0,
+                    width: itemWidth,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => onIndexChanged(index),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Align(
+                            alignment: Alignment(
+                              ((stopX - clampedLeft) / itemWidth) * 2 - 1,
+                              0,
+                            ),
+                            child: Container(
+                              width: 4,
+                              height: 14,
+                              decoration: BoxDecoration(
+                                color: AppColors.secondaryDark,
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Align(
+                            alignment: Alignment(
+                              ((stopX - clampedLeft) / itemWidth) * 2 - 1,
+                              0,
+                            ),
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                budgetLabels[index],
+                                style: GoogleFonts.urbanist(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 13,
+                                  color: AppColors.secondaryDark,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        budgetLabels[index],
-                        style: GoogleFonts.urbanist(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 13,
-                          color: AppColors.secondaryDark,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }),
-          ),
+                  );
+                }),
+              ),
+            );
+          },
         ),
       ],
     );
