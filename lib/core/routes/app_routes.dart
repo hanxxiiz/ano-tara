@@ -17,6 +17,7 @@ import '../../features/trips/presentation/screens/trip_overview_screen.dart';
 import '../../features/notifications/presentation/screens/invitations_screen.dart';
 import '../../features/expenses/presentation/screens/expense_updates_screen.dart';
 import '../../features/trips/presentation/screens/member_responses_screen.dart';
+import '../../features/groups/presentation/data/group_role.dart';
 
 /// Centralized route definitions and generator.
 /// Adding a new screen needs only a new route string and its screen widget in [routes].
@@ -51,25 +52,25 @@ class AppRoutes {
 
   /// Map of all available named routes
   static Map<String, WidgetBuilder> get routes => {
-        welcome: (context) => const WelcomeScreen(),
-        login: (context) => const LoginScreen(),
-        register: (context) => const RegisterScreen(),
-        forgotPassword: (context) => const ForgotPasswordScreen(),
-        verificationCode: (context) => const VerificationCodeScreen(),
-        createNewPassword: (context) => const CreateNewPasswordScreen(),
-        passwordUpdated: (context) => const PasswordUpdatedScreen(),
-        onboarding: (context) => const OnboardingFlowScreen(),
-        main: (context) => const MainShellScreen(),
-        planTrip: (context) => const PlanTripScreen(),
-        groupOverview: (context) => const GroupOverviewScreen(),
-        groupDetail: (context) => const GroupDetailScreen(),
-        groupChat: (context) => const GroupChatScreen(),
-        createGroup: (context) => const CreateGroupFlowScreen(),
-        tripOverview: (context) => const TripOverviewScreen(),
-        invitations: (context) => const InvitationsScreen(),
-        expenseUpdates: (context) => const ExpenseUpdatesScreen(),
-        memberResponses: (context) => const MemberResponsesScreen(),
-      };
+    welcome: (context) => const WelcomeScreen(),
+    login: (context) => const LoginScreen(),
+    register: (context) => const RegisterScreen(),
+    forgotPassword: (context) => const ForgotPasswordScreen(),
+    verificationCode: (context) => const VerificationCodeScreen(),
+    createNewPassword: (context) => const CreateNewPasswordScreen(),
+    passwordUpdated: (context) => const PasswordUpdatedScreen(),
+    onboarding: (context) => const OnboardingFlowScreen(),
+    main: (context) => const MainShellScreen(),
+    planTrip: (context) => const PlanTripScreen(),
+    groupOverview: (context) => const GroupOverviewScreen(),
+    groupDetail: (context) => const GroupDetailScreen(),
+    groupChat: (context) => const GroupChatScreen(),
+    createGroup: (context) => const CreateGroupFlowScreen(),
+    tripOverview: (context) => const TripOverviewScreen(),
+    invitations: (context) => const InvitationsScreen(),
+    expenseUpdates: (context) => const ExpenseUpdatesScreen(),
+    memberResponses: (context) => const MemberResponsesScreen(),
+  };
 
   /// Route generator for parameterized navigation
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
@@ -88,9 +89,16 @@ class AppRoutes {
       );
     }
     if (settings.name == groupDetail) {
-      final groupName = (settings.arguments as String?) ?? 'Trip to Bantayan';
+      final args = settings.arguments;
+      final GroupDetailArgs parsed = args is GroupDetailArgs
+          ? args
+          : GroupDetailArgs(
+              args is String ? args : 'Trip to Bantayan',
+              GroupRole.organizer, // old callers keep working as before
+            );
       return MaterialPageRoute(
-        builder: (context) => GroupDetailScreen(groupName: groupName),
+        builder: (context) =>
+            GroupDetailScreen(groupName: parsed.groupName, role: parsed.role),
         settings: settings,
       );
     }
@@ -104,10 +112,7 @@ class AppRoutes {
 
     final builder = routes[settings.name];
     if (builder != null) {
-      return MaterialPageRoute(
-        builder: builder,
-        settings: settings,
-      );
+      return MaterialPageRoute(builder: builder, settings: settings);
     }
 
     // Fallback route

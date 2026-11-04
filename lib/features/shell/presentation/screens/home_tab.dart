@@ -10,6 +10,7 @@ import '../../../../components/atoms/app_pressable.dart';
 import '../../../../components/organisms/app_main_top_bar.dart';
 import '../../../../components/organisms/trip_summary_card.dart';
 import '../widgets/hero_banner_trio.dart';
+import '../../../../features/groups/presentation/data/group_role.dart';
 
 class HomeTab extends StatefulWidget {
   final VoidCallback? onNavigateToTrips;
@@ -30,13 +31,22 @@ class HomeTab extends StatefulWidget {
 class _HomeTabState extends State<HomeTab> {
   String get _username {
     final user = supabase.auth.currentUser;
-    final name = user?.userMetadata?['username'] ??
+    final name =
+        user?.userMetadata?['username'] ??
         user?.userMetadata?['first_name'] ??
         user?.email?.split('@').first;
     if (name != null && name.toString().isNotEmpty) {
       return name.toString();
     }
     return 'blackxswann';
+  }
+
+  void _openGroup(String name, GroupRole role) {
+    Navigator.pushNamed(
+      context,
+      AppRoutes.groupDetail,
+      arguments: GroupDetailArgs(name, role),
+    );
   }
 
   @override
@@ -73,7 +83,10 @@ class _HomeTabState extends State<HomeTab> {
                 decoration: BoxDecoration(
                   color: AppColors.primaryOrange,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.secondaryDark, width: 2.0),
+                  border: Border.all(
+                    color: AppColors.secondaryDark,
+                    width: 2.0,
+                  ),
                   boxShadow: const [
                     BoxShadow(
                       color: AppColors.secondaryDark,
@@ -93,7 +106,9 @@ class _HomeTabState extends State<HomeTab> {
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 18, vertical: 20),
+                        horizontal: 18,
+                        vertical: 20,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -114,8 +129,9 @@ class _HomeTabState extends State<HomeTab> {
                               child: Text(
                                 "Get the group together and start planning what's next.",
                                 style: AppTypography.bodySmall.copyWith(
-                                  color: AppColors.secondaryDark
-                                      .withValues(alpha: 0.9),
+                                  color: AppColors.secondaryDark.withValues(
+                                    alpha: 0.9,
+                                  ),
                                   fontWeight: FontWeight.w600,
                                   fontSize: 11.5,
                                   height: 1.3,
@@ -126,8 +142,10 @@ class _HomeTabState extends State<HomeTab> {
                           const SizedBox(height: 16),
                           AppButton(
                             text: 'Plan a Trip',
-                            onPressed: () =>
-                                Navigator.pushNamed(context, AppRoutes.planTrip),
+                            onPressed: () => Navigator.pushNamed(
+                              context,
+                              AppRoutes.planTrip,
+                            ),
                             isFullWidth: false,
                             customHeight: 38,
                             borderRadius: 12,
@@ -162,37 +180,25 @@ class _HomeTabState extends State<HomeTab> {
                     _buildGroupItem(
                       name: 'The Group',
                       color: AppColors.semanticYellow,
-                      onTap: () {
-                        Navigator.pushNamed(context, AppRoutes.groupDetail,
-                            arguments: 'The Group');
-                      },
+                      onTap: () => _openGroup('The Group', GroupRole.member),
                     ),
                     const SizedBox(width: 14),
                     _buildGroupItem(
                       name: 'Blackpink',
                       color: AppColors.creamYellow,
-                      onTap: () {
-                        Navigator.pushNamed(context, AppRoutes.groupDetail,
-                            arguments: 'Blackpink');
-                      },
+                      onTap: () => _openGroup('Blackpink', GroupRole.member),
                     ),
                     const SizedBox(width: 14),
                     _buildGroupItem(
                       name: 'Twice',
                       color: AppColors.semanticYellow,
-                      onTap: () {
-                        Navigator.pushNamed(context, AppRoutes.groupDetail,
-                            arguments: 'Twice');
-                      },
+                      onTap: () => _openGroup('Twice', GroupRole.organizer),
                     ),
                     const SizedBox(width: 14),
                     _buildGroupItem(
                       name: 'Barkada',
                       color: AppColors.creamYellow,
-                      onTap: () {
-                        Navigator.pushNamed(context, AppRoutes.groupDetail,
-                            arguments: 'Barkada');
-                      },
+                      onTap: () => _openGroup('Barkada', GroupRole.member),
                     ),
                     const SizedBox(width: 14),
                     _buildAddGroupItem(
@@ -247,7 +253,9 @@ class _HomeTabState extends State<HomeTab> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                          color: AppColors.secondaryDark, width: 1.4),
+                        color: AppColors.secondaryDark,
+                        width: 1.4,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 6),
@@ -257,7 +265,9 @@ class _HomeTabState extends State<HomeTab> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                          color: AppColors.secondaryDark, width: 1.4),
+                        color: AppColors.secondaryDark,
+                        width: 1.4,
+                      ),
                     ),
                   ),
                 ],
@@ -440,11 +450,7 @@ class _HomeTabState extends State<HomeTab> {
                 border: Border.all(color: AppColors.secondaryDark, width: 1.5),
               ),
               child: Center(
-                child: AppIcon(
-                  badgeIcon,
-                  color: AppColors.white,
-                  size: 26,
-                ),
+                child: AppIcon(badgeIcon, color: AppColors.white, size: 26),
               ),
             ),
             const SizedBox(width: 14),

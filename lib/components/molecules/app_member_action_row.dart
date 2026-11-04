@@ -11,11 +11,13 @@ import '../atoms/app_text.dart';
 class AppMemberActionRow extends StatelessWidget {
   final String name;
   final VoidCallback? onActionTap;
+  final bool showAction;
 
   const AppMemberActionRow({
     super.key,
     required this.name,
     this.onActionTap,
+    this.showAction = true,
   });
 
   @override
@@ -47,16 +49,17 @@ class AppMemberActionRow extends StatelessWidget {
               fontSize: 14.5,
             ),
           ),
-          AppPressable(
-            onTap: onActionTap,
-            child: const Center(
-              child: AppIcon(
-                Iconsax.login5,
-                color: AppColors.primaryOrange,
-                size: 26,
+          if (showAction)
+            AppPressable(
+              onTap: onActionTap,
+              child: const Center(
+                child: AppIcon(
+                  Iconsax.login5,
+                  color: AppColors.primaryOrange,
+                  size: 26,
+                ),
               ),
             ),
-          ),
         ],
       ),
     );

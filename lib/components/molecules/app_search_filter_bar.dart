@@ -13,6 +13,7 @@ class AppSearchFilterBar extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final VoidCallback? onFilterTap;
   final bool showFilterButton;
+  final IconData actionIcon;
 
   const AppSearchFilterBar({
     super.key,
@@ -21,6 +22,7 @@ class AppSearchFilterBar extends StatelessWidget {
     this.onChanged,
     this.onFilterTap,
     this.showFilterButton = true,
+    this.actionIcon = Iconsax.filter5,
   });
 
   @override
@@ -56,10 +58,15 @@ class AppSearchFilterBar extends StatelessWidget {
                   child: TextField(
                     controller: controller,
                     onChanged: onChanged,
-                    style: AppTypography.bodyMedium.copyWith(color: AppColors.secondaryDark),
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.secondaryDark,
+                    ),
                     decoration: InputDecoration(
                       hintText: hintText,
-                      hintStyle: const TextStyle(color: AppColors.carla, fontSize: 14),
+                      hintStyle: const TextStyle(
+                        color: AppColors.carla,
+                        fontSize: 14,
+                      ),
                       isDense: true,
                       border: InputBorder.none,
                       enabledBorder: InputBorder.none,
@@ -94,9 +101,9 @@ class AppSearchFilterBar extends StatelessWidget {
                   ),
                 ],
               ),
-              child: const Center(
+              child: Center(
                 child: AppIcon(
-                  Iconsax.filter5,
+                  actionIcon,
                   color: AppColors.secondaryDark,
                   size: 24,
                 ),

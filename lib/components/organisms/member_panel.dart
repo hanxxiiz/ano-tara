@@ -35,6 +35,9 @@ class MemberPanel extends StatefulWidget {
   final bool showSearch;
   final bool isLoading;
   final String emptyMessage;
+  final bool showInvite;
+  final bool showRowActions;
+  final VoidCallback? onInviteTap;
 
   const MemberPanel({
     super.key,
@@ -51,6 +54,9 @@ class MemberPanel extends StatefulWidget {
     this.showSearch = true,
     this.isLoading = false,
     this.emptyMessage = 'No matching members found.',
+    this.showInvite = true,
+    this.showRowActions = true,
+    this.onInviteTap,
   });
 
   @override
@@ -73,6 +79,7 @@ class _MemberPanelState extends State<MemberPanel> {
     if (widget.member != null) {
       return AppMemberActionRow(
         name: widget.member!.name,
+        showAction: widget.showRowActions,
         onActionTap: widget.onMorePressed ?? widget.onTap,
       );
     }
@@ -98,7 +105,9 @@ class _MemberPanelState extends State<MemberPanel> {
           AppSearchFilterBar(
             hintText: widget.searchHint,
             controller: _searchController,
-            showFilterButton: false,
+            showFilterButton: widget.showInvite,
+            actionIcon: Icons.add,
+            onFilterTap: widget.onInviteTap,
             onChanged: (val) => setState(() => _query = val),
           ),
           const SizedBox(height: 14),
@@ -123,6 +132,7 @@ class _MemberPanelState extends State<MemberPanel> {
           for (int i = 0; i < filtered.length; i++) ...[
             AppMemberActionRow(
               name: filtered[i],
+              showAction: widget.showRowActions,
               onActionTap: () => widget.onMemberActionTap?.call(filtered[i]),
             ),
             if (i < filtered.length - 1) const SizedBox(height: 12),

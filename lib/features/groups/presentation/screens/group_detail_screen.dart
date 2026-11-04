@@ -12,11 +12,13 @@ import '../../../../components/organisms/overview_summary_panel.dart';
 import '../../../../components/organisms/trip_summary_card.dart';
 import '../../../shell/presentation/screens/main_shell_screen.dart';
 import '../../../trips/data/trip_repository.dart';
+import '../../../../features/groups/presentation/data/group_role.dart';
 
 enum GroupDetailTab { overview, trips, availability, members }
 
 class GroupDetailScreen extends StatefulWidget {
   final String groupName;
+  final GroupRole role;
   final GroupDetailTab initialTab;
   final bool embeddedInShell;
   final VoidCallback? onNavigateToProfile;
@@ -24,6 +26,7 @@ class GroupDetailScreen extends StatefulWidget {
   const GroupDetailScreen({
     super.key,
     this.groupName = 'Trip to Bantayan',
+    this.role = GroupRole.organizer,
     this.initialTab = GroupDetailTab.overview,
     this.embeddedInShell = false,
     this.onNavigateToProfile,
@@ -55,6 +58,41 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
     }
   }
 
+  Future<void> _planTrip() async {
+    final created = await Navigator.pushNamed(
+      context,
+      AppRoutes.planTrip,
+      arguments: widget.groupName,
+    );
+    if (created != null && mounted) {
+      setState(() => _activeTab = GroupDetailTab.trips);
+    }
+  }
+
+  Future<void> _confirmLeave() async {
+    final leave = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Leave group?'),
+        content: Text('You will no longer see ${widget.groupName}.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Leave'),
+          ),
+        ],
+      ),
+    );
+    if (leave == true && mounted) {
+      // TODO: delete the group_members row once groups are backed by Supabase
+      Navigator.of(context).pop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -75,7 +113,8 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
             );
           }
         },
-        onNotificationTap: () => Navigator.pushNamed(context, AppRoutes.invitations),
+        onNotificationTap: () =>
+            Navigator.pushNamed(context, AppRoutes.invitations),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -85,18 +124,11 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
               // O02 Group header organism
               GroupHeaderOrganism(
                 groupName: widget.groupName,
-                roleLabel: 'Organizer',
+                roleLabel: widget.role.label,
                 memberCount: 7,
-                onPlanTripTap: () async {
-                  final created = await Navigator.pushNamed(
-                    context,
-                    AppRoutes.planTrip,
-                    arguments: widget.groupName,
-                  );
-                  if (created != null && mounted) {
-                    setState(() => _activeTab = GroupDetailTab.trips);
-                  }
-                },
+                showPlanTrip: widget.role.isOrganizer,
+                onPlanTripTap: widget.role.isOrganizer ? _planTrip : null,
+                onLeaveTap: widget.role.isOrganizer ? null : _confirmLeave,
               ),
 
               const SizedBox(height: 16),
@@ -150,7 +182,11 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
       case GroupDetailTab.availability:
         return const AvailabilityPanel();
       case GroupDetailTab.members:
-        return const MemberPanel(
+        return MemberPanel(
+          showInvite: widget.role.isOrganizer,
+          showRowActions: widget.role.isOrganizer,
+          onInviteTap: () =>
+              Navigator.pushNamed(context, AppRoutes.createGroup),
           memberNames: [
             'Hannah S. Labandero',
             'Louielyn Abella',
@@ -165,7 +201,9 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
     return ValueListenableBuilder<List<TripModel>>(
       valueListenable: TripRepository.instance.tripsNotifier,
       builder: (context, _, _) {
-        final groupTrips = TripRepository.instance.tripsForGroup(widget.groupName);
+        final groupTrips = TripRepository.instance.tripsForGroup(
+          widget.groupName,
+        );
         final upcoming = groupTrips.isNotEmpty ? groupTrips.first : null;
 
         return Column(
@@ -198,7 +236,8 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
                 location: upcoming.destination,
                 groupLabel: upcoming.groupGoingLabel,
                 dateRange: upcoming.dateRangeLabel,
-                onTap: () => Navigator.pushNamed(context, AppRoutes.tripOverview),
+                onTap: () =>
+                    Navigator.pushNamed(context, AppRoutes.tripOverview),
               ),
           ],
         );
@@ -211,7 +250,9 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
     return ValueListenableBuilder<List<TripModel>>(
       valueListenable: TripRepository.instance.tripsNotifier,
       builder: (context, _, _) {
-        final groupTrips = TripRepository.instance.tripsForGroup(widget.groupName);
+        final groupTrips = TripRepository.instance.tripsForGroup(
+          widget.groupName,
+        );
         return Column(
           children: [
             for (int i = 0; i < groupTrips.length; i++) ...[
@@ -220,7 +261,8 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
                 location: groupTrips[i].destination,
                 groupLabel: groupTrips[i].groupGoingLabel,
                 dateRange: groupTrips[i].dateRangeLabel,
-                onTap: () => Navigator.pushNamed(context, AppRoutes.tripOverview),
+                onTap: () =>
+                    Navigator.pushNamed(context, AppRoutes.tripOverview),
               ),
               if (i < groupTrips.length - 1) const SizedBox(height: 16),
             ],
