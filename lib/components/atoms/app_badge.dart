@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_radii.dart';
@@ -116,9 +116,13 @@ class AppBadge extends StatelessWidget {
             icon!,
             const SizedBox(width: 4),
           ],
-          Text(
-            label,
-            style: AppTypography.badge.copyWith(color: fg),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTypography.badge.copyWith(color: fg),
+            ),
           ),
         ],
       ),

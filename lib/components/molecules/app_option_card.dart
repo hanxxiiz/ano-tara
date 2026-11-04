@@ -56,7 +56,7 @@ class _AppOptionCardState extends State<AppOptionCard> {
           width: widget.size,
           height: widget.size,
           transform: Matrix4.translationValues(0, _isPressed ? 2.0 : 0.0, 0),
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: BorderRadius.circular(18.0),
@@ -77,14 +77,16 @@ class _AppOptionCardState extends State<AppOptionCard> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               if (widget.customIcon != null)
-                widget.customIcon!
+                Flexible(child: widget.customIcon!)
               else if (widget.icon != null)
-                Icon(
-                  widget.icon,
-                  size: 32,
-                  color: fgColor,
+                Flexible(
+                  child: Icon(
+                    widget.icon,
+                    size: 30,
+                    color: fgColor,
+                  ),
                 ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               AnimatedDefaultTextStyle(
                 duration: const Duration(milliseconds: 200),
                 style: GoogleFonts.urbanist(

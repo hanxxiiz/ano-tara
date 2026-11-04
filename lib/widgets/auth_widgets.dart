@@ -149,30 +149,37 @@ class AppButton extends StatelessWidget {
         ),
         child: InkWell(
           onTap: loading ? null : onPressed,
-          child: Center(
-            child: loading
-                ? SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: foreground),
-                  )
-                : Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (icon != null) ...[
-                        Icon(icon, color: foreground, size: 24),
-                        const SizedBox(width: 12),
-                      ],
-                      Text(
-                        label,
-                        style: TextStyle(
-                          color: foreground,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Center(
+              child: loading
+                  ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: foreground),
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (icon != null) ...[
+                          Icon(icon, color: foreground, size: 24),
+                          const SizedBox(width: 12),
+                        ],
+                        Flexible(
+                          child: Text(
+                            label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: foreground,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+            ),
           ),
         ),
       ),
@@ -288,8 +295,9 @@ class FooterPrompt extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Wrap(
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         Text('$prompt ', style: const TextStyle(fontSize: 14, color: Colors.black)),
         GestureDetector(
@@ -358,7 +366,7 @@ class _OtpInputState extends State<OtpInput> {
     return Row(
       children: [
         for (var i = 0; i < widget.length; i++) ...[
-          if (i > 0) const SizedBox(width: 11),
+          if (i > 0) const SizedBox(width: 8),
           Expanded(
             child: Container(
               height: 56,
@@ -373,6 +381,7 @@ class _OtpInputState extends State<OtpInput> {
                 controller: _controllers[i],
                 focusNode: _nodes[i],
                 textAlign: TextAlign.center,
+                textAlignVertical: TextAlignVertical.center,
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 style: const TextStyle(
@@ -380,7 +389,18 @@ class _OtpInputState extends State<OtpInput> {
                   fontWeight: FontWeight.w600,
                   color: AppColors.ink,
                 ),
-                decoration: const InputDecoration.collapsed(hintText: ''),
+                decoration: const InputDecoration(
+                  isCollapsed: true,
+                  hintText: '',
+                  counterText: '',
+                  filled: false,
+                  contentPadding: EdgeInsets.zero,
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  errorBorder: InputBorder.none,
+                  disabledBorder: InputBorder.none,
+                ),
                 onChanged: (value) => _onChanged(i, value),
               ),
             ),

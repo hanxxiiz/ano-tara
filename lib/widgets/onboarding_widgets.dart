@@ -162,15 +162,17 @@ class _ChoiceTile extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(option.icon, size: 40, color: foreground),
-                  const SizedBox(height: 10),
+                  Flexible(
+                    child: Icon(option.icon, size: 36, color: foreground),
+                  ),
+                  const SizedBox(height: 6),
                   FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Text(
                       option.label,
                       maxLines: 1,
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: foreground,
                       ),

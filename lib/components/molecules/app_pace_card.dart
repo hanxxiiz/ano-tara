@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
+import '../atoms/app_icon.dart';
 import '../atoms/app_pressable.dart';
 
 /// Horizontal pace option card molecule for Onboarding Step 5 matching Figma.
@@ -58,12 +59,11 @@ class AppPaceCard extends StatelessWidget {
                 color: AppColors.primaryOrange,
                 borderRadius: BorderRadius.circular(14.0),
               ),
-              child: Center(
-                child: Icon(
-                  icon,
-                  color: AppColors.white,
-                  size: 28,
-                ),
+              alignment: Alignment.center,
+              child: AppIcon(
+                icon,
+                color: AppColors.white,
+                size: 28,
               ),
             ),
             const SizedBox(width: 14),

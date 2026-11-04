@@ -5,8 +5,8 @@ import 'app_routes.dart';
 import 'core/routes/app_routes.dart' as core_routes;
 import 'core/theme/app_theme.dart' as core_theme;
 import 'features/shell/presentation/screens/main_shell_screen.dart';
+import 'screens/component_preview_screen.dart';
 import 'screens/onboarding/onboarding_flow.dart';
-import 'services/auth_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,12 +39,12 @@ class AnoTaraApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Ano Tara',
       theme: core_theme.AppTheme.lightTheme,
-      home: const AuthGate(),
+      home: const ComponentPreviewScreen(),
       routes: appRoutes,
       onGenerateRoute: (settings) {
         if (settings.name == Navigator.defaultRouteName) {
           return MaterialPageRoute(
-            builder: (_) => const AuthGate(),
+            builder: (_) => const ComponentPreviewScreen(),
             settings: settings,
           );
         }

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_typography.dart';
@@ -39,13 +39,19 @@ class AppMessageComposer extends StatelessWidget {
           Expanded(
             child: TextField(
               controller: controller,
+              textAlignVertical: TextAlignVertical.center,
               style: AppTypography.bodyMedium.copyWith(color: AppColors.secondaryDark),
               decoration: InputDecoration(
+                isDense: true,
+                filled: false,
+                fillColor: Colors.transparent,
                 hintText: hintText,
                 hintStyle: const TextStyle(color: AppColors.shayne, fontSize: 14),
                 border: InputBorder.none,
                 enabledBorder: InputBorder.none,
                 focusedBorder: InputBorder.none,
+                errorBorder: InputBorder.none,
+                disabledBorder: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(vertical: 12),
               ),
               onSubmitted: (_) => onSend(),

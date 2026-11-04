@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_typography.dart';
@@ -56,11 +56,14 @@ class AppSearchFilterBar extends StatelessWidget {
                   child: TextField(
                     controller: controller,
                     onChanged: onChanged,
+                    textAlignVertical: TextAlignVertical.center,
                     style: AppTypography.bodyMedium.copyWith(color: AppColors.secondaryDark),
                     decoration: InputDecoration(
                       hintText: hintText,
                       hintStyle: const TextStyle(color: AppColors.carla, fontSize: 14),
                       isDense: true,
+                      filled: false,
+                      fillColor: Colors.transparent,
                       border: InputBorder.none,
                       enabledBorder: InputBorder.none,
                       focusedBorder: InputBorder.none,

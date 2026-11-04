@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 
@@ -61,10 +61,10 @@ class AppBudgetSlider extends StatelessWidget {
 
   String get formattedValue {
     if (selectedIndex >= budgetSteps.length - 1) {
-      return 'P 10.000+';
+      return 'P10,000+';
     }
     final num = budgetSteps[selectedIndex];
-    return 'P ${num.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}';
+    return 'P${num.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}';
   }
 
   @override
@@ -92,13 +92,16 @@ class AppBudgetSlider extends StatelessWidget {
             ],
           ),
           alignment: Alignment.center,
-          child: Text(
-            formattedValue,
-            style: GoogleFonts.urbanist(
-              color: AppColors.secondaryDark,
-              fontSize: 38,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 0.5,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              formattedValue,
+              style: GoogleFonts.urbanist(
+                color: AppColors.secondaryDark,
+                fontSize: 38,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.5,
+              ),
             ),
           ),
         ),
@@ -130,32 +133,37 @@ class AppBudgetSlider extends StatelessWidget {
 
         // Vertical Tick Marks and Labels Below
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          padding: const EdgeInsets.symmetric(horizontal: 12.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: List.generate(budgetLabels.length, (index) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 4,
-                    height: 14,
-                    decoration: BoxDecoration(
-                      color: AppColors.secondaryDark,
-                      borderRadius: BorderRadius.circular(2),
+              return Flexible(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 4,
+                      height: 14,
+                      decoration: BoxDecoration(
+                        color: AppColors.secondaryDark,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    budgetLabels[index],
-                    style: GoogleFonts.urbanist(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 13,
-                      color: AppColors.secondaryDark,
+                    const SizedBox(height: 6),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        budgetLabels[index],
+                        style: GoogleFonts.urbanist(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 13,
+                          color: AppColors.secondaryDark,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               );
             }),
           ),

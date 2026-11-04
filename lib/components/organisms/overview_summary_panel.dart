@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_typography.dart';
@@ -104,7 +104,7 @@ class OverviewSummaryPanel extends StatelessWidget {
 
   Widget _buildMetricCard(OverviewMetricData metric) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
@@ -120,34 +120,38 @@ class OverviewSummaryPanel extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 42,
-            height: 42,
+            width: 38,
+            height: 38,
             decoration: BoxDecoration(
               color: metric.badgeColor,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(11),
             ),
             child: Center(
-              child: AppIcon(metric.badgeIcon, color: AppColors.white, size: 22),
+              child: AppIcon(metric.badgeIcon, color: AppColors.white, size: 20),
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   metric.value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: AppTypography.titleLarge.copyWith(
                     color: AppColors.secondaryDark,
                     fontWeight: FontWeight.w900,
-                    fontSize: 16,
+                    fontSize: 15,
                   ),
                 ),
                 Text(
                   metric.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: AppTypography.caption.copyWith(
                     color: AppColors.carla,
-                    fontSize: 11,
+                    fontSize: 10.5,
                   ),
                 ),
               ],

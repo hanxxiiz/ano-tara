@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
@@ -83,64 +83,81 @@ class _AppOtpFieldState extends State<AppOtpField> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: List.generate(widget.length, (index) {
-        return Container(
-          width: 48,
-          height: 60,
-          decoration: BoxDecoration(
-            color: AppColors.secondaryLight,
-            borderRadius: BorderRadius.circular(16.0),
-            border: Border.all(
-              color: widget.hasError ? AppColors.primaryOrange : AppColors.secondaryDark,
-              width: 2.0,
-            ),
-            boxShadow: const [
-              BoxShadow(
-                color: AppColors.secondaryDark,
-                offset: Offset(0, 4),
-                blurRadius: 0,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const double minGap = 6.0;
+        final double maxWidth =
+            constraints.maxWidth.isFinite ? constraints.maxWidth : 320.0;
+        final double boxWidth =
+            ((maxWidth - minGap * (widget.length - 1)) / widget.length)
+                .clamp(32.0, 48.0);
+
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: List.generate(widget.length, (index) {
+            return Container(
+              width: boxWidth,
+              height: 60,
+              decoration: BoxDecoration(
+                color: AppColors.secondaryLight,
+                borderRadius: BorderRadius.circular(16.0),
+                border: Border.all(
+                  color: widget.hasError
+                      ? AppColors.primaryOrange
+                      : AppColors.secondaryDark,
+                  width: 2.0,
+                ),
+                boxShadow: const [
+                  BoxShadow(
+                    color: AppColors.secondaryDark,
+                    offset: Offset(0, 4),
+                    blurRadius: 0,
+                  ),
+                ],
               ),
-            ],
-          ),
-          alignment: Alignment.center,
-          child: KeyboardListener(
-            focusNode: FocusNode(),
-            onKeyEvent: (event) {
-              if (event is KeyDownEvent &&
-                  event.logicalKey == LogicalKeyboardKey.backspace &&
-                  _controllers[index].text.isEmpty &&
-                  index > 0) {
-                _focusNodes[index - 1].requestFocus();
-              }
-            },
-            child: TextField(
-              controller: _controllers[index],
-              focusNode: _focusNodes[index],
-              textAlign: TextAlign.center,
-              keyboardType: TextInputType.number,
-              maxLength: 1,
-              cursorColor: AppColors.secondaryDark,
-              style: GoogleFonts.urbanist(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                color: AppColors.secondaryDark,
+              alignment: Alignment.center,
+              child: KeyboardListener(
+                focusNode: FocusNode(),
+                onKeyEvent: (event) {
+                  if (event is KeyDownEvent &&
+                      event.logicalKey == LogicalKeyboardKey.backspace &&
+                      _controllers[index].text.isEmpty &&
+                      index > 0) {
+                    _focusNodes[index - 1].requestFocus();
+                  }
+                },
+                child: TextField(
+                  controller: _controllers[index],
+                  focusNode: _focusNodes[index],
+                  textAlign: TextAlign.center,
+                  textAlignVertical: TextAlignVertical.center,
+                  keyboardType: TextInputType.number,
+                  maxLength: 1,
+                  cursorColor: AppColors.secondaryDark,
+                  style: GoogleFonts.urbanist(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.secondaryDark,
+                  ),
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  decoration: const InputDecoration(
+                    isCollapsed: true,
+                    counterText: '',
+                    contentPadding: EdgeInsets.zero,
+                    filled: false,
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    errorBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
+                  ),
+                  onChanged: (val) => _onDigitChanged(index, val),
+                ),
               ),
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              decoration: const InputDecoration(
-                counterText: '',
-                contentPadding: EdgeInsets.zero,
-                filled: false,
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-              ),
-              onChanged: (val) => _onDigitChanged(index, val),
-            ),
-          ),
+            );
+          }),
         );
-      }),
+      },
     );
   }
 }

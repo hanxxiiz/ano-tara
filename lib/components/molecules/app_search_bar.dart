@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_radii.dart';
@@ -68,16 +68,22 @@ class _AppSearchBarState extends State<AppSearchBar> {
           enabled: widget.isEnabled,
           onChanged: widget.onChanged,
           onSubmitted: widget.onSubmitted,
+          textAlignVertical: TextAlignVertical.center,
           style: AppTypography.inputText,
           cursorColor: AppColors.primaryNavy,
           decoration: InputDecoration(
             isDense: true,
+            filled: false,
+            fillColor: Colors.transparent,
             hintText: widget.hintText,
             hintStyle: AppTypography.inputHint,
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             border: InputBorder.none,
             enabledBorder: InputBorder.none,
             focusedBorder: InputBorder.none,
+            errorBorder: InputBorder.none,
+            focusedErrorBorder: InputBorder.none,
+            disabledBorder: InputBorder.none,
             prefixIcon: const Padding(
               padding: EdgeInsets.only(left: 14, right: 8),
               child: Icon(
