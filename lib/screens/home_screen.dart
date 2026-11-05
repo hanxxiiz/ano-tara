@@ -56,6 +56,8 @@ class _HomeScreenState extends State<HomeScreen> {
       // A. TOPBAR
       // =======================================================================
       appBar: AppMainTopBar(
+        onSettingsTap: () =>
+            Navigator.of(context).pushNamed(AppRoutes.settings),
         onNotificationTap: () =>
             Navigator.of(context).pushNamed(AppRoutes.notifications),
       ),

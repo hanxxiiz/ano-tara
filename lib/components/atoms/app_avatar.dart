@@ -3,11 +3,7 @@ import 'package:iconsax/iconsax.dart';
 import '../../core/constants/app_colors.dart';
 import 'app_icon.dart';
 
-enum AppAvatarType {
-  singleUser,
-  group,
-  initials,
-}
+enum AppAvatarType { singleUser, group, initials }
 
 /// Avatar atom matching Figma "Avatars" board:
 /// Supports single user avatar (yellow circle), group avatar (orange with group icon), and avatar cluster.
@@ -50,7 +46,8 @@ class AppAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color bg = backgroundColor ??
+    final Color bg =
+        backgroundColor ??
         (type == AppAvatarType.group
             ? AppColors.primaryOrange
             : AppColors.semanticYellow);
@@ -69,8 +66,9 @@ class AppAvatar extends StatelessWidget {
         size: size * 0.55,
       );
     } else {
-      final initial =
-          (name != null && name!.isNotEmpty) ? name![0].toUpperCase() : 'U';
+      final initial = (name != null && name!.isNotEmpty)
+          ? name![0].toUpperCase()
+          : 'U';
       childWidget = Text(
         initial,
         style: TextStyle(
@@ -100,7 +98,18 @@ class AppAvatar extends StatelessWidget {
               ]
             : null,
       ),
-      child: Center(child: childWidget),
+      child: ClipOval(
+        child: imageUrl != null && imageUrl!.isNotEmpty
+            ? Image.network(
+                imageUrl!,
+                width: size,
+                height: size,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) =>
+                    Center(child: childWidget),
+              )
+            : Center(child: childWidget),
+      ),
     );
   }
 }
@@ -258,10 +267,7 @@ class AppAvatarGroup extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.primaryOrange,
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: AppColors.secondaryDark,
-                  width: 1.5,
-                ),
+                border: Border.all(color: AppColors.secondaryDark, width: 1.5),
               ),
               child: Center(
                 child: Text(

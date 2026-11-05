@@ -1,3 +1,4 @@
+import 'screens/settings/settings_screens.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -36,6 +37,16 @@ class AnoTaraApp extends StatelessWidget {
       AppRoutes.onboarding: (_) => const OnboardingFlow(),
       AppRoutes.editPreferences: (_) => const OnboardingFlow(editing: true),
       AppRoutes.home: (_) => const HomeScreen(),
+      AppRoutes.settings: (_) => const SettingsScreen(),
+      AppRoutes.personalInformation: (_) =>
+          const SettingsFormScreen(type: SettingsFormType.personal),
+      AppRoutes.accountSecurity: (_) => const AccountSecurityScreen(),
+      AppRoutes.changeEmail: (_) =>
+          const SettingsFormScreen(type: SettingsFormType.email),
+      AppRoutes.changePassword: (_) =>
+          const SettingsFormScreen(type: SettingsFormType.password),
+      AppRoutes.subscription: (_) => const SubscriptionScreen(),
+      AppRoutes.helpSupport: (_) => const HelpSupportScreen(),
       AppRoutes.notifications: (_) => const NotificationsScreen(),
     };
 
