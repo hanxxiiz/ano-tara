@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../core/constants/app_colors.dart';
+import '../atoms/app_icon.dart';
 
 /// Selectable option card molecule used in Onboarding (Activities, Dietary Preferences, Allergies).
 /// Adheres to Ano Tara Atomic Design: 2px solid Dark Ink (#0F0331) border and hard drop shadow (0, 4).
@@ -9,6 +11,7 @@ class AppOptionCard extends StatefulWidget {
   final String label;
   final IconData? icon;
   final Widget? customIcon;
+  final String? iconAsset;
   final bool isSelected;
   final VoidCallback onTap;
   final Color selectedColor;
@@ -19,6 +22,7 @@ class AppOptionCard extends StatefulWidget {
     required this.label,
     this.icon,
     this.customIcon,
+    this.iconAsset,
     required this.isSelected,
     required this.onTap,
     this.selectedColor = AppColors.primaryNavy,
@@ -34,10 +38,12 @@ class _AppOptionCardState extends State<AppOptionCard> {
 
   @override
   Widget build(BuildContext context) {
-    final Color bgColor =
-        widget.isSelected ? widget.selectedColor : AppColors.white;
-    final Color fgColor =
-        widget.isSelected ? AppColors.white : AppColors.secondaryDark;
+    final Color bgColor = widget.isSelected
+        ? widget.selectedColor
+        : AppColors.white;
+    final Color fgColor = widget.isSelected
+        ? AppColors.white
+        : AppColors.secondaryDark;
 
     return GestureDetector(
       onTapDown: (_) => setState(() => _isPressed = true),
@@ -60,10 +66,7 @@ class _AppOptionCardState extends State<AppOptionCard> {
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: BorderRadius.circular(18.0),
-            border: Border.all(
-              color: AppColors.secondaryDark,
-              width: 2.0,
-            ),
+            border: Border.all(color: AppColors.secondaryDark, width: 2.0),
             boxShadow: [
               BoxShadow(
                 color: AppColors.secondaryDark,
@@ -78,14 +81,18 @@ class _AppOptionCardState extends State<AppOptionCard> {
             children: [
               if (widget.customIcon != null)
                 Flexible(child: widget.customIcon!)
-              else if (widget.icon != null)
+              else if (widget.iconAsset != null)
                 Flexible(
-                  child: Icon(
-                    widget.icon,
-                    size: 30,
-                    color: fgColor,
+                  child: SvgPicture.asset(
+                    widget.iconAsset!,
+                    width: 44,
+                    height: 44,
+                    colorFilter: ColorFilter.mode(fgColor, BlendMode.srcIn),
+                    excludeFromSemantics: true,
                   ),
-                ),
+                )
+              else if (widget.icon != null)
+                Flexible(child: AppIcon(widget.icon!, size: 30, color: fgColor)),
               const SizedBox(height: 6),
               AnimatedDefaultTextStyle(
                 duration: const Duration(milliseconds: 200),

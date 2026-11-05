@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_typography.dart';
-import '../../core/routes/app_routes.dart';
 import '../atoms/app_button.dart';
 import '../atoms/app_icon.dart';
 import '../../../main.dart';
@@ -159,8 +158,6 @@ class _AppMainTopBarState extends State<AppMainTopBar> {
     }
     if (widget.onNotificationTap != null) {
       widget.onNotificationTap!();
-    } else if (context.mounted) {
-      Navigator.pushNamed(context, AppRoutes.invitations);
     }
   }
 

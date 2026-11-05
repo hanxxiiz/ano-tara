@@ -3,12 +3,13 @@ import 'package:iconsax/iconsax.dart';
 
 import '../../components/atoms/app_button.dart';
 import '../../components/atoms/app_input_field.dart';
-import '../../components/molecules/app_availability_pill.dart';
+import '../../components/molecules/app_availability_grid.dart';
 import '../../components/molecules/app_budget_slider.dart';
 import '../../components/molecules/app_option_card.dart';
 import '../../components/molecules/app_pace_card.dart';
 import '../../components/molecules/step_progress.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/app_preference_icons.dart';
 import '../../core/constants/app_typography.dart';
 import '../../models/member_preferences.dart';
 import '../../services/preferences_service.dart';
@@ -22,47 +23,37 @@ class _ChoiceItem {
 }
 
 const List<_ChoiceItem> _activityOptions = [
-  _ChoiceItem('Beaches & Islands', Iconsax.sun_1),
-  _ChoiceItem('Nature', Iconsax.tree),
-  _ChoiceItem('Cafes', Iconsax.coffee),
-  _ChoiceItem('Local Food & Markets', Iconsax.shop),
+  _ChoiceItem('Beaches', Iconsax.sun_1),
+  _ChoiceItem('Food Trips', Iconsax.cup),
+  _ChoiceItem('Sightseeing', Iconsax.eye),
+  _ChoiceItem('Hiking', Iconsax.routing),
+  _ChoiceItem('Museums', Iconsax.bank),
   _ChoiceItem('Shopping', Iconsax.shopping_bag),
-  _ChoiceItem('Nightlife & Bars', Iconsax.music),
-  _ChoiceItem('Cultural & Historical Sites', Iconsax.bank),
-  _ChoiceItem('Museums', Iconsax.courthouse),
-  _ChoiceItem('Adventure', Iconsax.flash_1),
-  _ChoiceItem('Hiking', Iconsax.routing_2),
-  _ChoiceItem('Relaxation & Wellness', Iconsax.heart),
-  _ChoiceItem('Scenic Spots', Iconsax.camera),
-  _ChoiceItem('Theme Parks', Iconsax.ticket_star),
-  _ChoiceItem('Water Activities', Iconsax.wind_2),
-  _ChoiceItem(_othersLabel, Iconsax.more_circle),
+  _ChoiceItem('Nightlife', Iconsax.music),
+  _ChoiceItem('Games', Iconsax.game5),
+  _ChoiceItem(_othersLabel, Iconsax.add_circle5),
 ];
 
 const List<_ChoiceItem> _dietaryOptions = [
-  _ChoiceItem('Halal', Iconsax.verify),
-  _ChoiceItem('Vegetarian', Iconsax.unlimited),
+  _ChoiceItem('Gluten-free', Iconsax.verify),
   _ChoiceItem('Vegan', Iconsax.tree),
   _ChoiceItem('Pescatarian', Iconsax.drop),
-  _ChoiceItem('No Pork', Iconsax.slash),
-  _ChoiceItem('No Beef', Iconsax.slash),
-  _ChoiceItem('Gluten-Free', Iconsax.forbidden_2),
-  _ChoiceItem('Dairy-Free', Iconsax.milk),
-  _ChoiceItem(_othersLabel, Iconsax.more_circle),
+  _ChoiceItem('Keto', Iconsax.flash_1),
+  _ChoiceItem('Vegetarian', Iconsax.heart),
+  _ChoiceItem(_othersLabel, Iconsax.add_circle5),
 ];
 
 const List<_ChoiceItem> _allergyOptions = [
-  _ChoiceItem('Peanuts', Iconsax.danger),
-  _ChoiceItem('Tree Nuts', Iconsax.tree),
   _ChoiceItem('Seafood', Iconsax.drop),
-  _ChoiceItem('Shellfish', Iconsax.warning_2),
+  _ChoiceItem('Nuts', Iconsax.warning_2),
+  _ChoiceItem('Dairy', Iconsax.milk),
+  _ChoiceItem('Gluten', Iconsax.verify),
+  _ChoiceItem('Shellfish', Iconsax.sun_fog),
   _ChoiceItem('Eggs', Iconsax.record_circle),
-  _ChoiceItem('Milk', Iconsax.milk),
   _ChoiceItem('Soy', Iconsax.cup),
-  _ChoiceItem('Wheat', Iconsax.forbidden_2),
-  _ChoiceItem(_othersLabel, Iconsax.more_circle),
+  _ChoiceItem('Sesame', Iconsax.magic_star),
+  _ChoiceItem(_othersLabel, Iconsax.add_circle5),
 ];
-
 const List<int> _budgetStops = [500, 1000, 2000, 5000, 10000];
 
 const List<String> _weekDays = [
@@ -76,9 +67,21 @@ const List<String> _weekDays = [
 ];
 
 enum _TravelPace {
-  relaxed('Relaxed', 'Slow days, plenty of downtime, 1-2 main activities', Iconsax.coffee),
-  balanced('Balanced', 'A mix of planned activities and free time', Iconsax.weight),
-  packed('Packed', 'Full days, see and do as much as possible', Iconsax.flash_1);
+  relaxed(
+    'Relaxed',
+    'Slow days, plenty of downtime, 1-2 main activities',
+    Iconsax.coffee,
+  ),
+  balanced(
+    'Balanced',
+    'A mix of planned activities and free time',
+    Iconsax.weight,
+  ),
+  packed(
+    'Packed',
+    'Full days, see and do as much as possible',
+    Iconsax.flash_1,
+  );
 
   const _TravelPace(this.title, this.subtitle, this.icon);
   final String title;
@@ -193,7 +196,9 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   List<String> _collect(Set<String> selected, TextEditingController other) {
     final values = selected.where((v) => v != _othersLabel).toList();
     final custom = other.text.trim();
-    if (selected.contains(_othersLabel) && custom.isNotEmpty) values.add(custom);
+    if (selected.contains(_othersLabel) && custom.isNotEmpty) {
+      values.add(custom);
+    }
     return values;
   }
 
@@ -265,7 +270,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
       _showMessage('Preferences updated.');
       Navigator.of(context).pop(true);
     } else {
-      Navigator.of(context).pushNamedAndRemoveUntil('/home', (_) => false);
+      Navigator.of(context).pushNamedAndRemoveUntil('/', (_) => false);
     }
   }
 
@@ -293,7 +298,9 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         const SizedBox(height: 6),
         Text(
           subtitle,
-          style: AppTypography.bodyMedium.copyWith(color: AppColors.secondaryDark),
+          style: AppTypography.bodyMedium.copyWith(
+            color: AppColors.secondaryDark,
+          ),
         ),
       ],
     );
@@ -327,6 +334,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
             return AppOptionCard(
               label: item.label,
               icon: item.icon,
+              iconAsset: AppPreferenceIcons.assets[item.label],
               isSelected: selected.contains(item.label),
               onTap: () => onToggle(item.label),
             );
@@ -334,17 +342,16 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         ),
         if (selected.contains(_othersLabel)) ...[
           const SizedBox(height: 16),
-          AppInputField(
-            label: 'Please specify',
-            controller: otherController,
-          ),
+          AppInputField(label: 'Please specify', controller: otherController),
         ],
       ],
     );
   }
 
   Widget _buildBudgetStep() {
-    final stepIndex = _budgetStops.indexOf(_budget).clamp(0, _budgetStops.length - 1);
+    final stepIndex = _budgetStops
+        .indexOf(_budget)
+        .clamp(0, _budgetStops.length - 1);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -395,14 +402,10 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
           'Select all days that generally work for you.',
         ),
         const SizedBox(height: 22),
-        for (final day in _weekDays) ...[
-          AppAvailabilityPill(
-            day: day,
-            isSelected: _days.contains(day),
-            onTap: () => _toggle(_days, day),
-          ),
-          const SizedBox(height: 12),
-        ],
+        AppAvailabilityGrid(
+          selectedDays: _days,
+          onDayTap: (day) => _toggle(_days, day),
+        ),
       ],
     );
   }
@@ -428,29 +431,29 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   Widget _currentStep() {
     return switch (_step) {
       0 => _buildChoiceStep(
-          title: 'What kind of activities do you enjoy on trips?',
-          subtitle: 'Pick all that apply so we can tailor recommendations.',
-          options: _activityOptions,
-          selected: _activities,
-          onToggle: (v) => _toggle(_activities, v),
-          otherController: _activitiesOther,
-        ),
+        title: 'What kind of activities do you enjoy on trips?',
+        subtitle: 'Pick all that apply so we can tailor recommendations.',
+        options: _activityOptions,
+        selected: _activities,
+        onToggle: (v) => _toggle(_activities, v),
+        otherController: _activitiesOther,
+      ),
       1 => _buildChoiceStep(
-          title: 'Do you have any dietary preferences?',
-          subtitle: 'Select any that apply (optional).',
-          options: _dietaryOptions,
-          selected: _dietary,
-          onToggle: (v) => _toggle(_dietary, v),
-          otherController: _dietaryOther,
-        ),
+        title: 'Do you have any dietary preferences?',
+        subtitle: 'Select any that apply (optional).',
+        options: _dietaryOptions,
+        selected: _dietary,
+        onToggle: (v) => _toggle(_dietary, v),
+        otherController: _dietaryOther,
+      ),
       2 => _buildChoiceStep(
-          title: 'Do you have any food allergies?',
-          subtitle: 'Let your group know ahead of time (optional).',
-          options: _allergyOptions,
-          selected: _allergies,
-          onToggle: (v) => _toggle(_allergies, v),
-          otherController: _allergiesOther,
-        ),
+        title: 'Do you have any food allergies?',
+        subtitle: 'Let your group know ahead of time (optional).',
+        options: _allergyOptions,
+        selected: _allergies,
+        onToggle: (v) => _toggle(_allergies, v),
+        otherController: _allergiesOther,
+      ),
       3 => _buildBudgetStep(),
       4 => _buildPaceStep(),
       5 => _buildDaysStep(),
@@ -473,7 +476,9 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         body: SafeArea(
           child: _loading
               ? const Center(
-                  child: CircularProgressIndicator(color: AppColors.secondaryDark),
+                  child: CircularProgressIndicator(
+                    color: AppColors.secondaryDark,
+                  ),
                 )
               : Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
