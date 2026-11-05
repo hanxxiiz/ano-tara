@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app_routes.dart';
+import 'screens/auth/start_screen.dart';
+import 'screens/home_screen.dart';
+import 'screens/notifications_screen.dart';
 import 'core/routes/app_routes.dart' as core_routes;
-import 'core/theme/app_theme.dart' as core_theme;
+import 'theme/app_theme.dart';
 
-import 'features/auth/presentation/screens/welcome_screen.dart';
 import 'screens/onboarding/onboarding_flow.dart';
 
 Future<void> main() async {
@@ -33,18 +35,20 @@ class AnoTaraApp extends StatelessWidget {
 
       AppRoutes.onboarding: (_) => const OnboardingFlow(),
       AppRoutes.editPreferences: (_) => const OnboardingFlow(editing: true),
+      AppRoutes.home: (_) => const HomeScreen(),
+      AppRoutes.notifications: (_) => const NotificationsScreen(),
     };
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Ano Tara',
-      theme: core_theme.AppTheme.lightTheme,
-      home: const WelcomeScreen(),
+      theme: buildAppTheme(),
+      home: const StartScreen(),
       routes: appRoutes,
       onGenerateRoute: (settings) {
         if (settings.name == Navigator.defaultRouteName) {
           return MaterialPageRoute(
-            builder: (_) => const WelcomeScreen(),
+            builder: (_) => const StartScreen(),
             settings: settings,
           );
         }

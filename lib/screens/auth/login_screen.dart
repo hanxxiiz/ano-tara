@@ -20,10 +20,12 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  // Temporary shortcut for testing Home without signing in. Set to false to restore auth.
+  static final bool _skipAuthenticationForTesting = true;
   final _formKey = GlobalKey<FormState>();
   final _email = TextEditingController();
   final _password = TextEditingController();
-  late final StreamSubscription<AuthState> _authSub;
+  StreamSubscription<AuthState>? _authSub;
 
   bool _loading = false;
   bool _googleLoading = false;
@@ -31,6 +33,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
+    if (_skipAuthenticationForTesting) return;
     _authSub = supabase.auth.onAuthStateChange.listen((data) {
       if (data.event == AuthChangeEvent.signedIn && mounted) {
         Navigator.of(context).popUntil((route) => route.isFirst);
@@ -40,7 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
-    _authSub.cancel();
+    _authSub?.cancel();
     _email.dispose();
     _password.dispose();
     super.dispose();
@@ -54,6 +57,11 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _logIn() async {
+    if (_skipAuthenticationForTesting) {
+      Navigator.of(context).pushNamedAndRemoveUntil(AppRoutes.home, (_) => false);
+      return;
+    }
+
     final emailErr = validateEmail(_email.text);
     final passErr = requiredField('Password')(_password.text);
     if (emailErr != null || passErr != null) {
