@@ -33,24 +33,34 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       ..showSnackBar(SnackBar(content: Text(msg)));
   }
 
-  //checks users if the email exist
-  Future<bool> _emailExists(String email) async {
+  // Asks Supabase for the account state: 'not_found', 'unverified' or 'verified'.
+  Future<String> _emailStatus(String email) async {
     final result = await supabase.rpc(
-      'email_exists',
+      'email_status',
       params: {'p_email': email},
     );
-    return result == true;
+    return result is String ? result : 'not_found';
   }
 
-  // send the recovery code with Supabase.
+  // send the recovery code with Supabase (only for existing, verified accounts).
   Future<void> _sendCode() async {
+    // The form validator already rejects empty / badly formatted emails.
     if (_loading || !_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
     final email = _email.text.trim();
 
     try {
-      if (!await _emailExists(email)) {
+      final status = await _emailStatus(email);
+
+      if (status == 'not_found') {
         _show('No account found with that email address.');
+        return;
+      }
+      if (status == 'unverified') {
+        _show(
+          'This email hasn\'t been verified yet. Please confirm it from the '
+          'email we sent when you signed up.',
+        );
         return;
       }
 
