@@ -26,8 +26,11 @@ class PreferencesService {
     final memberId = _memberId;
     if (memberId == null) throw NotSignedInException();
 
-    final row =
-        await _client.from(table).select().eq('member_id', memberId).maybeSingle();
+    final row = await _client
+        .from(table)
+        .select()
+        .eq('user_id', memberId)
+        .maybeSingle();
     return row == null ? null : MemberPreferences.fromMap(row);
   }
 
@@ -36,9 +39,9 @@ class PreferencesService {
     final memberId = _memberId;
     if (memberId == null) throw NotSignedInException();
 
-    await _client.from(table).upsert(
-      {...preferences.toMap(), 'member_id': memberId},
-      onConflict: 'member_id',
-    );
+    await _client.from(table).upsert({
+      ...preferences.toMap(),
+      'user_id': memberId,
+    }, onConflict: 'user_id');
   }
 }
