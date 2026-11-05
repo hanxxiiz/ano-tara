@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:io';
 
 import 'package:anotara/main.dart';
 import '../../widgets/auth_widgets.dart';
@@ -32,6 +33,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       ..showSnackBar(SnackBar(content: Text(msg)));
   }
 
+  //checks users if the email exist
+  Future<bool> _emailExists(String email) async {
+    final result = await supabase.rpc(
+      'email_exists',
+      params: {'p_email': email},
+    );
+    return result == true;
+  }
+
   // send the recovery code with Supabase.
   Future<void> _sendCode() async {
     if (_loading || !_formKey.currentState!.validate()) return;
@@ -39,13 +49,26 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final email = _email.text.trim();
 
     try {
+      if (!await _emailExists(email)) {
+        _show('No account found with that email address.');
+        return;
+      }
+
       await supabase.auth.resetPasswordForEmail(email);
       if (!mounted) return;
       Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => VerificationScreen(email: email)),
       );
     } on AuthException catch (e) {
-      _show(e.message);
+      final msg = e.message.toLowerCase();
+      if (e.code == 'over_email_send_rate_limit' ||
+          msg.contains('rate limit')) {
+        _show('Too many requests. Please wait a moment and try again.');
+      } else {
+        _show('Unable to send the code right now. Please try again.');
+      }
+    } on SocketException {
+      _show('No internet connection. Please check your network.');
     } catch (_) {
       _show('Something went wrong. Please try again.');
     } finally {

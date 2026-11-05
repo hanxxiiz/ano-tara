@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:io';
 
 import 'dart:async';
 import '../../app_routes.dart';
@@ -50,11 +51,34 @@ class _LoginScreenState extends State<LoginScreen> {
       ..showSnackBar(SnackBar(content: Text(msg)));
   }
 
+  // Turn Supabase auth errors into plain-language messages.
+  String _friendlyAuthError(AuthException e) {
+    final code = (e.code ?? '').toLowerCase();
+    final msg = e.message.toLowerCase();
+
+    if (code == 'invalid_credentials' ||
+        msg.contains('invalid login credentials')) {
+      return 'Incorrect email or password. Please try again.';
+    }
+    if (code == 'email_not_confirmed' || msg.contains('email not confirmed')) {
+      return 'Please verify your email before logging in.';
+    }
+    if (code == 'over_request_rate_limit' ||
+        code == 'over_email_send_rate_limit' ||
+        msg.contains('rate limit')) {
+      return 'Too many attempts. Please wait a moment and try again.';
+    }
+    if (code == 'user_banned') {
+      return 'This account has been disabled. Please contact support.';
+    }
+    return 'Unable to log in right now. Please try again.';
+  }
+
   bool _loading = false;
 
   // sign in with Supabase (email + password).
   Future<void> _logIn() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (_loading || !_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
 
     try {
@@ -70,11 +94,15 @@ class _LoginScreenState extends State<LoginScreen> {
           context,
         ).pushNamedAndRemoveUntil(AppRoutes.home, (_) => false);
       }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Something went wrong: $e")));
+    } on AuthException catch (e) {
+      _show(_friendlyAuthError(e));
+    } on SocketException {
+      _show('No internet connection. Please check your network.');
+    } catch (_) {
+      _show('Something went wrong. Please try again.');
+    } finally {
+      // Always release the button, including after a failed login.
+      if (mounted) setState(() => _loading = false);
     }
   }
 
@@ -87,11 +115,11 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       await supabase.auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: 'io.supabase.anotara://login-callback/',
+        redirectTo: 'io.supabase.anotara://signup-callback/',
         authScreenLaunchMode: LaunchMode.externalApplication,
       );
     } on AuthException catch (e) {
-      _show(e.message);
+      _show(_friendlyAuthError(e));
     } catch (_) {
       _show('Google sign-in failed. Please try again.');
     } finally {
