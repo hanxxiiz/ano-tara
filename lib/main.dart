@@ -5,8 +5,11 @@ import 'app_routes.dart';
 import 'screens/auth/start_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/notifications_screen.dart';
+import 'core/routes/app_routes.dart' as core_routes;
+import 'core/theme/app_theme.dart' as core_theme;
+
+import 'features/auth/presentation/screens/welcome_screen.dart';
 import 'screens/onboarding/onboarding_flow.dart';
-import 'theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,11 +22,22 @@ Future<void> main() async {
   runApp(const AnoTaraApp());
 }
 
+final supabase = Supabase.instance.client;
+
 class AnoTaraApp extends StatelessWidget {
   const AnoTaraApp({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // Exclude '/' from routes table since 'home' property is specified
+    final Map<String, WidgetBuilder> appRoutes = {
+      for (final entry in core_routes.AppRoutes.routes.entries)
+        if (entry.key != Navigator.defaultRouteName) entry.key: entry.value,
+
+      AppRoutes.onboarding: (_) => const OnboardingFlow(),
+      AppRoutes.editPreferences: (_) => const OnboardingFlow(editing: true),
+    };
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Ano Tara',
@@ -34,6 +48,17 @@ class AnoTaraApp extends StatelessWidget {
         AppRoutes.notifications: (_) => const NotificationsScreen(),
         AppRoutes.onboarding: (_) => const OnboardingFlow(),
         AppRoutes.editPreferences: (_) => const OnboardingFlow(editing: true),
+      theme: core_theme.AppTheme.lightTheme,
+      home: const WelcomeScreen(),
+      routes: appRoutes,
+      onGenerateRoute: (settings) {
+        if (settings.name == Navigator.defaultRouteName) {
+          return MaterialPageRoute(
+            builder: (_) => const WelcomeScreen(),
+            settings: settings,
+          );
+        }
+        return core_routes.AppRoutes.onGenerateRoute(settings);
       },
     );
   }

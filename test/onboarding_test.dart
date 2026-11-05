@@ -18,9 +18,9 @@ class _FakeService extends PreferencesService {
 }
 
 Widget _app(Widget home) => MaterialApp(
-      home: home,
-      routes: {AppRoutes.home: (_) => const Scaffold(body: Text('HOME'))},
-    );
+  home: home,
+  routes: {AppRoutes.welcome: (_) => const Scaffold(body: Text('WELCOME'))},
+);
 
 Future<void> _tapNext(WidgetTester tester) async {
   await tester.tap(find.text('Next'));
@@ -28,7 +28,9 @@ Future<void> _tapNext(WidgetTester tester) async {
 }
 
 void main() {
-  testWidgets('Full onboarding saves answers and lands on Home', (tester) async {
+  testWidgets('Full onboarding saves answers and returns to Welcome', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
@@ -81,7 +83,7 @@ void main() {
     await tester.tap(find.text('Finish'));
     await tester.pumpAndSettle();
 
-    expect(find.text('HOME'), findsOneWidget);
+    expect(find.text('WELCOME'), findsOneWidget);
     final saved = service.saved!;
     expect(saved.activities, ['Hiking', 'Surfing']);
     expect(saved.dietaryPreferences, ['Vegan']);
@@ -95,7 +97,9 @@ void main() {
   testWidgets('Edit mode loads saved answers', (tester) async {
     final service = _FakeService()
       ..stored = const MemberPreferences(activities: ['Museums', 'Surfing']);
-    await tester.pumpWidget(_app(OnboardingFlow(editing: true, service: service)));
+    await tester.pumpWidget(
+      _app(OnboardingFlow(editing: true, service: service)),
+    );
     await tester.pumpAndSettle();
 
     final surfing = tester.widget<TextField>(find.byType(TextField));
