@@ -1,14 +1,12 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:async';
 
-import 'package:anotara/main.dart';
-import '../../components/atoms/app_button.dart';
-import '../../components/atoms/app_input_field.dart';
-import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_typography.dart';
+//import 'package:url_launcher/url_launcher.dart';
+import '../../widgets/auth_widgets.dart';
 import 'login_screen.dart';
 import 'validators.dart';
+import 'package:anotara/main.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -18,25 +16,12 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
+  final _formKey = GlobalKey<FormState>();
   final _firstName = TextEditingController();
   final _lastName = TextEditingController();
   final _username = TextEditingController();
   final _email = TextEditingController();
   final _password = TextEditingController();
-
-  bool _loading = false;
-  bool _googleLoading = false;
-  late final StreamSubscription<AuthState> _authSub;
-
-  @override
-  void initState() {
-    super.initState();
-    _authSub = supabase.auth.onAuthStateChange.listen((data) {
-      if (data.event == AuthChangeEvent.signedIn && mounted) {
-        Navigator.of(context).popUntil((route) => route.isFirst);
-      }
-    });
-  }
 
   @override
   void dispose() {
@@ -49,6 +34,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
     super.dispose();
   }
 
+  // creates the account with Supabase.
+  bool _loading = false;
+
   void _show(String msg) {
     if (!mounted) return;
     ScaffoldMessenger.of(context)
@@ -57,18 +45,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   Future<void> _signUp() async {
-    if (_loading) return;
-    final err = requiredField('First name')(_firstName.text) ??
-        requiredField('Last name')(_lastName.text) ??
-        requiredField('Username')(_username.text) ??
-        validateEmail(_email.text) ??
-        validatePassword(_password.text);
-    if (err != null) {
-      _show(err);
-      return;
-    }
-
+    if (_loading || !_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
+
     try {
       final username = _username.text.trim().toLowerCase();
       final available = await supabase.rpc(
@@ -83,7 +62,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
       final response = await supabase.auth.signUp(
         email: _email.text.trim(),
         password: _password.text,
-        emailRedirectTo: 'io.supabase.anotara://login-callback/',
+        emailRedirectTo:
+            'io.supabase.anotara://login-callback/', // when email confirms with the link supabase will redirect users back to the app
         data: {
           'first_name': _firstName.text.trim(),
           'last_name': _lastName.text.trim(),
@@ -92,6 +72,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
       );
       if (!mounted) return;
 
+      // With email confirmation on, Supabase hides "already registered"
+      // by returning a user with no identities.
       if (response.user?.identities?.isEmpty ?? false) {
         _show('An account with this email already exists. Try logging in.');
         return;
@@ -102,6 +84,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         return;
       }
 
+      // Signed in. AuthGate reacts to the session, so just clear pushed screens.
       Navigator.of(context).popUntil((route) => route.isFirst);
     } on AuthException catch (e) {
       _show(
@@ -115,6 +98,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
       if (mounted) setState(() => _loading = false);
     }
   }
+
+  // sign up with Supabase Google OAuth.
+  bool _googleLoading = false;
 
   Future<void> _continueWithGoogle() async {
     if (_googleLoading) return;
@@ -134,113 +120,101 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
   }
 
+  late final StreamSubscription<AuthState> _authSub;
+
+  @override
+  void initState() {
+    super.initState();
+    _authSub = supabase.auth.onAuthStateChange.listen((data) {
+      if (data.event == AuthChangeEvent.signedIn && mounted) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(26, 24, 26, 32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 8),
-              Center(
-                child: Container(
-                  width: 132,
-                  height: 132,
-                  decoration: const BoxDecoration(
-                    color: AppColors.primaryOrange,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 22),
-              Text(
-                'Create Your Account',
-                textAlign: TextAlign.center,
-                style: AppTypography.h2.copyWith(color: AppColors.secondaryDark),
-              ),
-              const SizedBox(height: 32),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: AppInputField(
-                      label: 'First Name',
-                      controller: _firstName,
-                    ),
-                  ),
-                  const SizedBox(width: 13),
-                  Expanded(
-                    child: AppInputField(
-                      label: 'Last Name',
-                      controller: _lastName,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 13),
-              AppInputField(
-                label: 'Username',
-                controller: _username,
-              ),
-              const SizedBox(height: 13),
-              AppInputField(
-                label: 'Email',
-                controller: _email,
-                keyboardType: TextInputType.emailAddress,
-              ),
-              const SizedBox(height: 13),
-              AppInputField(
-                label: 'Password',
-                controller: _password,
-                isPassword: true,
-              ),
-              const SizedBox(height: 24),
-              AppButton(
-                text: 'Sign Up',
-                isLoading: _loading,
-                onPressed: _signUp,
-              ),
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 18),
-                child: Text(
-                  'or',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16, color: AppColors.secondaryDark),
-                ),
-              ),
-              AppButton.google(
-                onPressed: _continueWithGoogle,
-              ),
-              const SizedBox(height: 28),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    'Already have an account? ',
-                    style: TextStyle(fontSize: 14, color: AppColors.secondaryDark),
-                  ),
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (_) => const LoginScreen()),
-                    ),
-                    child: const Text(
-                      'Log In',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.primaryOrange,
+    return AuthScaffold(
+      children: [
+        const SizedBox(height: 8),
+        const LogoBadge(),
+        const SizedBox(height: 22),
+        const AuthHeader(title: 'Create Your Account'),
+        const SizedBox(height: 32),
+        Form(
+          key: _formKey,
+          child: AutofillGroup(
+            child: Column(
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: AppTextField(
+                        label: 'First Name',
+                        controller: _firstName,
+                        autofillHints: const [AutofillHints.givenName],
+                        validator: requiredField('First name'),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                    const SizedBox(width: 13),
+                    Expanded(
+                      child: AppTextField(
+                        label: 'Last Name',
+                        controller: _lastName,
+                        autofillHints: const [AutofillHints.familyName],
+                        validator: requiredField('Last name'),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 13),
+                AppTextField(
+                  label: 'Username',
+                  controller: _username,
+                  autofillHints: const [AutofillHints.newUsername],
+                  validator: requiredField('Username'),
+                ),
+                const SizedBox(height: 13),
+                AppTextField(
+                  label: 'Email',
+                  controller: _email,
+                  keyboardType: TextInputType.emailAddress,
+                  autofillHints: const [AutofillHints.email],
+                  validator: validateEmail,
+                ),
+                const SizedBox(height: 13),
+                AppTextField(
+                  label: 'Password',
+                  controller: _password,
+                  obscureText: true,
+                  textInputAction: TextInputAction.done,
+                  autofillHints: const [AutofillHints.newPassword],
+                  validator: validatePassword,
+                ),
+              ],
+            ),
           ),
         ),
-      ),
+        const SizedBox(height: 24),
+        AppButton(label: 'Sign Up', loading: _loading, onPressed: _signUp),
+        const OrDivider(),
+        AppButton(
+          label: 'Continue with Google',
+          icon: Icons.person,
+          variant: AppButtonVariant.secondary,
+          loading: _googleLoading,
+          onPressed: _continueWithGoogle,
+        ),
+        const SizedBox(height: 28),
+        FooterPrompt(
+          prompt: 'Already have an account?',
+          action: 'Log In',
+          onTap: () => Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
+          ),
+        ),
+      ],
     );
   }
 }

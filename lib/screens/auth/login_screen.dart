@@ -1,16 +1,14 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:io';
 
-import 'package:anotara/main.dart';
+import 'dart:async';
 import '../../app_routes.dart';
-import '../../components/atoms/app_button.dart';
-import '../../components/atoms/app_input_field.dart';
-import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_typography.dart';
+import '../../widgets/auth_widgets.dart';
 import 'forgot_password_screen.dart';
 import 'sign_up_screen.dart';
 import 'validators.dart';
+import 'package:anotara/main.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -20,20 +18,16 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // Temporary shortcut for testing Home without signing in. Set to false to restore auth.
-  static final bool _skipAuthenticationForTesting = true;
   final _formKey = GlobalKey<FormState>();
   final _email = TextEditingController();
   final _password = TextEditingController();
-  StreamSubscription<AuthState>? _authSub;
 
-  bool _loading = false;
-  bool _googleLoading = false;
+  // onAuthStateChange listener to pop the login screen when the user signs in.
+  late final StreamSubscription<AuthState> _authSub;
 
   @override
   void initState() {
     super.initState();
-    if (_skipAuthenticationForTesting) return;
     _authSub = supabase.auth.onAuthStateChange.listen((data) {
       if (data.event == AuthChangeEvent.signedIn && mounted) {
         Navigator.of(context).popUntil((route) => route.isFirst);
@@ -43,12 +37,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
-    _authSub?.cancel();
+    _authSub.cancel();
     _email.dispose();
     _password.dispose();
     super.dispose();
   }
 
+  //temporaray notification for erros and other
   void _show(String msg) {
     if (!mounted) return;
     ScaffoldMessenger.of(context)
@@ -56,18 +51,34 @@ class _LoginScreenState extends State<LoginScreen> {
       ..showSnackBar(SnackBar(content: Text(msg)));
   }
 
-  Future<void> _logIn() async {
-    if (_skipAuthenticationForTesting) {
-      Navigator.of(context).pushNamedAndRemoveUntil(AppRoutes.home, (_) => false);
-      return;
-    }
+  // Turn Supabase auth errors into plain-language messages.
+  String _friendlyAuthError(AuthException e) {
+    final code = (e.code ?? '').toLowerCase();
+    final msg = e.message.toLowerCase();
 
-    final emailErr = validateEmail(_email.text);
-    final passErr = requiredField('Password')(_password.text);
-    if (emailErr != null || passErr != null) {
-      _show(emailErr ?? passErr!);
-      return;
+    if (code == 'invalid_credentials' ||
+        msg.contains('invalid login credentials')) {
+      return 'Incorrect email or password. Please try again.';
     }
+    if (code == 'email_not_confirmed' || msg.contains('email not confirmed')) {
+      return 'Please verify your email before logging in.';
+    }
+    if (code == 'over_request_rate_limit' ||
+        code == 'over_email_send_rate_limit' ||
+        msg.contains('rate limit')) {
+      return 'Too many attempts. Please wait a moment and try again.';
+    }
+    if (code == 'user_banned') {
+      return 'This account has been disabled. Please contact support.';
+    }
+    return 'Unable to log in right now. Please try again.';
+  }
+
+  bool _loading = false;
+
+  // sign in with Supabase (email + password).
+  Future<void> _logIn() async {
+    if (_loading || !_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
 
     try {
@@ -81,15 +92,22 @@ class _LoginScreenState extends State<LoginScreen> {
       if (response.user != null) {
         Navigator.of(
           context,
-        ).pushNamedAndRemoveUntil(AppRoutes.onboarding, (_) => false);
+        ).pushNamedAndRemoveUntil(AppRoutes.home, (_) => false);
       }
-    } catch (e) {
-      if (!mounted) return;
-      _show("Something went wrong: $e");
+    } on AuthException catch (e) {
+      _show(_friendlyAuthError(e));
+    } on SocketException {
+      _show('No internet connection. Please check your network.');
+    } catch (_) {
+      _show('Something went wrong. Please try again.');
     } finally {
+      // Always release the button, including after a failed login.
       if (mounted) setState(() => _loading = false);
     }
   }
+
+  // sign in with Supabase Google OAuth.
+  bool _googleLoading = false;
 
   Future<void> _continueWithGoogle() async {
     if (_googleLoading) return;
@@ -97,11 +115,11 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       await supabase.auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: 'io.supabase.anotara://login-callback/',
+        redirectTo: 'io.supabase.anotara://signup-callback/',
         authScreenLaunchMode: LaunchMode.externalApplication,
       );
     } on AuthException catch (e) {
-      _show(e.message);
+      _show(_friendlyAuthError(e));
     } catch (_) {
       _show('Google sign-in failed. Please try again.');
     } finally {
@@ -111,113 +129,70 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(26, 24, 26, 32),
-          child: Form(
-            key: _formKey,
+    return AuthScaffold(
+      children: [
+        const SizedBox(height: 8),
+        const LogoBadge(),
+        const SizedBox(height: 24),
+        const AuthHeader(title: 'Welcome Back'),
+        const SizedBox(height: 28),
+        Form(
+          key: _formKey,
+          child: AutofillGroup(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 8),
-                Center(
-                  child: Container(
-                    width: 132,
-                    height: 132,
-                    decoration: const BoxDecoration(
-                      color: AppColors.primaryOrange,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  'Welcome Back',
-                  textAlign: TextAlign.center,
-                  style: AppTypography.h2.copyWith(
-                    color: AppColors.secondaryDark,
-                  ),
-                ),
-                const SizedBox(height: 28),
-                AppInputField(
+                AppTextField(
                   label: 'Email',
                   controller: _email,
                   keyboardType: TextInputType.emailAddress,
+                  autofillHints: const [AutofillHints.email],
+                  validator: validateEmail,
                 ),
                 const SizedBox(height: 16),
-                AppInputField(
+                AppTextField(
                   label: 'Password',
                   controller: _password,
-                  isPassword: true,
-                ),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    style: TextButton.styleFrom(
-                      foregroundColor: AppColors.secondaryDark,
-                    ),
-                    onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const ForgotPasswordScreen(),
-                      ),
-                    ),
-                    child: const Text(
-                      'Forgot password?',
-                      style: TextStyle(fontSize: 14),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                AppButton(
-                  text: 'Log In',
-                  isLoading: _loading,
-                  onPressed: _logIn,
-                ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 18),
-                  child: Text(
-                    'or',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: AppColors.secondaryDark,
-                    ),
-                  ),
-                ),
-                AppButton.google(onPressed: _continueWithGoogle),
-                const SizedBox(height: 32),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      "Don't have an account? ",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppColors.secondaryDark,
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () => Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(builder: (_) => const SignUpScreen()),
-                      ),
-                      child: const Text(
-                        'Sign Up',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.primaryOrange,
-                        ),
-                      ),
-                    ),
-                  ],
+                  obscureText: true,
+                  textInputAction: TextInputAction.done,
+                  autofillHints: const [AutofillHints.password],
+                  validator: requiredField('Password'),
                 ),
               ],
             ),
           ),
         ),
-      ),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton(
+            style: TextButton.styleFrom(foregroundColor: Colors.black),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+            ),
+            child: const Text(
+              'Forgot password?',
+              style: TextStyle(fontSize: 14),
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+        AppButton(label: 'Log In', loading: _loading, onPressed: _logIn),
+        const OrDivider(),
+        AppButton(
+          label: 'Continue with Google',
+          icon: Icons.person,
+          variant: AppButtonVariant.secondary,
+          loading: _googleLoading,
+          onPressed: _continueWithGoogle,
+        ),
+        const SizedBox(height: 32),
+        FooterPrompt(
+          prompt: "Don't have an account?",
+          action: 'Sign Up',
+          onTap: () => Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const SignUpScreen()),
+          ),
+        ),
+      ],
     );
   }
 }

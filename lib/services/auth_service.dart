@@ -56,7 +56,7 @@ class _OnboardingCheckState extends State<OnboardingCheck> {
             ),
           );
         }
-        return snap.data == null ? const OnboardingFlow() : const StartScreen();
+        return snap.data == null ? const OnboardingFlow() : const HomeScreen();
       },
     );
   }

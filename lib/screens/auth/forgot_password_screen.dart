@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:iconsax/iconsax.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:io';
 
 import 'package:anotara/main.dart';
-import '../../components/atoms/app_button.dart';
-import '../../components/atoms/app_input_field.dart';
-import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_typography.dart';
+import '../../widgets/auth_widgets.dart';
 import 'validators.dart';
 import 'verification_screen.dart';
 
@@ -18,6 +15,7 @@ class ForgotPasswordScreen extends StatefulWidget {
 }
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+  final _formKey = GlobalKey<FormState>();
   final _email = TextEditingController();
   bool _loading = false;
 
@@ -27,6 +25,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     super.dispose();
   }
 
+  // temporary message function to show error messages in a snackbar.
   void _show(String msg) {
     if (!mounted) return;
     ScaffoldMessenger.of(context)
@@ -34,24 +33,52 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       ..showSnackBar(SnackBar(content: Text(msg)));
   }
 
+  // Asks Supabase for the account state: 'not_found', 'unverified' or 'verified'.
+  Future<String> _emailStatus(String email) async {
+    final result = await supabase.rpc(
+      'email_status',
+      params: {'p_email': email},
+    );
+    return result is String ? result : 'not_found';
+  }
+
+  // send the recovery code with Supabase (only for existing, verified accounts).
   Future<void> _sendCode() async {
-    if (_loading) return;
-    final err = validateEmail(_email.text);
-    if (err != null) {
-      _show(err);
-      return;
-    }
+    // The form validator already rejects empty / badly formatted emails.
+    if (_loading || !_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
     final email = _email.text.trim();
 
     try {
+      final status = await _emailStatus(email);
+
+      if (status == 'not_found') {
+        _show('No account found with that email address.');
+        return;
+      }
+      if (status == 'unverified') {
+        _show(
+          'This email hasn\'t been verified yet. Please confirm it from the '
+          'email we sent when you signed up.',
+        );
+        return;
+      }
+
       await supabase.auth.resetPasswordForEmail(email);
       if (!mounted) return;
       Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => VerificationScreen(email: email)),
       );
     } on AuthException catch (e) {
-      _show(e.message);
+      final msg = e.message.toLowerCase();
+      if (e.code == 'over_email_send_rate_limit' ||
+          msg.contains('rate limit')) {
+        _show('Too many requests. Please wait a moment and try again.');
+      } else {
+        _show('Unable to send the code right now. Please try again.');
+      }
+    } on SocketException {
+      _show('No internet connection. Please check your network.');
     } catch (_) {
       _show('Something went wrong. Please try again.');
     } finally {
@@ -61,65 +88,30 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(26, 12, 26, 32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Align(
-                alignment: Alignment.centerLeft,
-                child: IconButton(
-                  onPressed: () => Navigator.of(context).maybePop(),
-                  icon: const Icon(Iconsax.arrow_left, color: AppColors.secondaryDark),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Center(
-                child: Container(
-                  width: 140,
-                  height: 140,
-                  decoration: const BoxDecoration(
-                    color: AppColors.primaryOrange,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Iconsax.shield_tick5,
-                    color: AppColors.white,
-                    size: 72,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 22),
-              Text(
-                'Forgot Password',
-                textAlign: TextAlign.center,
-                style: AppTypography.h2.copyWith(color: AppColors.secondaryDark),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                "Enter your email and we'll send you a verification code.",
-                textAlign: TextAlign.center,
-                style: AppTypography.bodyMedium.copyWith(color: AppColors.secondaryDark),
-              ),
-              const SizedBox(height: 22),
-              AppInputField(
-                label: 'Email',
-                controller: _email,
-                keyboardType: TextInputType.emailAddress,
-              ),
-              const SizedBox(height: 30),
-              AppButton(
-                text: 'Send Code',
-                isLoading: _loading,
-                onPressed: _sendCode,
-              ),
-            ],
+    return AuthScaffold(
+      children: [
+        const SizedBox(height: 40),
+        const LogoBadge(size: 140, icon: Icons.shield_rounded),
+        const SizedBox(height: 22),
+        const AuthHeader(
+          title: 'Forgot Password',
+          subtitle: "Enter your email and we'll send you a verification code.",
+        ),
+        const SizedBox(height: 22),
+        Form(
+          key: _formKey,
+          child: AppTextField(
+            label: 'Email',
+            controller: _email,
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.done,
+            autofillHints: const [AutofillHints.email],
+            validator: validateEmail,
           ),
         ),
-      ),
+        const SizedBox(height: 30),
+        AppButton(label: 'Send Code', loading: _loading, onPressed: _sendCode),
+      ],
     );
   }
 }
