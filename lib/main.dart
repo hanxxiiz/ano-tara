@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app_routes.dart';
+import 'screens/auth/start_screen.dart';
+import 'screens/home_screen.dart';
+import 'screens/notifications_screen.dart';
 import 'core/routes/app_routes.dart' as core_routes;
 import 'core/theme/app_theme.dart' as core_theme;
 
@@ -38,6 +41,13 @@ class AnoTaraApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Ano Tara',
+      theme: buildAppTheme(),
+      home: const StartScreen(),
+      routes: {
+        AppRoutes.home: (_) => const HomeScreen(),
+        AppRoutes.notifications: (_) => const NotificationsScreen(),
+        AppRoutes.onboarding: (_) => const OnboardingFlow(),
+        AppRoutes.editPreferences: (_) => const OnboardingFlow(editing: true),
       theme: core_theme.AppTheme.lightTheme,
       home: const WelcomeScreen(),
       routes: appRoutes,
