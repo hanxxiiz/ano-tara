@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../app_routes.dart';
 import '../theme/app_theme.dart';
 import '../widgets/hero_banner_trio.dart';
-import '../widgets/home_placeholders.dart';
+import '../components/atoms/app_button.dart';
+import '../components/organisms/app_main_top_bar.dart';
+import '../components/organisms/app_bottom_navigation.dart';
+import '../components/organisms/trip_summary_card.dart';
+import '../components/molecules/group_tile.dart';
+import '../components/molecules/action_needed_tile.dart';
 
-/// Home Screen UI
-///
-/// Responsive, mobile-first dashboard for Ano Tara group travel planning app.
-/// Matches the visual reference layout, spacing, colors, and typography.
-///
-/// All 6 designated components (Topbar, Navbar, Button, Groups Tile,
-/// Upcoming Trips Tile, Action Needed Tile) are isolated placeholders
-/// ready for drop-in replacement by existing/in-progress components.
+/// Dashboard for group travel planning.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -35,7 +34,8 @@ class _HomeScreenState extends State<HomeScreen> {
   String get _greetingName {
     try {
       final user = Supabase.instance.client.auth.currentUser;
-      final name = user?.userMetadata?['username'] ??
+      final name =
+          user?.userMetadata?['username'] ??
           user?.userMetadata?['first_name'] ??
           user?.email?.split('@').first;
       if (name != null && name.toString().trim().isNotEmpty) {
@@ -55,29 +55,10 @@ class _HomeScreenState extends State<HomeScreen> {
       // =======================================================================
       // A. TOPBAR
       // =======================================================================
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(60),
-        child: SafeArea(
-          bottom: false,
-          // PLACEHOLDER: Replace with the existing Topbar component
-          child: TopbarPlaceholder(
-            onAvatarTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Avatar tapped')),
-              );
-            },
-            onNotificationTap: () {
-              Navigator.of(context).pushNamed(AppRoutes.notifications);
-            },
-            onSettingsTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Settings tapped')),
-              );
-            },
-          ),
-        ),
+      appBar: AppMainTopBar(
+        onNotificationTap: () =>
+            Navigator.of(context).pushNamed(AppRoutes.notifications),
       ),
-
       // =======================================================================
       // MAIN SCROLLABLE CONTENT (Sections B through F)
       // =======================================================================
@@ -127,10 +108,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     const Positioned(
                       right: -2,
                       bottom: 0,
-                      child: HeroBannerTrio(
-                        width: 155,
-                        height: 180,
-                      ),
+                      child: HeroBannerTrio(width: 155, height: 180),
                     ),
                     // Banner Text and CTA Button on the left
                     Padding(
@@ -158,18 +136,22 @@ class _HomeScreenState extends State<HomeScreen> {
                                 fontFamily: AppFonts.openSans,
                                 color: Color(0xFF0F0331),
                                 fontSize: 11.5,
-                                fontWeight: FontWeight.normal, // Open Sans Regular
+                                fontWeight:
+                                    FontWeight.normal, // Open Sans Regular
                                 height: 1.35,
                               ),
                             ),
                           ),
                           const SizedBox(height: 14),
-                          // PLACEHOLDER: Replace with the existing Button component
-                          ButtonPlaceholder(
-                            label: 'Plan a Trip',
+                          AppButton(
+                            isFullWidth: false,
+                            size: AppButtonSize.small,
+                            text: 'Plan a Trip',
                             onPressed: () {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Plan a Trip tapped')),
+                                const SnackBar(
+                                  content: Text('Plan a Trip tapped'),
+                                ),
                               );
                             },
                           ),
@@ -191,29 +173,22 @@ class _HomeScreenState extends State<HomeScreen> {
                 physics: const BouncingScrollPhysics(),
                 child: Row(
                   children: [
-                    // PLACEHOLDER: Replace with the existing GroupsTile component
-                    GroupsTilePlaceholder(
+                    GroupTile(
                       name: 'The Group',
                       onTap: () => _onGroupTap('The Group'),
                     ),
                     const SizedBox(width: 12),
 
-                    // PLACEHOLDER: Replace with the existing GroupsTile component
-                    GroupsTilePlaceholder(
+                    GroupTile(
                       name: 'Blackpink',
                       onTap: () => _onGroupTap('Blackpink'),
                     ),
                     const SizedBox(width: 12),
 
-                    // PLACEHOLDER: Replace with the existing GroupsTile component
-                    GroupsTilePlaceholder(
-                      name: 'Twice',
-                      onTap: () => _onGroupTap('Twice'),
-                    ),
+                    GroupTile(name: 'Twice', onTap: () => _onGroupTap('Twice')),
                     const SizedBox(width: 12),
 
-                    // PLACEHOLDER: Replace with the existing GroupsTile component
-                    GroupsTilePlaceholder(
+                    GroupTile(
                       name: 'Group 4',
                       onTap: () => _onGroupTap('Group 4'),
                     ),
@@ -228,7 +203,7 @@ class _HomeScreenState extends State<HomeScreen> {
               _buildSectionHeading('Upcoming Trips'),
               const SizedBox(height: 12),
               SizedBox(
-                height: 240,
+                height: 310,
                 child: PageView(
                   controller: _tripsPageController,
                   onPageChanged: (index) {
@@ -240,40 +215,37 @@ class _HomeScreenState extends State<HomeScreen> {
                     // Primary Upcoming Trip from reference
                     Padding(
                       padding: const EdgeInsets.only(bottom: 6),
-                      // PLACEHOLDER: Replace with the existing UpcomingTripsTile component
-                      child: UpcomingTripsTilePlaceholder(
-                        destination: 'Bantayan Trip',
+                      child: TripSummaryCard(
+                        title: 'Bantayan Trip',
                         location: 'Bantayan, Philippines',
-                        group: 'The Group (6 going)',
-                        dates: 'Oct 10 - Oct 15',
+                        groupLabel: 'The Group (6 going)',
+                        dateRange: 'Oct 10 - Oct 15',
                         imageUrl:
                             'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
                         onTap: () => _onTripTap('Bantayan Trip'),
                       ),
                     ),
-                    // Carousel Slide 2 Placeholder
+                    // Carousel Slide 2
                     Padding(
                       padding: const EdgeInsets.only(bottom: 6),
-                      // PLACEHOLDER: Replace with the existing UpcomingTripsTile component
-                      child: UpcomingTripsTilePlaceholder(
-                        destination: 'Siargao Island Getaway',
+                      child: TripSummaryCard(
+                        title: 'Siargao Island Getaway',
                         location: 'Siargao, Philippines',
-                        group: 'Twice (5 going)',
-                        dates: 'Nov 12 - Nov 18',
+                        groupLabel: 'Twice (5 going)',
+                        dateRange: 'Nov 12 - Nov 18',
                         imageUrl:
                             'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80',
                         onTap: () => _onTripTap('Siargao Island Getaway'),
                       ),
                     ),
-                    // Carousel Slide 3 Placeholder
+                    // Carousel Slide 3
                     Padding(
                       padding: const EdgeInsets.only(bottom: 6),
-                      // PLACEHOLDER: Replace with the existing UpcomingTripsTile component
-                      child: UpcomingTripsTilePlaceholder(
-                        destination: 'Baguio Mountain Retreat',
+                      child: TripSummaryCard(
+                        title: 'Baguio Mountain Retreat',
                         location: 'Baguio, Philippines',
-                        group: 'Blackpink (4 going)',
-                        dates: 'Dec 01 - Dec 05',
+                        groupLabel: 'Blackpink (4 going)',
+                        dateRange: 'Dec 01 - Dec 05',
                         imageUrl:
                             'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
                         onTap: () => _onTripTap('Baguio Mountain Retreat'),
@@ -316,34 +288,34 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 12),
 
               // 1. Pending Invitations
-              // PLACEHOLDER: Replace with the existing ActionNeededTile component
-              ActionNeededTilePlaceholder(
+              ActionNeededTile(
                 title: 'Pending Invitations',
-                description: '5 pending invitations are waiting for your response.',
+                description:
+                    '5 pending invitations are waiting for your response.',
                 badgeColor: AppColors.primaryBlue,
-                icon: Icons.mark_email_unread_rounded,
-                onTap: () => Navigator.of(context).pushNamed(AppRoutes.notifications),
+                icon: Iconsax.sms_star5,
+                onTap: () =>
+                    Navigator.of(context).pushNamed(AppRoutes.notifications),
               ),
               const SizedBox(height: 12),
 
               // 2. Unsettled Expenses
-              // PLACEHOLDER: Replace with the existing ActionNeededTile component
-              ActionNeededTilePlaceholder(
+              ActionNeededTile(
                 title: 'Unsettled Expenses',
-                description: 'You have an unpaid ₱420 balance for Bantayan Trip.',
+                description:
+                    'You have an unpaid ₱420 balance for Bantayan Trip.',
                 badgeColor: AppColors.promotionalBanner,
-                icon: Icons.paid_rounded,
+                icon: Iconsax.bitcoin_convert5,
                 onTap: () => _onActionTap('Unsettled Expenses'),
               ),
               const SizedBox(height: 12),
 
               // 3. Waiting for Responses
-              // PLACEHOLDER: Replace with the existing ActionNeededTile component
-              ActionNeededTilePlaceholder(
+              ActionNeededTile(
                 title: 'Waiting for Responses',
                 description: '3 members haven\'t confirmed Bantayan Trip.',
                 badgeColor: AppColors.secondaryYellow,
-                icon: Icons.mark_email_read_rounded,
+                icon: Iconsax.sms_star5,
                 onTap: () => _onActionTap('Waiting for Responses'),
               ),
               const SizedBox(height: 24),
@@ -355,15 +327,19 @@ class _HomeScreenState extends State<HomeScreen> {
       // =======================================================================
       // G. BOTTOM NAVBAR
       // =======================================================================
-      // PLACEHOLDER: Replace with the existing Navbar component
-      bottomNavigationBar: NavbarPlaceholder(
-        selectedIndex: 0,
-        onItemSelected: (index) {
-          // Navigation logic placeholder
-        },
-        onCreatePressed: () {
+      bottomNavigationBar: AppBottomNavigation(
+        currentIndex: 0,
+        onTabSelected: (index) {
+          if (index == 0) return;
+          const destinations = [
+            'Home',
+            'Trips',
+            'Create trip',
+            'Groups',
+            'Profile',
+          ];
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Create trip (+) tapped')),
+            SnackBar(content: Text('${destinations[index]} tapped')),
           );
         },
       ),
@@ -384,20 +360,20 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onGroupTap(String groupName) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Group "$groupName" tapped')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Group "$groupName" tapped')));
   }
 
   void _onTripTap(String tripName) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Trip "$tripName" tapped')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Trip "$tripName" tapped')));
   }
 
   void _onActionTap(String actionTitle) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Action "$actionTitle" tapped')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Action "$actionTitle" tapped')));
   }
 }

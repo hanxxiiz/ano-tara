@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:anotara/components/organisms/app_top_bar.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:anotara/components/invitation_filter.dart';
@@ -12,7 +13,7 @@ void main() {
   Widget buildTestableScreen(Widget child) {
     return MaterialApp(
       theme: buildAppTheme(),
-      home: child,
+      home: Scaffold(body: child),
     );
   }
 
@@ -29,7 +30,7 @@ void main() {
 
       // Topbar
       expect(find.text('Notifications'), findsOneWidget);
-      expect(find.byIcon(Icons.arrow_back), findsOneWidget);
+      expect(find.byType(AppTopBar), findsOneWidget);
 
       // ToggleTab
       expect(find.text('Activity'), findsOneWidget);

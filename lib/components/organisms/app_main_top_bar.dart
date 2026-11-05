@@ -4,8 +4,8 @@ import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_typography.dart';
 import '../atoms/app_button.dart';
 import '../atoms/app_icon.dart';
-import '../../../main.dart';
-import '../../../screens/auth/login_screen.dart';
+import '../../main.dart';
+import '../../screens/auth/login_screen.dart';
 
 /// Reusable non-scrollable top navigation bar matching Ano Tara Figma designs.
 /// Pinned at the top of Scaffold so profile, notifications, and settings NEVER scroll with page content.

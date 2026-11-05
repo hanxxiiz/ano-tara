@@ -6,6 +6,8 @@ import '../components/invitation_tile.dart';
 import '../components/mark_all_as_read.dart';
 import '../components/notification_tile.dart';
 import '../theme/app_theme.dart';
+import '../components/organisms/app_top_bar.dart';
+import '../components/molecules/app_segmented_tabs.dart';
 
 /// Activity notification data model
 class _ActivityNotificationData {
@@ -63,7 +65,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     _ActivityNotificationData(
       id: '1',
       title: 'New expense added',
-      description: 'Mika added ₱1,200 for transportation to your Bohol Getaway.',
+      description:
+          'Mika added ₱1,200 for transportation to your Bohol Getaway.',
       timestamp: '2 hours ago',
       icon: Iconsax.wallet_2,
       isUnread: true,
@@ -71,7 +74,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     _ActivityNotificationData(
       id: '2',
       title: 'Trip details updated',
-      description: 'The meeting time for your Cebu City Food Crawl has changed to 9:00 AM.',
+      description:
+          'The meeting time for your Cebu City Food Crawl has changed to 9:00 AM.',
       timestamp: 'Yesterday',
       icon: Iconsax.calendar_1,
       isUnread: false,
@@ -126,51 +130,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       backgroundColor: Colors.white,
 
       // =======================================================================
-      // A. TOPBAR (Placeholder Only)
+      // A. TOPBAR
       // =======================================================================
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(60),
-        child: SafeArea(
-          bottom: false,
-          // PLACEHOLDER: Replace with the existing Topbar widget.
-          child: Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              border: Border(
-                bottom: BorderSide(
-                  color: Color(0xFF10052F),
-                  width: 1.5,
-                ),
-              ),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            height: 60,
-            child: Row(
-              children: [
-                IconButton(
-                  onPressed: () => Navigator.of(context).maybePop(),
-                  icon: const Icon(
-                    Icons.arrow_back,
-                    color: Color(0xFF0F0331),
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                const Text(
-                  'Notifications',
-                  style: TextStyle(
-                    fontFamily: AppFonts.urbanist,
-                    color: Color(0xFF0F0331),
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800, // Urbanist ExtraBold
-                    letterSpacing: -0.3,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+      appBar: const AppTopBar(title: 'Notifications'),
 
       // =======================================================================
       // MAIN SCREEN CONTENT
@@ -178,86 +140,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       body: SafeArea(
         top: false,
         child: ListView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 15,
-            vertical: 16,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
           children: [
             // =================================================================
-            // B. TOGGLE TAB (Placeholder Only)
+            // B. TOGGLE TAB
             // =================================================================
-            // PLACEHOLDER: Replace with the existing ToggleTab widget.
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: const Color(0xFF10052F),
-                  width: 2.0,
-                ),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0xFF10052F),
-                    offset: Offset(0, 4),
-                    blurRadius: 0,
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Row(
-                  children: [
-                    // Activity Tab Segment
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() => _activeTabIndex = 0),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 11),
-                          color: _activeTabIndex == 0
-                              ? const Color(0xFF164D91)
-                              : Colors.white,
-                          alignment: Alignment.center,
-                          child: Text(
-                            'Activity',
-                            style: TextStyle(
-                              fontFamily: AppFonts.urbanist,
-                              color: _activeTabIndex == 0
-                                  ? Colors.white
-                                  : const Color(0xFF0F0331),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    // Invitations Tab Segment
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() => _activeTabIndex = 1),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 11),
-                          color: _activeTabIndex == 1
-                              ? const Color(0xFF164D91)
-                              : Colors.white,
-                          alignment: Alignment.center,
-                          child: Text(
-                            'Invitations',
-                            style: TextStyle(
-                              fontFamily: AppFonts.urbanist,
-                              color: _activeTabIndex == 1
-                                  ? Colors.white
-                                  : const Color(0xFF0F0331),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            AppSegmentedTabs<int>(
+              tabs: const [0, 1],
+              selectedTab: _activeTabIndex,
+              labelBuilder: (tab) => tab == 0 ? 'Activity' : 'Invitations',
+              onTabChanged: (tab) => setState(() => _activeTabIndex = tab),
             ),
             const SizedBox(height: 16),
 
@@ -282,10 +174,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // A. Mark All as Read
-        MarkAllAsRead(
-          checked: _isAllRead,
-          onChanged: _onToggleMarkAllAsRead,
-        ),
+        MarkAllAsRead(checked: _isAllRead, onChanged: _onToggleMarkAllAsRead),
         const SizedBox(height: 16),
 
         // B. Notification Tiles List
@@ -337,7 +226,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             padding: const EdgeInsets.symmetric(vertical: 32),
             child: Center(
               child: Text(
-                isAll ? 'No invitations.' : 'No $_selectedFilterStatus invitations.',
+                isAll
+                    ? 'No invitations.'
+                    : 'No $_selectedFilterStatus invitations.',
                 style: const TextStyle(
                   fontFamily: AppFonts.openSans,
                   color: Color(0xFF0F0331),
