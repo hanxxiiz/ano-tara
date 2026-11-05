@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_preference_icons.dart';
 import '../../../../components/atoms/app_button.dart';
-import '../../../../components/molecules/app_availability_pill.dart';
+import '../../../../components/molecules/app_availability_grid.dart';
 import '../../../../components/molecules/app_budget_slider.dart';
 import '../../../../components/molecules/app_option_card.dart';
 import '../../../../components/molecules/app_pace_card.dart';
@@ -12,7 +13,7 @@ import '../../../../core/routes/app_routes.dart';
 
 /// 7-Step Onboarding Preferences flow matching Figma design:
 /// Activities -> Dietary Preferences -> Allergies -> Budget -> Pace -> Availability -> Getting Started.
-/// Uses Iconsax icons and the reusable StepProgress molecule.
+/// Uses local preference artwork and the reusable StepProgress molecule.
 class OnboardingFlowScreen extends StatefulWidget {
   const OnboardingFlowScreen({super.key});
 
@@ -34,8 +35,8 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
     ('Museums', Iconsax.bank),
     ('Shopping', Iconsax.shopping_bag),
     ('Nightlife', Iconsax.music),
-    ('Nature', Iconsax.tree),
-    ('Others', Iconsax.add_circle),
+    ('Games', Iconsax.game5),
+    ('Others', Iconsax.add_circle5),
   ];
 
   // Step 2: Dietary Preferences (using Iconsax icons)
@@ -47,7 +48,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
     ('Pescatarian', Iconsax.drop),
     ('Keto', Iconsax.flash_1),
     ('Vegetarian', Iconsax.heart),
-    ('Others', Iconsax.add_circle),
+    ('Others', Iconsax.add_circle5),
   ];
 
   // Step 3: Allergies (using Iconsax icons)
@@ -56,14 +57,14 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
       TextEditingController();
   final List<(String, IconData)> _allergiesList = const [
     ('Seafood', Iconsax.drop),
-    ('Peanuts', Iconsax.warning_2),
+    ('Nuts', Iconsax.warning_2),
     ('Dairy', Iconsax.cup),
     ('Gluten', Iconsax.verify),
-    ('Eggs', Iconsax.star_1),
     ('Shellfish', Iconsax.sun_fog),
+    ('Eggs', Iconsax.star_1),
     ('Soy', Iconsax.tree),
     ('Sesame', Iconsax.magic_star),
-    ('Others', Iconsax.add_circle),
+    ('Others', Iconsax.add_circle5),
   ];
 
   // Step 4: Budget
@@ -135,7 +136,9 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
     if (!mounted) return;
     setState(() => _isFinishing = false);
 
-    Navigator.of(context).pushReplacementNamed(AppRoutes.main);
+    Navigator.of(
+      context,
+    ).pushNamedAndRemoveUntil(AppRoutes.welcome, (_) => false);
   }
 
   @override
@@ -147,15 +150,19 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
           children: [
             // Header: Back Arrow and Reusable StepProgress Molecule
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20.0,
+                vertical: 8.0,
+              ),
               child: Row(
                 children: [
                   if (_currentStep > 0)
                     IconButton(
                       padding: EdgeInsets.zero,
-                      constraints:
-                          const BoxConstraints(minWidth: 40, minHeight: 40),
+                      constraints: const BoxConstraints(
+                        minWidth: 40,
+                        minHeight: 40,
+                      ),
                       icon: const Icon(
                         Iconsax.arrow_left,
                         color: AppColors.secondaryDark,
@@ -182,16 +189,20 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
             // Main Step Content
             Expanded(
               child: SingleChildScrollView(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24.0, vertical: 4.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24.0,
+                  vertical: 4.0,
+                ),
                 child: _buildCurrentStepContent(),
               ),
             ),
 
             // Bottom Navigation CTA
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 16.0,
+              ),
               child: AppButton(
                 text: _currentStep == _totalSteps - 1 ? 'Finish' : 'Next',
                 variant: AppButtonVariant.primaryNavy,
@@ -282,6 +293,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
                 return AppOptionCard(
                   label: item.$1,
                   icon: item.$2,
+                  iconAsset: AppPreferenceIcons.assets[item.$1],
                   isSelected: isSelected,
                   selectedColor: AppColors.secondaryDark,
                   onTap: () {
@@ -329,6 +341,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
                 return AppOptionCard(
                   label: item.$1,
                   icon: item.$2,
+                  iconAsset: AppPreferenceIcons.assets[item.$1],
                   isSelected: isSelected,
                   selectedColor: AppColors.primaryNavy,
                   onTap: () {
@@ -381,6 +394,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
                 return AppOptionCard(
                   label: item.$1,
                   icon: item.$2,
+                  iconAsset: AppPreferenceIcons.assets[item.$1],
                   isSelected: isSelected,
                   selectedColor: AppColors.primaryOrange,
                   onTap: () {
@@ -416,10 +430,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
       decoration: BoxDecoration(
         color: AppColors.secondaryLight,
         borderRadius: BorderRadius.circular(20.0),
-        border: Border.all(
-          color: AppColors.secondaryDark,
-          width: 2.0,
-        ),
+        border: Border.all(color: AppColors.secondaryDark, width: 2.0),
       ),
       child: TextFormField(
         controller: controller,
@@ -505,68 +516,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
           'Set your general availability so your groups know\nwhen you\'re likely free.',
         ),
         const SizedBox(height: 12),
-        // Row 1: Monday, Tuesday
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AppAvailabilityPill(
-              day: 'Monday',
-              isSelected: _selectedDays.contains('Monday'),
-              onTap: () => _toggleDay('Monday'),
-            ),
-            const SizedBox(width: 14),
-            AppAvailabilityPill(
-              day: 'Tuesday',
-              isSelected: _selectedDays.contains('Tuesday'),
-              onTap: () => _toggleDay('Tuesday'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 14),
-        // Row 2: Wednesday, Thursday
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AppAvailabilityPill(
-              day: 'Wednesday',
-              isSelected: _selectedDays.contains('Wednesday'),
-              onTap: () => _toggleDay('Wednesday'),
-            ),
-            const SizedBox(width: 14),
-            AppAvailabilityPill(
-              day: 'Thursday',
-              isSelected: _selectedDays.contains('Thursday'),
-              onTap: () => _toggleDay('Thursday'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 14),
-        // Row 3: Friday, Saturday
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AppAvailabilityPill(
-              day: 'Friday',
-              isSelected: _selectedDays.contains('Friday'),
-              onTap: () => _toggleDay('Friday'),
-            ),
-            const SizedBox(width: 14),
-            AppAvailabilityPill(
-              day: 'Saturday',
-              isSelected: _selectedDays.contains('Saturday'),
-              onTap: () => _toggleDay('Saturday'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 14),
-        // Row 4: Sunday (Centered)
-        Center(
-          child: AppAvailabilityPill(
-            day: 'Sunday',
-            isSelected: _selectedDays.contains('Sunday'),
-            onTap: () => _toggleDay('Sunday'),
-          ),
-        ),
+        AppAvailabilityGrid(selectedDays: _selectedDays, onDayTap: _toggleDay),
         const SizedBox(height: 16),
       ],
     );
@@ -595,10 +545,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
           decoration: BoxDecoration(
             color: AppColors.secondaryLight,
             borderRadius: BorderRadius.circular(20.0),
-            border: Border.all(
-              color: AppColors.secondaryDark,
-              width: 2.0,
-            ),
+            border: Border.all(color: AppColors.secondaryDark, width: 2.0),
           ),
           child: TextFormField(
             controller: _notesController,

@@ -71,7 +71,9 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
 
       if (response.user != null) {
-        Navigator.of(context).pushNamedAndRemoveUntil(AppRoutes.home, (_) => false);
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil(AppRoutes.onboarding, (_) => false);
       }
     } catch (e) {
       if (!mounted) return;
@@ -126,7 +128,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 Text(
                   'Welcome Back',
                   textAlign: TextAlign.center,
-                  style: AppTypography.h2.copyWith(color: AppColors.secondaryDark),
+                  style: AppTypography.h2.copyWith(
+                    color: AppColors.secondaryDark,
+                  ),
                 ),
                 const SizedBox(height: 28),
                 AppInputField(
@@ -147,7 +151,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       foregroundColor: AppColors.secondaryDark,
                     ),
                     onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+                      MaterialPageRoute(
+                        builder: (_) => const ForgotPasswordScreen(),
+                      ),
                     ),
                     child: const Text(
                       'Forgot password?',
@@ -166,19 +172,23 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Text(
                     'or',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16, color: AppColors.secondaryDark),
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: AppColors.secondaryDark,
+                    ),
                   ),
                 ),
-                AppButton.google(
-                  onPressed: _continueWithGoogle,
-                ),
+                AppButton.google(onPressed: _continueWithGoogle),
                 const SizedBox(height: 32),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text(
                       "Don't have an account? ",
-                      style: TextStyle(fontSize: 14, color: AppColors.secondaryDark),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.secondaryDark,
+                      ),
                     ),
                     GestureDetector(
                       onTap: () => Navigator.of(context).pushReplacement(

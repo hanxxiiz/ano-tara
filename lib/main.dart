@@ -4,8 +4,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'app_routes.dart';
 import 'core/routes/app_routes.dart' as core_routes;
 import 'core/theme/app_theme.dart' as core_theme;
-import 'features/shell/presentation/screens/main_shell_screen.dart';
-import 'screens/component_preview_screen.dart';
+
+import 'features/auth/presentation/screens/welcome_screen.dart';
 import 'screens/onboarding/onboarding_flow.dart';
 
 Future<void> main() async {
@@ -30,7 +30,7 @@ class AnoTaraApp extends StatelessWidget {
     final Map<String, WidgetBuilder> appRoutes = {
       for (final entry in core_routes.AppRoutes.routes.entries)
         if (entry.key != Navigator.defaultRouteName) entry.key: entry.value,
-      AppRoutes.home: (_) => const HomeScreen(),
+
       AppRoutes.onboarding: (_) => const OnboardingFlow(),
       AppRoutes.editPreferences: (_) => const OnboardingFlow(editing: true),
     };
@@ -39,29 +39,17 @@ class AnoTaraApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Ano Tara',
       theme: core_theme.AppTheme.lightTheme,
-      home: const ComponentPreviewScreen(),
+      home: const WelcomeScreen(),
       routes: appRoutes,
       onGenerateRoute: (settings) {
         if (settings.name == Navigator.defaultRouteName) {
           return MaterialPageRoute(
-            builder: (_) => const ComponentPreviewScreen(),
+            builder: (_) => const WelcomeScreen(),
             settings: settings,
           );
         }
         return core_routes.AppRoutes.onGenerateRoute(settings);
       },
     );
-  }
-}
-
-/// Home screen displayed when logged in.
-/// Renders the complete Ano Tara navigation shell with the 5 bottom tabs
-/// (Home, Trips, Create, Groups, Profile) matching the design mockup.
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const MainShellScreen();
   }
 }
