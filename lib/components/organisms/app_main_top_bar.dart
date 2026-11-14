@@ -179,17 +179,21 @@ class _AppMainTopBarState extends State<AppMainTopBar> {
 
   @override
   Widget build(BuildContext context) {
-    final bool notifHighlighted = widget.isNotificationSelected ||
+    final bool notifHighlighted =
+        widget.isNotificationSelected ||
         _isNotifPressed ||
         _activeRightIndex == 0;
-    final bool settingsHighlighted = widget.isSettingsSelected ||
+    final bool settingsHighlighted =
+        widget.isSettingsSelected ||
         _isSettingsPressed ||
         _activeRightIndex == 1;
 
-    final Color notifColor =
-        notifHighlighted ? AppColors.primaryNavy : AppColors.shayne;
-    final Color settingsColor =
-        settingsHighlighted ? AppColors.primaryNavy : AppColors.shayne;
+    final Color notifColor = notifHighlighted
+        ? AppColors.primaryNavy
+        : AppColors.shayne;
+    final Color settingsColor = settingsHighlighted
+        ? AppColors.primaryNavy
+        : AppColors.shayne;
 
     return AppBar(
       backgroundColor: widget.backgroundColor,
@@ -273,8 +277,10 @@ class _AppMainTopBarState extends State<AppMainTopBar> {
                 onTapUp: (_) => _handleNotifTapUp(context),
                 onTapCancel: () => setState(() => _isNotifPressed = false),
                 child: ConstrainedBox(
-                  constraints:
-                      const BoxConstraints(minWidth: 44.0, minHeight: 44.0),
+                  constraints: const BoxConstraints(
+                    minWidth: 44.0,
+                    minHeight: 44.0,
+                  ),
                   child: AnimatedScale(
                     scale: _isNotifPressed
                         ? 0.90
@@ -293,13 +299,15 @@ class _AppMainTopBarState extends State<AppMainTopBar> {
                               duration: const Duration(milliseconds: 200),
                               transitionBuilder: (child, animation) =>
                                   ScaleTransition(
-                                scale: Tween<double>(begin: 0.88, end: 1.0)
-                                    .animate(animation),
-                                child: FadeTransition(
-                                  opacity: animation,
-                                  child: child,
-                                ),
-                              ),
+                                    scale: Tween<double>(
+                                      begin: 0.88,
+                                      end: 1.0,
+                                    ).animate(animation),
+                                    child: FadeTransition(
+                                      opacity: animation,
+                                      child: child,
+                                    ),
+                                  ),
                               child: AppIcon(
                                 Iconsax.notification5,
                                 key: ValueKey('topbar_notif_$notifHighlighted'),
@@ -334,8 +342,10 @@ class _AppMainTopBarState extends State<AppMainTopBar> {
                 onTapUp: (_) => _handleSettingsTapUp(context),
                 onTapCancel: () => setState(() => _isSettingsPressed = false),
                 child: ConstrainedBox(
-                  constraints:
-                      const BoxConstraints(minWidth: 44.0, minHeight: 44.0),
+                  constraints: const BoxConstraints(
+                    minWidth: 44.0,
+                    minHeight: 44.0,
+                  ),
                   child: AnimatedScale(
                     scale: _isSettingsPressed
                         ? 0.90
@@ -351,17 +361,20 @@ class _AppMainTopBarState extends State<AppMainTopBar> {
                           duration: const Duration(milliseconds: 200),
                           transitionBuilder: (child, animation) =>
                               ScaleTransition(
-                            scale: Tween<double>(begin: 0.88, end: 1.0)
-                                .animate(animation),
-                            child: FadeTransition(
-                              opacity: animation,
-                              child: child,
-                            ),
-                          ),
+                                scale: Tween<double>(
+                                  begin: 0.88,
+                                  end: 1.0,
+                                ).animate(animation),
+                                child: FadeTransition(
+                                  opacity: animation,
+                                  child: child,
+                                ),
+                              ),
                           child: AppIcon(
                             Iconsax.setting_25,
                             key: ValueKey(
-                                'topbar_settings_$settingsHighlighted'),
+                              'topbar_settings_$settingsHighlighted',
+                            ),
                             color: settingsColor,
                             size: 26,
                           ),

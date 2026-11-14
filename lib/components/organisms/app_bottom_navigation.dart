@@ -3,13 +3,7 @@ import 'package:iconsax/iconsax.dart';
 import '../../core/constants/app_colors.dart';
 import '../molecules/app_navigation_item.dart';
 
-enum AppTab {
-  home,
-  trips,
-  create,
-  groups,
-  profile,
-}
+enum AppTab { home, trips, create, groups, profile }
 
 /// O01 Bottom Navigation Bar organism built from AppNavigationItem molecules.
 /// Selected / Pressed tab uses AppColors.primaryNavy (#144885) and unselected uses AppColors.shayne (#868097).
@@ -47,9 +41,7 @@ class _AppBottomNavigationState extends State<AppBottomNavigation> {
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.white,
-        border: Border(
-          top: BorderSide(color: Color(0xFFE8E6E3), width: 1.2),
-        ),
+        border: Border(top: BorderSide(color: Color(0xFFE8E6E3), width: 1.2)),
       ),
       child: SafeArea(
         top: false,

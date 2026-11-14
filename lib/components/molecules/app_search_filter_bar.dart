@@ -57,10 +57,15 @@ class AppSearchFilterBar extends StatelessWidget {
                     controller: controller,
                     onChanged: onChanged,
                     textAlignVertical: TextAlignVertical.center,
-                    style: AppTypography.bodyMedium.copyWith(color: AppColors.secondaryDark),
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.secondaryDark,
+                    ),
                     decoration: InputDecoration(
                       hintText: hintText,
-                      hintStyle: const TextStyle(color: AppColors.carla, fontSize: 14),
+                      hintStyle: const TextStyle(
+                        color: AppColors.carla,
+                        fontSize: 14,
+                      ),
                       isDense: true,
                       filled: false,
                       fillColor: Colors.transparent,
@@ -80,28 +85,35 @@ class AppSearchFilterBar extends StatelessWidget {
         if (showFilterButton) ...[
           const SizedBox(width: 14),
           // Filter Button (min 44x44px tap target)
-          GestureDetector(
-            onTap: onFilterTap,
-            child: Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: AppColors.semanticYellow,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.secondaryDark, width: 2.0),
-                boxShadow: const [
-                  BoxShadow(
+          Semantics(
+            button: true,
+            label: 'Filter',
+            child: GestureDetector(
+              onTap: onFilterTap,
+              child: Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: AppColors.semanticYellow,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
                     color: AppColors.secondaryDark,
-                    offset: Offset(0, 4),
-                    blurRadius: 0,
+                    width: 2.0,
                   ),
-                ],
-              ),
-              child: const Center(
-                child: AppIcon(
-                  Iconsax.filter5,
-                  color: AppColors.secondaryDark,
-                  size: 24,
+                  boxShadow: const [
+                    BoxShadow(
+                      color: AppColors.secondaryDark,
+                      offset: Offset(0, 4),
+                      blurRadius: 0,
+                    ),
+                  ],
+                ),
+                child: const Center(
+                  child: AppIcon(
+                    Iconsax.filter5,
+                    color: AppColors.secondaryDark,
+                    size: 24,
+                  ),
                 ),
               ),
             ),
