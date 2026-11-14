@@ -4,7 +4,9 @@ import 'package:iconsax/iconsax.dart';
 import '../../app_routes.dart';
 import '../../components/molecules/app_segmented_tabs.dart';
 import '../../components/organisms/app_bottom_navigation.dart';
+import '../../components/atoms/app_button.dart';
 import '../../components/organisms/app_main_top_bar.dart';
+import '../../components/organisms/availability_calendar.dart';
 import '../../components/organisms/group_header_organism.dart';
 import '../../components/organisms/group_trip_card.dart';
 import '../../components/molecules/app_search_filter_bar.dart';
@@ -55,6 +57,10 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
   MemberFilter _memberFilter = const MemberFilter();
   final _memberSearchController = TextEditingController();
   String _memberQuery = '';
+  DateTime _availabilityMonth = DateTime(
+    DateTime.now().year,
+    DateTime.now().month,
+  );
 
   @override
   void dispose() {
@@ -79,6 +85,18 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
       current: _memberFilter,
     );
     if (filter != null) setState(() => _memberFilter = filter);
+  }
+
+  Future<void> _editMyAvailability() async {
+    final dates = await showMyAvailabilitySheet(
+      context,
+      groupName: _group.name,
+      initialMonth: _availabilityMonth,
+      selected: _group.myAvailability,
+    );
+    if (!mounted || dates == null) return;
+    setState(() => _group = _group.withMyAvailability(dates));
+    _showMessage('Your availability was updated');
   }
 
   Future<void> _confirmRemoveMember(GroupMember member) async {
@@ -181,8 +199,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                 key: ValueKey(_tab),
                 child: switch (_tab) {
                   GroupTab.trips => _buildTripsTab(),
-                  // Left blank until the Availability design is ready.
-                  GroupTab.availability => const SizedBox.shrink(),
+                  GroupTab.availability => _buildAvailabilityTab(),
                   GroupTab.members => _buildMembersTab(),
                 },
               ),
@@ -241,6 +258,84 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                 onRemove: _group.isOrganizer && !member.isCurrentUser
                     ? () => _confirmRemoveMember(member)
                     : null,
+              ),
+            ),
+      ],
+    );
+  }
+
+  Widget _buildAvailabilityTab() {
+    // Pending invitees can't mark dates yet, so they don't count.
+    final total = _group.members.where((m) => !m.isPending).length;
+    final bestDates = _group.bestDates(_availabilityMonth);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            AvailabilityMonthNav(
+              month: _availabilityMonth,
+              onPrevious: () => setState(
+                () => _availabilityMonth = DateTime(
+                  _availabilityMonth.year,
+                  _availabilityMonth.month - 1,
+                ),
+              ),
+              onNext: () => setState(
+                () => _availabilityMonth = DateTime(
+                  _availabilityMonth.year,
+                  _availabilityMonth.month + 1,
+                ),
+              ),
+            ),
+            const Spacer(),
+            _FilterChipButton(
+              isActive: false,
+              semanticLabel: 'Filter availability',
+              onTap: () => _showMessage('Availability filters are coming soon'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        AvailabilityCalendar(
+          month: _availabilityMonth,
+          dayStyle: (day) =>
+              AvailabilityDayStyle.heat(_group.availableOn(day).length, total),
+          dayLabel: (day) =>
+              '${_group.availableOn(day).length} of $total available',
+        ),
+        const SizedBox(height: 18),
+        AppButton(
+          text: 'Edit Availability',
+          variant: AppButtonVariant.primaryOrange,
+          borderRadius: 16,
+          customHeight: 50,
+          onPressed: _editMyAvailability,
+        ),
+        const SizedBox(height: 28),
+        Text(
+          'Best Dates',
+          style: AppTypography.h3.copyWith(
+            color: AppColors.secondaryDark,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 14),
+        if (bestDates.isEmpty)
+          const _EmptyState(
+            message: 'No one has marked their availability this month yet.',
+          )
+        else
+          for (final date in bestDates)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 14),
+              child: BestDateCard(
+                date: date,
+                availableNames: [
+                  for (final m in _group.availableOn(date)) m.name,
+                ],
+                totalMembers: total,
               ),
             ),
       ],
@@ -307,15 +402,20 @@ class _EmptyState extends StatelessWidget {
 
 class _FilterChipButton extends StatelessWidget {
   final bool isActive;
+  final String semanticLabel;
   final VoidCallback onTap;
 
-  const _FilterChipButton({required this.isActive, required this.onTap});
+  const _FilterChipButton({
+    required this.isActive,
+    required this.onTap,
+    this.semanticLabel = 'Filter trips',
+  });
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: isActive ? 'Filter trips, filters applied' : 'Filter trips',
+      label: isActive ? '$semanticLabel, filters applied' : semanticLabel,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,

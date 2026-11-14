@@ -35,6 +35,9 @@ class AppColors {
   static const Color mapLavender = Color(0xFFE9E7FC);
   static const Color mapLavenderLine = Color(0xFF8094FF);
 
+  /// Availability calendar day nobody can make (#D9D9D9)
+  static const Color calendarEmpty = Color(0xFFD9D9D9);
+
   /// Selected row tint in the Invite Members list (#ECF1F9)
   static const Color selectedRowBlue = Color(0xFFECF1F9);
 

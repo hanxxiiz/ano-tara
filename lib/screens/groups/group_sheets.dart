@@ -9,6 +9,7 @@ import '../../components/atoms/app_button.dart';
 import '../../components/atoms/app_input_field.dart';
 import '../../components/molecules/app_bottom_sheet.dart';
 import '../../components/molecules/app_radio_option.dart';
+import '../../components/organisms/availability_calendar.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_typography.dart';
 import '../../models/group_models.dart';
@@ -290,6 +291,107 @@ class _GroupActionTile extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// 05.13 My Availability
+// =============================================================================
+
+/// Lets the current user tap the dates they're free. Returns the full new
+/// set of dates on "Update Availability", or null if dismissed.
+Future<Set<DateTime>?> showMyAvailabilitySheet(
+  BuildContext context, {
+  required String groupName,
+  required DateTime initialMonth,
+  required Set<DateTime> selected,
+}) {
+  return showAppBottomSheet<Set<DateTime>>(
+    context,
+    builder: (_) => _MyAvailabilitySheet(
+      groupName: groupName,
+      initialMonth: initialMonth,
+      initialSelected: selected,
+    ),
+  );
+}
+
+class _MyAvailabilitySheet extends StatefulWidget {
+  final String groupName;
+  final DateTime initialMonth;
+  final Set<DateTime> initialSelected;
+
+  const _MyAvailabilitySheet({
+    required this.groupName,
+    required this.initialMonth,
+    required this.initialSelected,
+  });
+
+  @override
+  State<_MyAvailabilitySheet> createState() => _MyAvailabilitySheetState();
+}
+
+class _MyAvailabilitySheetState extends State<_MyAvailabilitySheet> {
+  late DateTime _month = widget.initialMonth;
+  late final Set<DateTime> _selected = {...widget.initialSelected};
+
+  void _toggle(DateTime day) {
+    setState(() {
+      if (!_selected.remove(day)) _selected.add(day);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBottomSheet(
+      title: 'My Availability',
+      showTitleMarker: false,
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              widget.groupName,
+              style: AppTypography.bodySmall.copyWith(color: AppColors.slate),
+            ),
+            const _SheetDivider(),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: AvailabilityMonthNav(
+                month: _month,
+                onPrevious: () => setState(
+                  () => _month = DateTime(_month.year, _month.month - 1),
+                ),
+                onNext: () => setState(
+                  () => _month = DateTime(_month.year, _month.month + 1),
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+            AvailabilityCalendar(
+              month: _month,
+              onDayTap: _toggle,
+              dayStyle: (day) => _selected.contains(day)
+                  ? const AvailabilityDayStyle(
+                      fill: AppColors.primaryOrange,
+                      outlined: true,
+                    )
+                  : AvailabilityDayStyle.empty,
+              dayLabel: (day) =>
+                  _selected.contains(day) ? 'available' : 'not available',
+            ),
+            const SizedBox(height: 20),
+            AppButton(
+              text: 'Update Availability',
+              variant: AppButtonVariant.primaryOrange,
+              borderRadius: 16,
+              customHeight: 50,
+              onPressed: () => Navigator.of(context).pop(_selected),
+            ),
+          ],
         ),
       ),
     );

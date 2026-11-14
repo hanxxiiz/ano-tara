@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:anotara/components/organisms/availability_calendar.dart';
 import 'package:anotara/components/organisms/group_header_organism.dart';
 import 'package:anotara/components/organisms/group_trip_card.dart';
 import 'package:anotara/components/organisms/group_member_card.dart';
@@ -96,6 +97,51 @@ void main() {
     await tester.tap(arrow);
     await tester.pumpAndSettle();
     expect(find.text('Group Actions'), findsOneWidget);
+  });
+
+  testWidgets('Availability tab shows the heat map and best dates', (
+    tester,
+  ) async {
+    await pumpScreen(tester, organizerGroup);
+    await tester.tap(find.text('Availability'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AvailabilityCalendar), findsOneWidget);
+    expect(find.text('Edit Availability'), findsOneWidget);
+    expect(find.text('Best Dates'), findsOneWidget);
+    expect(find.byType(BestDateCard), findsNWidgets(3));
+  });
+
+  testWidgets('Edit Availability saves the dates I pick', (tester) async {
+    await pumpScreen(tester, organizerGroup);
+    await tester.tap(find.text('Availability'));
+    await tester.pumpAndSettle();
+
+    // Sample data: on the 4th, 3 of the 6 joined members are free (not me).
+    final day4 = RegExp(r'^[A-Za-z]+ 4, ');
+    expect(
+      find.bySemanticsLabel(RegExp('${day4.pattern}3 of 6 available\$')),
+      findsOneWidget,
+    );
+
+    await tester.ensureVisible(find.text('Edit Availability'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Edit Availability'));
+    await tester.pumpAndSettle();
+    expect(find.text('My Availability'), findsOneWidget);
+
+    await tester.tap(
+      find.bySemanticsLabel(RegExp('${day4.pattern}not available\$')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Update Availability'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Your availability was updated'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel(RegExp('${day4.pattern}4 of 6 available\$')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('members do not see organizer-only actions', (tester) async {
