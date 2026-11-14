@@ -14,6 +14,7 @@ import '../components/molecules/action_needed_tile.dart';
 import '../core/theme/smooth_page_route.dart';
 import '../models/group_models.dart';
 import 'groups/group_details_screen.dart';
+import 'groups/groups_list_screen.dart';
 
 /// Dashboard for group travel planning.
 class HomeScreen extends StatefulWidget {
@@ -337,6 +338,12 @@ class _HomeScreenState extends State<HomeScreen> {
           if (index == 0) return;
           if (index == 1) {
             _onGroupTap('The Group');
+            return;
+          }
+          if (index == 3) {
+            Navigator.of(
+              context,
+            ).push(SmoothPageRoute(page: const GroupsListScreen()));
             return;
           }
           const destinations = [

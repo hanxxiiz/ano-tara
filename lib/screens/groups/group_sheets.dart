@@ -70,6 +70,134 @@ Future<MemberFilter?> showFilterMembersSheet(
       : MemberFilter(status: result.$1, sort: result.$2);
 }
 
+// =============================================================================
+// 05.18 Filter Groups
+// =============================================================================
+
+/// Returns the chosen filter, or null if the sheet was dismissed.
+Future<GroupFilter?> showFilterGroupsSheet(
+  BuildContext context, {
+  required GroupFilter current,
+}) {
+  return showAppBottomSheet<GroupFilter>(
+    context,
+    builder: (_) => _FilterGroupsSheet(initial: current),
+  );
+}
+
+class _FilterGroupsSheet extends StatefulWidget {
+  final GroupFilter initial;
+
+  const _FilterGroupsSheet({required this.initial});
+
+  @override
+  State<_FilterGroupsSheet> createState() => _FilterGroupsSheetState();
+}
+
+class _FilterGroupsSheetState extends State<_FilterGroupsSheet> {
+  late GroupActivity? _activity = widget.initial.activity;
+  late GroupRole? _role = widget.initial.role;
+  late GroupSort _sort = widget.initial.sort;
+
+  List<Widget> _options<T>(
+    List<T> options,
+    String Function(T) label,
+    T selected,
+    ValueChanged<T> onSelect,
+  ) {
+    return [
+      for (final option in options)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 4),
+          child: AppRadioOption(
+            label: label(option),
+            isSelected: selected == option,
+            onTap: () => setState(() => onSelect(option)),
+          ),
+        ),
+    ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBottomSheet(
+      title: 'Filter Groups',
+      showTitleMarker: false,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Flexible(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.only(top: 14, bottom: 4),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const AppSheetSectionTitle('Group Activity'),
+                  const SizedBox(height: 10),
+                  ..._options<GroupActivity?>(
+                    [null, ...GroupActivity.values],
+                    (activity) => activity?.label ?? 'All Activity',
+                    _activity,
+                    (activity) => _activity = activity,
+                  ),
+                  const _SheetDivider(),
+                  const AppSheetSectionTitle('Your Role'),
+                  const SizedBox(height: 10),
+                  ..._options<GroupRole?>(
+                    [null, ...GroupRole.values],
+                    (role) => role?.label ?? 'All Roles',
+                    _role,
+                    (role) => _role = role,
+                  ),
+                  const _SheetDivider(),
+                  const AppSheetSectionTitle('Sort By'),
+                  const SizedBox(height: 10),
+                  ..._options<GroupSort>(
+                    GroupSort.values,
+                    (sort) => sort.label,
+                    _sort,
+                    (sort) => _sort = sort,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const _SheetDivider(),
+          Row(
+            children: [
+              Expanded(
+                child: AppButton(
+                  text: 'Reset',
+                  variant: AppButtonVariant.secondary,
+                  borderRadius: 16,
+                  customHeight: 50,
+                  onPressed: () => setState(() {
+                    _activity = null;
+                    _role = null;
+                    _sort = GroupSort.newest;
+                  }),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: AppButton(
+                  text: 'Apply Filters',
+                  borderRadius: 16,
+                  customHeight: 50,
+                  onPressed: () => Navigator.of(context).pop(
+                    GroupFilter(activity: _activity, role: _role, sort: _sort),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Shared layout for the filter sheets: a radio section for the filter,
 /// a radio section for the sort order, and Reset / Apply Filters actions.
 /// Pops with the selected `(filter, sort)` pair on apply.
@@ -785,6 +913,162 @@ class _CodeCell extends StatelessWidget {
 }
 
 // =============================================================================
+// 05.08 Join a Group (enter invitation code)
+// =============================================================================
+
+/// Returns the 5-character code the user entered, or null if dismissed.
+Future<String?> showJoinGroupSheet(BuildContext context) {
+  return showAppBottomSheet<String>(
+    context,
+    builder: (_) => const _JoinGroupSheet(),
+  );
+}
+
+class _JoinGroupSheet extends StatefulWidget {
+  const _JoinGroupSheet();
+
+  @override
+  State<_JoinGroupSheet> createState() => _JoinGroupSheetState();
+}
+
+class _JoinGroupSheetState extends State<_JoinGroupSheet> {
+  static const _codeLength = 5;
+
+  final _controller = TextEditingController();
+  final _focusNode = FocusNode();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final code = _controller.text;
+
+    return AppBottomSheet(
+      title: 'Join a Group',
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const _SheetDivider(spacing: 12),
+            const SizedBox(height: 14),
+            // One hidden field drives the five boxes, so typing, pasting and
+            // backspace all behave like a normal text field.
+            Stack(
+              children: [
+                Positioned.fill(
+                  child: Opacity(
+                    opacity: 0,
+                    child: TextField(
+                      controller: _controller,
+                      focusNode: _focusNode,
+                      autofocus: true,
+                      maxLength: _codeLength,
+                      showCursor: false,
+                      enableInteractiveSelection: false,
+                      textCapitalization: TextCapitalization.characters,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(
+                          RegExp('[A-Za-z0-9]'),
+                        ),
+                        TextInputFormatter.withFunction(
+                          (_, value) =>
+                              value.copyWith(text: value.text.toUpperCase()),
+                        ),
+                      ],
+                      decoration: const InputDecoration(counterText: ''),
+                      onChanged: (_) => setState(() {}),
+                    ),
+                  ),
+                ),
+                Semantics(
+                  textField: true,
+                  label: 'Invitation code',
+                  value: code.split('').join(' '),
+                  excludeSemantics: true,
+                  onTap: _focusNode.requestFocus,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: _focusNode.requestFocus,
+                    child: Row(
+                      children: [
+                        for (int i = 0; i < _codeLength; i++) ...[
+                          if (i > 0) const SizedBox(width: 4),
+                          Expanded(
+                            child: _CodeCell(i < code.length ? code[i] : ''),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 26),
+            AppButton(
+              text: 'Join Group',
+              borderRadius: 16,
+              customHeight: 46,
+              isDisabled: code.length < _codeLength,
+              onPressed: () => Navigator.of(context).pop(code),
+            ),
+            const SizedBox(height: 14),
+            AppButton(
+              text: 'Cancel',
+              variant: AppButtonVariant.secondary,
+              borderRadius: 16,
+              customHeight: 46,
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// 05.12 Join group success / 05.16 invalid code
+// =============================================================================
+
+/// Resolves to true for View Group, false for Back to Groups or dismiss.
+Future<bool> showJoinSuccessSheet(
+  BuildContext context, {
+  required String groupName,
+}) {
+  return _showStatusSheet(
+    context,
+    icon: Icons.verified,
+    iconColor: AppColors.primaryNavy,
+    title: 'Successfully Joined!',
+    message:
+        "You've joined $groupName! You can now view the group's trips, "
+        'plans, and activities.',
+    confirmLabel: 'View Group',
+    cancelLabel: 'Back to Groups',
+  );
+}
+
+/// Resolves to true for Try Again, false for Cancel or dismiss.
+Future<bool> showInvalidCodeSheet(BuildContext context) {
+  return _showStatusSheet(
+    context,
+    icon: Iconsax.warning_25,
+    iconColor: AppColors.primaryOrange,
+    title: 'Invalid Invitation Code',
+    message:
+        'The code you entered is invalid or no longer active. Please check '
+        'the code or ask the group organizer for a new one.',
+    confirmLabel: 'Try Again',
+    confirmVariant: AppButtonVariant.primaryOrange,
+  );
+}
+
+// =============================================================================
 // 05.19 Delete Group confirmation
 // =============================================================================
 
@@ -829,6 +1113,29 @@ Future<bool> _showDestructiveConfirmSheet(
   required String title,
   required String message,
   required String confirmLabel,
+}) {
+  return _showStatusSheet(
+    context,
+    icon: Iconsax.warning_25,
+    iconColor: AppColors.primaryOrange,
+    title: title,
+    message: message,
+    confirmLabel: confirmLabel,
+    confirmVariant: AppButtonVariant.destructive,
+  );
+}
+
+/// Big status icon + title + message + a primary and a secondary action.
+/// Resolves to true only when the primary action is tapped.
+Future<bool> _showStatusSheet(
+  BuildContext context, {
+  required IconData icon,
+  required Color iconColor,
+  required String title,
+  required String message,
+  required String confirmLabel,
+  AppButtonVariant confirmVariant = AppButtonVariant.primaryNavy,
+  String cancelLabel = 'Cancel',
 }) async {
   final confirmed = await showAppBottomSheet<bool>(
     context,
@@ -837,11 +1144,7 @@ Future<bool> _showDestructiveConfirmSheet(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Icon(
-              Iconsax.warning_25,
-              size: 78,
-              color: AppColors.primaryOrange,
-            ),
+            Icon(icon, size: 78, color: iconColor),
             const SizedBox(height: 18),
             Text(
               title,
@@ -870,14 +1173,14 @@ Future<bool> _showDestructiveConfirmSheet(
                 children: [
                   AppButton(
                     text: confirmLabel,
-                    variant: AppButtonVariant.destructive,
+                    variant: confirmVariant,
                     borderRadius: 16,
                     customHeight: 50,
                     onPressed: () => Navigator.of(context).pop(true),
                   ),
                   const SizedBox(height: 14),
                   AppButton(
-                    text: 'Cancel',
+                    text: cancelLabel,
                     variant: AppButtonVariant.secondary,
                     borderRadius: 16,
                     customHeight: 50,

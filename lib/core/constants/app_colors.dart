@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 /// App color palette matching the Figma design system specifications.
 class AppColors {
@@ -40,6 +40,9 @@ class AppColors {
 
   /// Selected row tint in the Invite Members list (#ECF1F9)
   static const Color selectedRowBlue = Color(0xFFECF1F9);
+
+  // "Next: trip" pill on group list cards (05.01)
+  static const Color nextTripPill = Color(0xFFC4D1E0);
 
   /// Error / Destructive Red (#F50506)
   static const Color semanticRed = Color(0xFFF50506);

@@ -137,6 +137,15 @@ class GroupMember {
   });
 
   bool get isPending => status == MemberStatus.pending;
+
+  /// The signed-in user, until profiles come from Supabase.
+  static final me = GroupMember(
+    id: 'marco',
+    name: 'Marco Reyes',
+    handle: '@marcoreyes',
+    addedAt: DateTime(2026, 1, 4),
+    isCurrentUser: true,
+  );
 }
 
 /// Status filter + sort order chosen in the Filter Members sheet.
@@ -316,18 +325,59 @@ class GroupDetails {
   }
 
   /// Placeholder data until groups are backed by Supabase.
+  /// Invite codes that resolve to a group, until codes are checked by
+  /// Supabase. Values are (group name, organizer name).
+  static const _joinableByCode = {
+    'TRIP5': ('Weekend Wanderers', 'Bea Tan'),
+    'BORA8': ('Boracay Barkada', 'Paolo Ramos'),
+  };
+
+  /// The group an invite [code] belongs to, joined as a member, or null if
+  /// the code is unknown. Matching ignores case and surrounding spaces.
+  static ({GroupDetails group, String organizerName})? findByInviteCode(
+    String code,
+  ) {
+    final normalized = code.trim().toUpperCase();
+    final match = _joinableByCode[normalized];
+    if (match == null) return null;
+    final (name, organizerName) = match;
+    return (
+      group: GroupDetails.sample(
+        name,
+        role: GroupRole.member,
+      ).copyWith(inviteCode: normalized),
+      organizerName: organizerName,
+    );
+  }
+
+  /// A brand-new group from the Create Group flow: the current user organizes
+  /// it and everyone in [invited] starts as a pending invitation.
+  factory GroupDetails.create({
+    required String name,
+    String description = '',
+    List<UserProfile> invited = const [],
+  }) {
+    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    final seed = DateTime.now().microsecondsSinceEpoch;
+    final code = [
+      for (var i = 0; i < 5; i++) alphabet[(seed >> (i * 5)) % alphabet.length],
+    ].join();
+    return GroupDetails(
+      id: '${name.toLowerCase().replaceAll(' ', '-')}-$seed',
+      name: name,
+      description: description,
+      inviteCode: code,
+      currentUserRole: GroupRole.organizer,
+      members: [GroupMember.me],
+    ).withInvited(invited);
+  }
+
   static GroupDetails sample(
     String name, {
     GroupRole role = GroupRole.organizer,
   }) {
     final memberList = [
-      GroupMember(
-        id: 'marco',
-        name: 'Marco Reyes',
-        handle: '@marcoreyes',
-        addedAt: DateTime(2026, 1, 4),
-        isCurrentUser: true,
-      ),
+      GroupMember.me,
       GroupMember(
         id: 'louielyn',
         name: 'Louielyn Abella',
@@ -423,5 +473,160 @@ class GroupDetails {
         ),
       ],
     );
+  }
+}
+
+extension GroupRoleLabel on GroupRole {
+  String get label => switch (this) {
+    GroupRole.organizer => 'Organizer',
+    GroupRole.member => 'Member',
+  };
+}
+
+/// Trip activity shown in the Filter Groups sheet (05.18).
+enum GroupActivity { activeTrip, upcomingTrip, noActiveTrip }
+
+extension GroupActivityLabel on GroupActivity {
+  String get label => switch (this) {
+    GroupActivity.activeTrip => 'With Active Trips',
+    GroupActivity.upcomingTrip => 'With Upcoming Trips',
+    GroupActivity.noActiveTrip => 'No Active Trips',
+  };
+}
+
+enum GroupSort { newest, oldest, nameAz, nameZa }
+
+extension GroupSortLabel on GroupSort {
+  String get label => switch (this) {
+    GroupSort.newest => 'Date Created (Newest First)',
+    GroupSort.oldest => 'Date Created (Oldest First)',
+    GroupSort.nameAz => 'Group Name (A-Z)',
+    GroupSort.nameZa => 'Group Name (Z-A)',
+  };
+}
+
+/// One card in the Groups list (05.01).
+class GroupSummary {
+  final String id;
+  final String name;
+  final String organizerName;
+  final GroupRole role;
+  final List<String> memberNames;
+  final String? nextTripTitle;
+  final GroupActivity activity;
+  final DateTime createdAt;
+
+  const GroupSummary({
+    required this.id,
+    required this.name,
+    required this.organizerName,
+    required this.role,
+    required this.memberNames,
+    required this.activity,
+    required this.createdAt,
+    this.nextTripTitle,
+  });
+
+  factory GroupSummary.fromDetails(
+    GroupDetails group, {
+    String? organizerName,
+    DateTime? createdAt,
+  }) {
+    final organizer = group.isOrganizer ? group.currentUser : null;
+    return GroupSummary(
+      id: group.id,
+      name: group.name,
+      organizerName: organizerName ?? organizer?.name ?? '',
+      role: group.currentUserRole,
+      memberNames: group.memberNames,
+      activity: GroupActivity.noActiveTrip,
+      createdAt: createdAt ?? DateTime.now(),
+    );
+  }
+
+  /// Placeholder list until groups are backed by Supabase.
+  static List<GroupSummary> sampleList() {
+    final crew = GroupDetails.sample('').memberNames;
+    return [
+      GroupSummary(
+        id: 'the-group',
+        name: 'The Group',
+        organizerName: GroupMember.me.name,
+        role: GroupRole.organizer,
+        memberNames: crew,
+        nextTripTitle: 'Bantayan Trip',
+        activity: GroupActivity.activeTrip,
+        createdAt: DateTime(2026, 1, 4),
+      ),
+      GroupSummary(
+        id: 'blackpink',
+        name: 'Blackpink',
+        organizerName: 'Hannah Labandero',
+        role: GroupRole.member,
+        memberNames: crew.take(4).toList(),
+        nextTripTitle: 'Baguio Mountain Retreat',
+        activity: GroupActivity.upcomingTrip,
+        createdAt: DateTime(2026, 3, 15),
+      ),
+      GroupSummary(
+        id: 'twice',
+        name: 'Twice',
+        organizerName: 'Elle Bernante',
+        role: GroupRole.member,
+        memberNames: crew.take(5).toList(),
+        nextTripTitle: 'Siargao Island Getaway',
+        activity: GroupActivity.upcomingTrip,
+        createdAt: DateTime(2026, 5, 20),
+      ),
+      GroupSummary(
+        id: 'group-4',
+        name: 'Group 4',
+        organizerName: GroupMember.me.name,
+        role: GroupRole.organizer,
+        memberNames: crew.take(3).toList(),
+        activity: GroupActivity.noActiveTrip,
+        createdAt: DateTime(2026, 8, 2),
+      ),
+    ];
+  }
+}
+
+/// Activity + role filters and sort order from the Filter Groups sheet.
+/// A null [activity] or [role] means "All".
+class GroupFilter {
+  final GroupActivity? activity;
+  final GroupRole? role;
+  final GroupSort sort;
+
+  const GroupFilter({this.activity, this.role, this.sort = GroupSort.newest});
+
+  bool get isDefault =>
+      activity == null && role == null && sort == GroupSort.newest;
+
+  List<GroupSummary> apply(List<GroupSummary> groups, {String query = ''}) {
+    final needle = query.trim().toLowerCase();
+    final result = groups
+        .where((g) => activity == null || g.activity == activity)
+        .where((g) => role == null || g.role == role)
+        .where(
+          (g) =>
+              needle.isEmpty ||
+              g.name.toLowerCase().contains(needle) ||
+              g.organizerName.toLowerCase().contains(needle),
+        )
+        .toList();
+    result.sort(
+      (a, b) => switch (sort) {
+        GroupSort.newest => b.createdAt.compareTo(a.createdAt),
+        GroupSort.oldest => a.createdAt.compareTo(b.createdAt),
+        GroupSort.nameAz => a.name.toLowerCase().compareTo(
+          b.name.toLowerCase(),
+        ),
+        GroupSort.nameZa => b.name.toLowerCase().compareTo(
+          a.name.toLowerCase(),
+        ),
+      },
+    );
+    return result;
   }
 }

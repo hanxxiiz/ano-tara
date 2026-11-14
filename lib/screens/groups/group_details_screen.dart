@@ -17,6 +17,7 @@ import '../../core/theme/smooth_page_route.dart';
 import '../../models/group_models.dart';
 import 'edit_group_screen.dart';
 import 'group_sheets.dart';
+import 'groups_list_screen.dart';
 
 enum GroupTab { trips, availability, members }
 
@@ -213,6 +214,10 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
         onTabSelected: (index) {
           if (index == 0) {
             Navigator.of(context).popUntil((route) => route.isFirst);
+          } else if (index == 3) {
+            Navigator.of(
+              context,
+            ).push(SmoothPageRoute(page: const GroupsListScreen()));
           } else if (index != 1) {
             const destinations = [
               'Home',
