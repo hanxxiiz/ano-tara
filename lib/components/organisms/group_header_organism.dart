@@ -1,103 +1,209 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:iconsax/iconsax.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_typography.dart';
 import '../atoms/app_avatar.dart';
 import '../atoms/app_button.dart';
 
-/// O02 Group header organism matching Figma "03 Organisms" board:
-/// Recipe: Avatar + identity + organizer badge + member count + CTA.
-/// Accepts data as parameters for reusability across screens.
+/// O02 Group header organism matching Figma "05.03 Group details":
+/// Recipe: Yellow band + group avatar + name + role badge + member tokens
+/// + Plan a Trip CTA + organizer-only actions menu.
 class GroupHeaderOrganism extends StatelessWidget {
   final String groupName;
-  final String roleLabel;
-  final int memberCount;
+  final bool isOrganizer;
+  final List<String> memberNames;
   final VoidCallback? onPlanTripTap;
-  final bool showMemberTokens;
-  final bool isLoading;
+
+  /// Opens Group Actions. Only rendered for organizers.
+  final VoidCallback? onMenuTap;
 
   const GroupHeaderOrganism({
     super.key,
     required this.groupName,
-    this.roleLabel = 'Organizer',
-    this.memberCount = 7,
+    this.isOrganizer = false,
+    this.memberNames = const [],
     this.onPlanTripTap,
-    this.showMemberTokens = true,
-    this.isLoading = false,
+    this.onMenuTap,
   });
+
+  static const double _bandHeight = 46;
+  static const double _avatarSize = 86;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: AppColors.semanticYellow,
-        border: Border.all(color: AppColors.secondaryDark, width: 2.0),
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: AppColors.secondaryDark, width: 2),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.secondaryDark,
+            offset: Offset(0, 4),
+            blurRadius: 0,
+          ),
+        ],
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Group Avatar Atom (86px orange circle with 2px border & hard shadow)
-              AppAvatar.group(size: 86),
-              const SizedBox(width: 16),
-              Expanded(
+              Container(
+                height: _bandHeight,
+                decoration: const BoxDecoration(
+                  color: AppColors.semanticYellow,
+                  border: Border(
+                    bottom: BorderSide(
+                      color: AppColors.secondaryDark,
+                      width: 2,
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(117, 12, 14, 0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       groupName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: AppTypography.h3.copyWith(
-                        color: AppColors.secondaryDark,
                         fontWeight: FontWeight.w800,
-                        fontSize: 20,
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
-                      decoration: BoxDecoration(
                         color: AppColors.secondaryDark,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        roleLabel,
-                        style: AppTypography.badge.copyWith(
-                          color: AppColors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 11.5,
-                        ),
                       ),
                     ),
                     const SizedBox(height: 6),
-                    if (showMemberTokens) ...[
-                      const AppMemberTokenCluster(extraCount: 3, size: 17),
-                      const SizedBox(height: 4),
-                    ],
-                    Text(
-                      '$memberCount members',
-                      style: AppTypography.caption.copyWith(
-                        color: AppColors.secondaryDark,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 11.5,
+                    Row(
+                      children: [
+                        _RoleBadge(isOrganizer: isOrganizer),
+                        const SizedBox(width: 10),
+                        Flexible(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: AppInitialsTokenRow(
+                              names: memberNames,
+                              maxVisible: 4,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(21, 18, 21, 23),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: AppButton(
+                        text: 'Plan a Trip',
+                        variant: AppButtonVariant.secondary,
+                        size: AppButtonSize.small,
+                        customHeight: 36,
+                        borderRadius: 12,
+                        iconLeading: const Icon(
+                          Icons.add_rounded,
+                          size: 20,
+                          color: AppColors.secondaryDark,
+                        ),
+                        onPressed: onPlanTripTap ?? () {},
                       ),
                     ),
+                    if (isOrganizer) ...[
+                      const SizedBox(width: 10),
+                      _MenuButton(onTap: onMenuTap),
+                    ],
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 14),
-          AppButton(
-            text: 'Plan a Trip',
-            variant: AppButtonVariant.secondary,
-            size: AppButtonSize.small,
-            isLoading: isLoading,
-            onPressed: onPlanTripTap ?? () {},
+          Positioned(
+            left: 21,
+            top: _bandHeight - 19,
+            child: AppAvatar.group(size: _avatarSize),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _RoleBadge extends StatelessWidget {
+  final bool isOrganizer;
+
+  const _RoleBadge({required this.isOrganizer});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 20,
+      padding: const EdgeInsets.symmetric(horizontal: 13),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: isOrganizer
+            ? AppColors.primaryOrange.withValues(alpha: 0.75)
+            : AppColors.primaryNavy,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        isOrganizer ? 'Organizer' : 'Member',
+        style: AppTypography.badge.copyWith(
+          color: AppColors.white,
+          fontSize: 11,
+          letterSpacing: 0,
+        ),
+      ),
+    );
+  }
+}
+
+class _MenuButton extends StatelessWidget {
+  final VoidCallback? onTap;
+
+  const _MenuButton({this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: 'Group actions',
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: Container(
+          width: 44,
+          height: 44,
+          alignment: Alignment.center,
+          child: Container(
+            width: 40,
+            height: 36,
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppColors.secondaryDark, width: 2),
+              boxShadow: const [
+                BoxShadow(
+                  color: AppColors.secondaryDark,
+                  offset: Offset(0, 2),
+                  blurRadius: 0,
+                ),
+              ],
+            ),
+            child: const Icon(
+              Iconsax.more,
+              size: 22,
+              color: AppColors.secondaryDark,
+            ),
+          ),
+        ),
       ),
     );
   }

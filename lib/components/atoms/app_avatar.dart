@@ -281,3 +281,87 @@ class AppAvatarGroup extends StatelessWidget {
     );
   }
 }
+
+/// Overlapping two-letter member tokens with a trailing "+N" label,
+/// matching the member stacks on Figma group header and trip cards (05.03).
+class AppInitialsTokenRow extends StatelessWidget {
+  final List<String> names;
+  final int maxVisible;
+  final double size;
+
+  const AppInitialsTokenRow({
+    super.key,
+    required this.names,
+    this.maxVisible = 3,
+    this.size = 22.0,
+  });
+
+  static const _tokenColors = [
+    AppColors.semanticYellow,
+    AppColors.primaryOrange,
+    AppColors.primaryNavy,
+    AppColors.secondaryLight,
+  ];
+
+  static String initialsOf(String name) {
+    final parts = name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty);
+    final letters = parts.take(2).map((p) => p[0].toUpperCase()).join();
+    return letters.isEmpty ? '?' : letters;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final visible = names.take(maxVisible).toList();
+    if (visible.isEmpty) return const SizedBox.shrink();
+    final overflow = names.length - visible.length;
+    final double step = size * 0.83;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          width: size + (visible.length - 1) * step,
+          height: size,
+          child: Stack(
+            children: [
+              for (int i = 0; i < visible.length; i++)
+                Positioned(
+                  left: i * step,
+                  child: Container(
+                    width: size,
+                    height: size,
+                    decoration: BoxDecoration(
+                      color: _tokenColors[i % _tokenColors.length],
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.secondaryDark, width: 1.3),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      initialsOf(visible[i]),
+                      style: TextStyle(
+                        color: AppColors.secondaryDark,
+                        fontSize: size * 0.34,
+                        fontWeight: FontWeight.w700,
+                        height: 1.0,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        if (overflow > 0) ...[
+          const SizedBox(width: 6),
+          Text(
+            '+$overflow',
+            style: TextStyle(
+              color: AppColors.secondaryDark,
+              fontSize: size * 0.46,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}

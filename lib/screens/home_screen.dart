@@ -11,6 +11,9 @@ import '../components/organisms/app_bottom_navigation.dart';
 import '../components/organisms/trip_summary_card.dart';
 import '../components/molecules/group_tile.dart';
 import '../components/molecules/action_needed_tile.dart';
+import '../core/theme/smooth_page_route.dart';
+import '../models/group_models.dart';
+import 'groups/group_details_screen.dart';
 
 /// Dashboard for group travel planning.
 class HomeScreen extends StatefulWidget {
@@ -222,7 +225,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         dateRange: 'Oct 10 - Oct 15',
                         imageUrl:
                             'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
-                        onTap: () => _onTripTap('Bantayan Trip'),
+                        onTap: () =>
+                            _onGroupTap('The Group', tripId: 'bantayan'),
                       ),
                     ),
                     // Carousel Slide 2
@@ -235,7 +239,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         dateRange: 'Nov 12 - Nov 18',
                         imageUrl:
                             'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80',
-                        onTap: () => _onTripTap('Siargao Island Getaway'),
+                        onTap: () => _onGroupTap('Twice', tripId: 'siargao'),
                       ),
                     ),
                     // Carousel Slide 3
@@ -248,7 +252,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         dateRange: 'Dec 01 - Dec 05',
                         imageUrl:
                             'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
-                        onTap: () => _onTripTap('Baguio Mountain Retreat'),
+                        onTap: () => _onGroupTap('Blackpink', tripId: 'baguio'),
                       ),
                     ),
                   ],
@@ -331,6 +335,10 @@ class _HomeScreenState extends State<HomeScreen> {
         currentIndex: 0,
         onTabSelected: (index) {
           if (index == 0) return;
+          if (index == 1) {
+            _onGroupTap('The Group');
+            return;
+          }
           const destinations = [
             'Home',
             'Trips',
@@ -359,16 +367,16 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _onGroupTap(String groupName) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Group "$groupName" tapped')));
-  }
-
-  void _onTripTap(String tripName) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Trip "$tripName" tapped')));
+  /// Opens the group's details; [tripId] puts that trip first in Trips.
+  void _onGroupTap(String groupName, {String? tripId}) {
+    Navigator.of(context).push(
+      SmoothPageRoute(
+        page: GroupDetailsScreen(
+          group: GroupDetails.sample(groupName),
+          focusedTripId: tripId,
+        ),
+      ),
+    );
   }
 
   void _onActionTap(String actionTitle) {

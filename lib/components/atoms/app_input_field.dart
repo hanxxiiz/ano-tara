@@ -24,6 +24,7 @@ class AppInputField extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final VoidCallback? onTap;
   final FormFieldValidator<String>? validator;
+  final double borderRadius;
 
   const AppInputField({
     super.key,
@@ -45,6 +46,7 @@ class AppInputField extends StatelessWidget {
     this.onChanged,
     this.onTap,
     this.validator,
+    this.borderRadius = 20.0,
   });
 
   @override
@@ -53,7 +55,7 @@ class AppInputField extends StatelessWidget {
     final bool effectivelyEnabled = isEnabled && !isLoading;
 
     final outlineBorder = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(20.0),
+      borderRadius: BorderRadius.circular(borderRadius),
       borderSide: BorderSide(
         color: hasError
             ? AppColors.primaryOrange

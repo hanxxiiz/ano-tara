@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_typography.dart';
@@ -34,7 +34,11 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
       leadingWidget = ConstrainedBox(
         constraints: const BoxConstraints(minWidth: 44.0, minHeight: 44.0),
         child: IconButton(
-          icon: const Icon(Iconsax.arrow_left, color: AppColors.chucky, size: 22),
+          icon: const Icon(
+            Iconsax.arrow_left,
+            color: AppColors.chucky,
+            size: 22,
+          ),
           onPressed: onBackPressed ?? () => Navigator.of(context).maybePop(),
           splashRadius: 22,
         ),
@@ -58,20 +62,12 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
                 ),
                 if (subtitle != null) ...[
                   const SizedBox(height: 2),
-                  Text(
-                    subtitle!,
-                    style: AppTypography.bodySmall,
-                  ),
+                  Text(subtitle!, style: AppTypography.bodySmall),
                 ],
               ],
             )
           : null,
-      actions: actions != null
-          ? [
-              ...actions!,
-              const SizedBox(width: 8),
-            ]
-          : null,
+      actions: actions != null ? [...actions!, const SizedBox(width: 8)] : null,
     );
   }
 }
