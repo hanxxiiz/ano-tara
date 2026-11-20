@@ -50,7 +50,8 @@ class OverviewSummaryPanel extends StatelessWidget {
       );
     }
 
-    final metrics = customMetrics ??
+    final metrics =
+        customMetrics ??
         [
           OverviewMetricData(
             badgeColor: AppColors.primaryNavy,
@@ -127,7 +128,11 @@ class OverviewSummaryPanel extends StatelessWidget {
               borderRadius: BorderRadius.circular(11),
             ),
             child: Center(
-              child: AppIcon(metric.badgeIcon, color: AppColors.white, size: 20),
+              child: AppIcon(
+                metric.badgeIcon,
+                color: AppColors.white,
+                size: 20,
+              ),
             ),
           ),
           const SizedBox(width: 8),
