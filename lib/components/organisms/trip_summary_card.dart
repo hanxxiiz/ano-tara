@@ -115,8 +115,10 @@ class _TripSummaryCardState extends State<TripSummaryCard> {
                 color: AppColors.secondaryDark,
               ),
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -143,8 +145,10 @@ class _TripSummaryCardState extends State<TripSummaryCard> {
                       ),
                     ),
                     ConstrainedBox(
-                      constraints:
-                          const BoxConstraints(minWidth: 44.0, minHeight: 44.0),
+                      constraints: const BoxConstraints(
+                        minWidth: 44.0,
+                        minHeight: 44.0,
+                      ),
                       child: Center(
                         child: AnimatedSlide(
                           offset: Offset(_isPressed ? 0.15 : 0.0, 0),
@@ -175,11 +179,7 @@ class _TripSummaryCardState extends State<TripSummaryCard> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF26A69A),
-            Color(0xFF80CBC4),
-            Color(0xFFFFE082),
-          ],
+          colors: [Color(0xFF26A69A), Color(0xFF80CBC4), Color(0xFFFFE082)],
         ),
       ),
       child: Center(
