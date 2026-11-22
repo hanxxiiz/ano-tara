@@ -14,6 +14,7 @@ import '../../components/organisms/group_member_card.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_typography.dart';
 import '../../core/theme/smooth_page_route.dart';
+import '../../features/itinerary/presentation/screens/itinerary_empty_day_screen.dart';
 import '../../models/group_models.dart';
 import 'edit_group_screen.dart';
 import 'group_sheets.dart';
@@ -161,6 +162,28 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
     }
   }
 
+  /// 07.11: opens the selected trip's itinerary on its first day.
+  void _openItinerary(GroupTrip trip) {
+    final start = DateUtils.dateOnly(trip.startDate);
+    final dayCount =
+        DateUtils.dateOnly(trip.endDate).difference(start).inDays + 1;
+    final days = List<DateTime>.generate(
+      dayCount < 1 ? 1 : dayCount,
+      (i) => DateTime(start.year, start.month, start.day + i),
+    );
+
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ItineraryEmptyDayScreen(
+          tripId: trip.id,
+          destination: trip.location,
+          tripDays: days,
+          onAddManually: (_) => _showMessage('Add Manually is coming soon'),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -182,6 +205,21 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
               onPlanTripTap: () => _showMessage('Plan a Trip is coming soon'),
               onMenuTap: _openGroupActions,
             ),
+            if (_focusedTrip != null) ...[
+              const SizedBox(height: 14),
+              AppButton(
+                text: 'View Itinerary',
+                variant: AppButtonVariant.secondary,
+                size: AppButtonSize.small,
+                borderRadius: 16,
+                iconLeading: const Icon(
+                  Iconsax.routing,
+                  size: 18,
+                  color: AppColors.secondaryDark,
+                ),
+                onPressed: () => _openItinerary(_focusedTrip!),
+              ),
+            ],
             const SizedBox(height: 18),
             AppSegmentedTabs<GroupTab>(
               tabs: GroupTab.values,
