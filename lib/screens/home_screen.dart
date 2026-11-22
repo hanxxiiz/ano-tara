@@ -11,6 +11,7 @@ import '../components/organisms/app_bottom_navigation.dart';
 import '../components/organisms/trip_summary_card.dart';
 import '../components/molecules/group_tile.dart';
 import '../components/molecules/action_needed_tile.dart';
+import '../components/molecules/floating_messages_button.dart';
 
 /// Dashboard for group travel planning.
 class HomeScreen extends StatefulWidget {
@@ -325,12 +326,21 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
 
       // =======================================================================
+      // FLOATING MESSAGES BUTTON
+      // =======================================================================
+      floatingActionButton: const FloatingMessagesButton(),
+
+      // =======================================================================
       // G. BOTTOM NAVBAR
       // =======================================================================
       bottomNavigationBar: AppBottomNavigation(
         currentIndex: 0,
         onTabSelected: (index) {
           if (index == 0) return;
+          if (index == 3) {
+            Navigator.of(context).pushNamed(AppRoutes.messages);
+            return;
+          }
           const destinations = [
             'Home',
             'Trips',

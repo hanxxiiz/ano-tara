@@ -4,6 +4,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:anotara/services/auth_service.dart';
 
 import 'app_routes.dart';
+import 'components/molecules/floating_messages_button.dart';
+import 'screens/messages_list_screen.dart';
+import 'screens/notifications_screen.dart';
 import 'screens/onboarding/onboarding_flow.dart';
 import 'theme/app_theme.dart';
 
@@ -34,6 +37,8 @@ class AnoTaraApp extends StatelessWidget {
         AppRoutes.home: (_) => const HomeScreen(),
         AppRoutes.onboarding: (_) => const OnboardingFlow(),
         AppRoutes.editPreferences: (_) => const OnboardingFlow(editing: true),
+        AppRoutes.notifications: (_) => const NotificationsScreen(),
+        AppRoutes.messages: (_) => const MessagesListScreen(),
       },
     );
   }
@@ -196,10 +201,21 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {},
-        icon: const Icon(Icons.add),
-        label: const Text('New task'),
+      // TODO: Remove temporary navigation button once Groups tab is wired
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          FloatingActionButton.extended(
+            heroTag: 'temp_messages_btn',
+            onPressed: () =>
+                Navigator.of(context).pushNamed(AppRoutes.messages),
+            icon: const Icon(Icons.chat_bubble_outline_rounded),
+            label: const Text('Messages (Temp)'),
+          ),
+          const SizedBox(height: 12),
+          const FloatingMessagesButton(),
+        ],
       ),
     );
   }
