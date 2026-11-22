@@ -433,4 +433,53 @@ class TripRepository {
     tripsNotifier.value = [newTrip, ...tripsNotifier.value];
     return newTrip;
   }
+
+  /// Updates an existing trip's essentials in `trips` and the local list.
+  /// Kept locally even if the Supabase update fails.
+  Future<void> updateTripDetails({
+    required String tripId,
+    required String name,
+    required String destination,
+    required String startDate,
+    required String endDate,
+    required String meetingPlace,
+    required String description,
+    List<TripMemberModel>? members,
+  }) async {
+    tripsNotifier.value = [
+      for (final t in tripsNotifier.value)
+        t.id == tripId
+            ? TripModel(
+                id: t.id,
+                groupName: t.groupName,
+                name: name,
+                destination: destination,
+                startDate: startDate,
+                endDate: endDate,
+                meetingPlace: meetingPlace,
+                description: description,
+                isAiGenerated: t.isAiGenerated,
+                members: members ?? t.members,
+                itineraryItems: t.itineraryItems,
+              )
+            : t,
+    ];
+
+    try {
+      final client = Supabase.instance.client;
+      await client
+          .from('trips')
+          .update({
+            'name': name,
+            'destination': destination,
+            'start_date': startDate,
+            'end_date': endDate,
+            'meeting_place': meetingPlace,
+            'description': description,
+          })
+          .eq('id', tripId);
+    } catch (e) {
+      debugPrint('Supabase trips update fallback (local saved): $e');
+    }
+  }
 }

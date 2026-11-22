@@ -46,6 +46,9 @@ abstract class PlaceService {
 
   /// Places whose name, kind or address matches [query].
   Future<List<PlaceResult>> search(String destination, String query);
+
+  /// Trip-level destinations suggested before the user searches.
+  Future<List<PlaceResult>> popularDestinations();
 }
 
 class MockPlaceService implements PlaceService {
@@ -136,6 +139,61 @@ class MockPlaceService implements PlaceService {
       rating: 4.3,
       kind: 'Food park',
     ),
+    // Trip-level destinations (Create Trip → Select Destination).
+    PlaceResult(
+      id: 'bantayan-island',
+      name: 'Bantayan Island',
+      address: 'Cebu, Philippines',
+      latitude: 11.2000,
+      longitude: 123.7300,
+      rating: 4.7,
+      kind: 'Destination',
+    ),
+    PlaceResult(
+      id: 'siargao',
+      name: 'Siargao Island',
+      address: 'Surigao del Norte, Philippines',
+      latitude: 9.8480,
+      longitude: 126.0458,
+      rating: 4.8,
+      kind: 'Destination',
+    ),
+    PlaceResult(
+      id: 'boracay',
+      name: 'Boracay',
+      address: 'Malay, Aklan, Philippines',
+      latitude: 11.9674,
+      longitude: 121.9248,
+      rating: 4.7,
+      kind: 'Destination',
+    ),
+    PlaceResult(
+      id: 'el-nido',
+      name: 'El Nido',
+      address: 'Palawan, Philippines',
+      latitude: 11.1956,
+      longitude: 119.4075,
+      rating: 4.8,
+      kind: 'Destination',
+    ),
+    PlaceResult(
+      id: 'baguio',
+      name: 'Baguio City',
+      address: 'Benguet, Philippines',
+      latitude: 16.4023,
+      longitude: 120.5960,
+      rating: 4.5,
+      kind: 'Destination',
+    ),
+    PlaceResult(
+      id: 'moalboal',
+      name: 'Moalboal',
+      address: 'Cebu, Philippines',
+      latitude: 9.9536,
+      longitude: 123.3989,
+      rating: 4.6,
+      kind: 'Destination',
+    ),
     PlaceResult(
       id: 'santa-fe-port',
       name: 'Santa Fe Port',
@@ -156,10 +214,16 @@ class MockPlaceService implements PlaceService {
     String destination, {
     int limit = 5,
   }) async {
-    final sorted = [..._catalog]
+    final sorted = _catalog.where((p) => p.kind != _destinationKind).toList()
       ..sort((a, b) => (b.rating ?? 0).compareTo(a.rating ?? 0));
     return sorted.take(limit).toList();
   }
+
+  static const _destinationKind = 'Destination';
+
+  @override
+  Future<List<PlaceResult>> popularDestinations() async =>
+      _catalog.where((p) => p.kind == _destinationKind).toList();
 
   @override
   Future<List<PlaceResult>> search(String destination, String query) async {

@@ -65,6 +65,8 @@ class GroupTrip {
   final DateTime endDate;
   final TripStatus status;
   final List<String> memberNames;
+  final String meetingPlace;
+  final String description;
 
   const GroupTrip({
     required this.id,
@@ -74,7 +76,40 @@ class GroupTrip {
     required this.endDate,
     required this.status,
     this.memberNames = const [],
+    this.meetingPlace = '',
+    this.description = '',
   });
+
+  GroupTrip copyWith({
+    String? title,
+    String? location,
+    DateTime? startDate,
+    DateTime? endDate,
+    TripStatus? status,
+    List<String>? memberNames,
+    String? meetingPlace,
+    String? description,
+  }) => GroupTrip(
+    id: id,
+    title: title ?? this.title,
+    location: location ?? this.location,
+    startDate: startDate ?? this.startDate,
+    endDate: endDate ?? this.endDate,
+    status: status ?? this.status,
+    memberNames: memberNames ?? this.memberNames,
+    meetingPlace: meetingPlace ?? this.meetingPlace,
+    description: description ?? this.description,
+  );
+
+  /// Calendar dates for Day 1…N (at least one day).
+  List<DateTime> get days {
+    final start = dateOnly(startDate);
+    final count = dateOnly(endDate).difference(start).inDays + 1;
+    return [
+      for (var i = 0; i < (count < 1 ? 1 : count); i++)
+        DateTime(start.year, start.month, start.day + i),
+    ];
+  }
 
   String get dateRange => '${_formatDay(startDate)} - ${_formatDay(endDate)}';
 
@@ -293,6 +328,7 @@ class GroupDetails {
     String? description,
     String? inviteCode,
     List<GroupMember>? members,
+    List<GroupTrip>? trips,
     Map<String, Set<DateTime>>? availability,
   }) => GroupDetails(
     id: id,
@@ -301,9 +337,31 @@ class GroupDetails {
     inviteCode: inviteCode ?? this.inviteCode,
     currentUserRole: currentUserRole,
     members: members ?? this.members,
-    trips: trips,
+    trips: trips ?? this.trips,
     availability: availability ?? this.availability,
   );
+
+  /// Adds [trip], or replaces the trip with the same id.
+  GroupDetails withTrip(GroupTrip trip) {
+    final exists = trips.any((t) => t.id == trip.id);
+    return copyWith(
+      trips: exists
+          ? [for (final t in trips) t.id == trip.id ? trip : t]
+          : [trip, ...trips],
+    );
+  }
+
+  /// How many days from [start] to [end] (inclusive) [member] marked as free.
+  int freeDaysFor(GroupMember member, DateTime start, DateTime end) {
+    final dates = availability[member.id] ?? const <DateTime>{};
+    var count = 0;
+    for (var d = dateOnly(start);
+        !d.isAfter(dateOnly(end));
+        d = DateTime(d.year, d.month, d.day + 1)) {
+      if (dates.contains(d)) count++;
+    }
+    return count;
+  }
 
   /// Adds [people] as pending invitations, skipping anyone already listed.
   GroupDetails withInvited(List<UserProfile> people) {

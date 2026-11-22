@@ -15,6 +15,8 @@ import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_typography.dart';
 import '../../core/theme/smooth_page_route.dart';
 import '../../features/itinerary/presentation/screens/itinerary_screen.dart';
+import '../../features/trips/presentation/screens/create_trip_screen.dart';
+import '../../features/trips/presentation/screens/edit_trip_screen.dart';
 import '../../models/group_models.dart';
 import 'edit_group_screen.dart';
 import 'group_sheets.dart';
@@ -164,23 +166,40 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
 
   /// 07.11: opens the selected trip's itinerary on its first day.
   void _openItinerary(GroupTrip trip) {
-    final start = DateUtils.dateOnly(trip.startDate);
-    final dayCount =
-        DateUtils.dateOnly(trip.endDate).difference(start).inDays + 1;
-    final days = List<DateTime>.generate(
-      dayCount < 1 ? 1 : dayCount,
-      (i) => DateTime(start.year, start.month, start.day + i),
-    );
-
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => ItineraryScreen(
           tripId: trip.id,
           destination: trip.location,
-          tripDays: days,
+          tripDays: trip.days,
         ),
       ),
     );
+  }
+
+  /// 08.01 Create Trip → ready screen; shows the new trip afterwards.
+  Future<void> _planTrip() async {
+    final result = await Navigator.of(context).push<CreateTripResult>(
+      SmoothPageRoute(page: CreateTripScreen(group: _group)),
+    );
+    if (result == null || !mounted) return;
+    setState(() {
+      _group = _group.withTrip(result.trip);
+      _focusedTripId = result.trip.id;
+      _tab = GroupTab.trips;
+    });
+    if (result.action == TripReadyAction.planItinerary) {
+      _openItinerary(result.trip);
+    }
+  }
+
+  Future<void> _editTrip(GroupTrip trip) async {
+    final updated = await Navigator.of(context).push<GroupTrip>(
+      SmoothPageRoute(page: EditTripScreen(group: _group, trip: trip)),
+    );
+    if (updated == null || !mounted) return;
+    setState(() => _group = _group.withTrip(updated));
+    _showMessage('Trip details updated');
   }
 
   @override
@@ -201,22 +220,45 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
               groupName: _focusedTrip?.title ?? _group.name,
               isOrganizer: _group.isOrganizer,
               memberNames: _focusedTrip?.memberNames ?? _group.memberNames,
-              onPlanTripTap: () => _showMessage('Plan a Trip is coming soon'),
+              onPlanTripTap: _planTrip,
               onMenuTap: _openGroupActions,
             ),
             if (_focusedTrip != null) ...[
               const SizedBox(height: 14),
-              AppButton(
-                text: 'View Itinerary',
-                variant: AppButtonVariant.secondary,
-                size: AppButtonSize.small,
-                borderRadius: 16,
-                iconLeading: const Icon(
-                  Iconsax.routing,
-                  size: 18,
-                  color: AppColors.secondaryDark,
-                ),
-                onPressed: () => _openItinerary(_focusedTrip!),
+              Row(
+                children: [
+                  Expanded(
+                    child: AppButton(
+                      text: 'View Itinerary',
+                      variant: AppButtonVariant.secondary,
+                      size: AppButtonSize.small,
+                      borderRadius: 16,
+                      iconLeading: const Icon(
+                        Iconsax.routing,
+                        size: 18,
+                        color: AppColors.secondaryDark,
+                      ),
+                      onPressed: () => _openItinerary(_focusedTrip!),
+                    ),
+                  ),
+                  if (_group.isOrganizer) ...[
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: AppButton(
+                        text: 'Edit Trip',
+                        variant: AppButtonVariant.secondary,
+                        size: AppButtonSize.small,
+                        borderRadius: 16,
+                        iconLeading: const Icon(
+                          Iconsax.edit_2,
+                          size: 18,
+                          color: AppColors.secondaryDark,
+                        ),
+                        onPressed: () => _editTrip(_focusedTrip!),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ],
             const SizedBox(height: 18),
