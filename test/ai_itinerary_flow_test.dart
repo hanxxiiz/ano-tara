@@ -39,6 +39,15 @@ const _request = AiItineraryRequest(
 );
 
 void main() {
+  /// Lets real font loading finish, then handles the relayout it schedules,
+  /// so it does not fire after the widget tree is disposed.
+  Future<void> settleFonts(WidgetTester tester) async {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 300)),
+    );
+    await tester.pumpAndSettle();
+  }
+
   Future<void> pumpFlow(
     WidgetTester tester, {
     required AiItineraryService service,
@@ -84,6 +93,7 @@ void main() {
 
     expect(service.calls, 2);
     expect(find.text('Eat at Jollibee'), findsOneWidget);
+    await settleFonts(tester);
   });
 
   testWidgets('removed suggestions are not saved', (tester) async {
@@ -139,5 +149,6 @@ void main() {
     await tester.tap(find.text('Whole Trip'));
     await tester.pumpAndSettle();
     expect(find.text('Existing Entries Detected'), findsOneWidget);
+    await settleFonts(tester);
   });
 }

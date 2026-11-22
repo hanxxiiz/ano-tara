@@ -14,7 +14,7 @@ import '../../components/organisms/group_member_card.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_typography.dart';
 import '../../core/theme/smooth_page_route.dart';
-import '../../features/itinerary/presentation/screens/itinerary_empty_day_screen.dart';
+import '../../features/itinerary/presentation/screens/itinerary_screen.dart';
 import '../../models/group_models.dart';
 import 'edit_group_screen.dart';
 import 'group_sheets.dart';
@@ -174,11 +174,10 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
 
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => ItineraryEmptyDayScreen(
+        builder: (_) => ItineraryScreen(
           tripId: trip.id,
           destination: trip.location,
           tripDays: days,
-          onAddManually: (_) => _showMessage('Add Manually is coming soon'),
         ),
       ),
     );

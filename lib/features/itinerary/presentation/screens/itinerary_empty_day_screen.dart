@@ -48,160 +48,86 @@ Future<AiItineraryFlowResult?> startAiItineraryFlow({
   );
 }
 
-/// 07.11 · Itinerary — empty day from trip.
-class ItineraryEmptyDayScreen extends StatefulWidget {
-  final String? tripId;
-  final String destination;
+/// 07.11 · Itinerary — empty day: hero, copy, "Generate with AI" and
+/// "Add Manually". Shown by the itinerary screen when a day has no entries.
+class ItineraryEmptyDayBody extends StatelessWidget {
+  final int dayNumber;
+  final VoidCallback onGenerateWithAi;
+  final VoidCallback onAddManually;
 
-  /// Calendar dates for Day 1…N. Must not be empty.
-  final List<DateTime> tripDays;
-  final int initialDay;
-  final List<ItineraryItemModel> existingItems;
-
-  /// Opens the manual "Add itinerary" flow for the given day.
-  final ValueChanged<int>? onAddManually;
-
-  /// Called after AI suggestions were saved.
-  final ValueChanged<AiItineraryFlowResult>? onAiItemsAdded;
-  final AiItineraryService? aiService;
-
-  const ItineraryEmptyDayScreen({
+  const ItineraryEmptyDayBody({
     super.key,
-    this.tripId,
-    required this.destination,
-    required this.tripDays,
-    this.initialDay = 1,
-    this.existingItems = const [],
-    this.onAddManually,
-    this.onAiItemsAdded,
-    this.aiService,
+    required this.dayNumber,
+    required this.onGenerateWithAi,
+    required this.onAddManually,
   });
 
   @override
-  State<ItineraryEmptyDayScreen> createState() =>
-      _ItineraryEmptyDayScreenState();
-}
-
-class _ItineraryEmptyDayScreenState extends State<ItineraryEmptyDayScreen> {
-  late int _day = widget.initialDay.clamp(1, widget.tripDays.length);
-
-  Future<void> _generateWithAi() async {
-    final result = await startAiItineraryFlow(
-      context: context,
-      tripId: widget.tripId,
-      destination: widget.destination,
-      tripDays: widget.tripDays,
-      selectedDay: _day,
-      existingItems: widget.existingItems,
-      service: widget.aiService,
-    );
-    if (result != null) widget.onAiItemsAdded?.call(result);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final dayCount = widget.tripDays.length;
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        titleSpacing: 0,
-        leading: IconButton(
-          icon: const Icon(Iconsax.arrow_left, color: AppColors.secondaryDark),
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
-        title: Text(
-          'View Itinerary',
-          style: AppTypography.h3.copyWith(color: AppColors.secondaryDark),
-        ),
-        bottom: const PreferredSize(
-          preferredSize: Size.fromHeight(1),
-          child: Divider(height: 1, thickness: 1, color: AppColors.secondaryDark),
-        ),
-      ),
-      body: SafeArea(
-        top: false,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(13, 18, 13, 0),
-              child: ItineraryDayHeader(
-                dayNumber: _day,
-                dayCount: dayCount,
-                date: widget.tripDays[_day - 1],
-                onPrevious: _day > 1 ? () => setState(() => _day--) : null,
-                onNext:
-                    _day < dayCount ? () => setState(() => _day++) : null,
-              ),
-            ),
-            Expanded(
-              child: Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 40),
-                  child: Column(
-                    children: [
-                      const ItineraryHeroCircle(icon: Iconsax.routing5),
-                      const SizedBox(height: 20),
-                      Text(
-                        'No itinerary yet',
-                        style: AppTypography.h3.copyWith(
-                          color: AppColors.black,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Plan Day $_day yourself, or let AI draft it from '
-                        'your group\'s preferences.',
-                        textAlign: TextAlign.center,
-                        style: AppTypography.bodyMedium.copyWith(
-                          color: AppColors.secondaryDark,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(27, 0, 32, 24),
+    return Column(
+      children: [
+        Expanded(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 40),
               child: Column(
                 children: [
-                  AppButton(
-                    text: 'Generate with AI',
-                    customHeight: 47,
-                    borderRadius: 16,
-                    iconLeading: const AppIcon(
-                      Iconsax.magic_star5,
-                      size: 20,
-                      color: AppColors.white,
+                  const ItineraryHeroCircle(icon: Iconsax.routing5),
+                  const SizedBox(height: 20),
+                  Text(
+                    'No itinerary yet',
+                    style: AppTypography.h3.copyWith(
+                      color: AppColors.black,
+                      fontWeight: FontWeight.w800,
                     ),
-                    onPressed: _generateWithAi,
                   ),
-                  const SizedBox(height: 18),
-                  AppButton(
-                    text: 'Add Manually',
-                    variant: AppButtonVariant.secondary,
-                    customHeight: 47,
-                    borderRadius: 16,
-                    iconLeading: const Icon(
-                      Iconsax.add,
-                      size: 20,
+                  const SizedBox(height: 8),
+                  Text(
+                    'Plan Day $dayNumber yourself, or let AI draft it from '
+                    'your group\'s preferences.',
+                    textAlign: TextAlign.center,
+                    style: AppTypography.bodyMedium.copyWith(
                       color: AppColors.secondaryDark,
+                      fontWeight: FontWeight.w600,
                     ),
-                    onPressed: widget.onAddManually == null
-                        ? null
-                        : () => widget.onAddManually!(_day),
                   ),
                 ],
               ),
             ),
-          ],
+          ),
         ),
-      ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(27, 0, 32, 24),
+          child: Column(
+            children: [
+              AppButton(
+                text: 'Generate with AI',
+                customHeight: 47,
+                borderRadius: 16,
+                iconLeading: const AppIcon(
+                  Iconsax.magic_star5,
+                  size: 20,
+                  color: AppColors.white,
+                ),
+                onPressed: onGenerateWithAi,
+              ),
+              const SizedBox(height: 18),
+              AppButton(
+                text: 'Add Manually',
+                variant: AppButtonVariant.secondary,
+                customHeight: 47,
+                borderRadius: 16,
+                iconLeading: const Icon(
+                  Iconsax.add,
+                  size: 20,
+                  color: AppColors.secondaryDark,
+                ),
+                onPressed: onAddManually,
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

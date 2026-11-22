@@ -47,17 +47,22 @@ class ItinerarySquareIconButton extends StatelessWidget {
   final Color background;
   final String semanticLabel;
 
+  /// Grey outline/icon instead of ink (select mode, 07.13).
+  final bool muted;
+
   const ItinerarySquareIconButton({
     super.key,
     required this.icon,
     required this.onPressed,
     required this.semanticLabel,
     this.background = AppColors.secondaryLight,
+    this.muted = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final enabled = onPressed != null;
+    final ink = muted ? AppColors.shayne : AppColors.secondaryDark;
     return Semantics(
       button: true,
       enabled: enabled,
@@ -69,23 +74,23 @@ class ItinerarySquareIconButton extends StatelessWidget {
           // Pads the 35×34 visual to a ≥44 tap target.
           padding: const EdgeInsets.all(5),
           child: Opacity(
-            opacity: enabled ? 1 : 0.35,
+            opacity: enabled || muted ? 1 : 0.35,
             child: Container(
               width: 35,
               height: 34,
               decoration: BoxDecoration(
                 color: background,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.secondaryDark, width: 1.5),
-                boxShadow: const [
+                border: Border.all(color: ink, width: 1.5),
+                boxShadow: [
                   BoxShadow(
-                    color: AppColors.secondaryDark,
-                    offset: Offset(0, 2),
+                    color: ink,
+                    offset: const Offset(0, 2),
                     blurRadius: 0,
                   ),
                 ],
               ),
-              child: Icon(icon, size: 16, color: AppColors.secondaryDark),
+              child: Icon(icon, size: 16, color: ink),
             ),
           ),
         ),
@@ -102,6 +107,9 @@ class ItineraryDayHeader extends StatelessWidget {
   final VoidCallback? onPrevious;
   final VoidCallback? onNext;
 
+  /// Greyed-out header while selecting entries (07.13).
+  final bool muted;
+
   const ItineraryDayHeader({
     super.key,
     required this.dayNumber,
@@ -109,10 +117,12 @@ class ItineraryDayHeader extends StatelessWidget {
     this.date,
     this.onPrevious,
     this.onNext,
+    this.muted = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final ink = muted ? AppColors.shayne : AppColors.secondaryDark;
     return Column(
       children: [
         Row(
@@ -120,7 +130,8 @@ class ItineraryDayHeader extends StatelessWidget {
             ItinerarySquareIconButton(
               icon: Iconsax.arrow_left_2,
               semanticLabel: 'Previous day',
-              onPressed: onPrevious,
+              onPressed: muted ? null : onPrevious,
+              muted: muted,
             ),
             Expanded(
               child: Column(
@@ -128,7 +139,7 @@ class ItineraryDayHeader extends StatelessWidget {
                   Text(
                     'Day $dayNumber of $dayCount',
                     style: AppTypography.h3.copyWith(
-                      color: AppColors.secondaryDark,
+                      color: ink,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -148,7 +159,8 @@ class ItineraryDayHeader extends StatelessWidget {
             ItinerarySquareIconButton(
               icon: Iconsax.arrow_right_3,
               semanticLabel: 'Next day',
-              onPressed: onNext,
+              onPressed: muted ? null : onNext,
+              muted: muted,
             ),
           ],
         ),
@@ -165,11 +177,9 @@ class ItineraryDayHeader extends StatelessWidget {
                     height: 9,
                     margin: const EdgeInsets.symmetric(horizontal: 4),
                     decoration: BoxDecoration(
-                      color: d == dayNumber
-                          ? AppColors.secondaryDark
-                          : const Color(0xFFE9E6E6),
+                      color: d == dayNumber ? ink : const Color(0xFFE9E6E6),
                       borderRadius: BorderRadius.circular(4.5),
-                      border: Border.all(color: AppColors.secondaryDark),
+                      border: Border.all(color: ink),
                     ),
                   ),
                 ),
@@ -236,36 +246,52 @@ class AiNoticeBox extends StatelessWidget {
   }
 }
 
-IconData _categoryIcon(String category) {
+/// Icon on the navy image tile of an entry card.
+IconData itineraryCategoryIcon(String category) {
   switch (category.toLowerCase()) {
     case 'food':
+    case 'dining':
       return Iconsax.reserve5;
     case 'place':
     case 'place/check-in':
     case 'accommodation':
-      return Iconsax.location5;
+      return Iconsax.home_25;
     default:
-      return Iconsax.map5;
+      return Iconsax.routing5;
   }
 }
 
-/// AI suggestion row on the review screen (08.06) with an orange remove button.
-class AiSuggestionCard extends StatelessWidget {
-  final AiItinerarySuggestion suggestion;
-  final VoidCallback onRemove;
+/// Itinerary entry row (07.12): navy image, category chip, title, location
+/// and time, plus a [trailing] control (chevron, checkbox, remove button).
+class ItineraryEntryCard extends StatelessWidget {
+  final String category;
+  final String title;
+  final String location;
+  final String timeRange;
+  final Widget? trailing;
+  final Color background;
+  final VoidCallback? onTap;
+  final String? semanticLabel;
 
-  const AiSuggestionCard({
+  const ItineraryEntryCard({
     super.key,
-    required this.suggestion,
-    required this.onRemove,
+    required this.category,
+    required this.title,
+    required this.location,
+    required this.timeRange,
+    this.trailing,
+    this.background = AppColors.white,
+    this.onTap,
+    this.semanticLabel,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(15, 15, 6, 15),
+    final card = AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      padding: const EdgeInsets.fromLTRB(17, 15, 6, 15),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: background,
         borderRadius: BorderRadius.circular(15),
         border: Border.all(color: AppColors.secondaryDark, width: 2),
         boxShadow: const [
@@ -288,7 +314,7 @@ class AiSuggestionCard extends StatelessWidget {
             ),
             alignment: Alignment.center,
             child: AppIcon(
-              _categoryIcon(suggestion.category),
+              itineraryCategoryIcon(category),
               size: 28,
               color: AppColors.white,
             ),
@@ -299,6 +325,7 @@ class AiSuggestionCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
+                  constraints: const BoxConstraints(minWidth: 86),
                   padding:
                       const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
                   decoration: BoxDecoration(
@@ -306,7 +333,8 @@ class AiSuggestionCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8.5),
                   ),
                   child: Text(
-                    suggestion.category,
+                    category,
+                    textAlign: TextAlign.center,
                     style: AppTypography.caption.copyWith(
                       color: AppColors.white,
                       fontWeight: FontWeight.w600,
@@ -316,7 +344,7 @@ class AiSuggestionCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  suggestion.title,
+                  title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: AppTypography.titleLarge.copyWith(
@@ -327,33 +355,67 @@ class AiSuggestionCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 6),
-                _MetaRow(icon: Iconsax.location5, text: suggestion.location),
+                _MetaRow(icon: Iconsax.location5, text: location),
                 const SizedBox(height: 4),
-                _MetaRow(icon: Iconsax.clock5, text: suggestion.timeRange),
+                _MetaRow(icon: Iconsax.clock5, text: timeRange),
               ],
             ),
           ),
-          Semantics(
-            button: true,
-            label: 'Remove ${suggestion.title}',
-            child: InkResponse(
-              key: ValueKey('remove-${suggestion.id}'),
-              onTap: onRemove,
-              radius: 24,
-              child: const SizedBox(
-                width: 44,
-                height: 44,
-                child: Center(
-                  child: AppIcon(
-                    Iconsax.close_circle5,
-                    size: 22,
-                    color: AppColors.primaryOrange,
-                  ),
-                ),
+          ?trailing,
+        ],
+      ),
+    );
+
+    if (onTap == null) return card;
+    return Semantics(
+      button: true,
+      label: semanticLabel,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: card,
+      ),
+    );
+  }
+}
+
+/// AI suggestion row on the review screen (08.06) with an orange remove button.
+class AiSuggestionCard extends StatelessWidget {
+  final AiItinerarySuggestion suggestion;
+  final VoidCallback onRemove;
+
+  const AiSuggestionCard({
+    super.key,
+    required this.suggestion,
+    required this.onRemove,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ItineraryEntryCard(
+      category: suggestion.category,
+      title: suggestion.title,
+      location: suggestion.location,
+      timeRange: suggestion.timeRange,
+      trailing: Semantics(
+        button: true,
+        label: 'Remove ${suggestion.title}',
+        child: InkResponse(
+          key: ValueKey('remove-${suggestion.id}'),
+          onTap: onRemove,
+          radius: 24,
+          child: const SizedBox(
+            width: 44,
+            height: 44,
+            child: Center(
+              child: AppIcon(
+                Iconsax.close_circle5,
+                size: 22,
+                color: AppColors.primaryOrange,
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }
