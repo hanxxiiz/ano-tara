@@ -3,6 +3,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../app_routes.dart';
+import '../features/trips/presentation/widgets/trip_views_preview_sheet.dart';
 import '../theme/app_theme.dart';
 import '../widgets/hero_banner_trio.dart';
 import '../components/atoms/app_button.dart';
@@ -84,6 +85,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   fontWeight: FontWeight.bold,
                   letterSpacing: -0.3,
                 ),
+              ),
+              const SizedBox(height: 16),
+
+              // ---------------------------------------------------------------
+              // TEMP SHORTCUT: Trip Map & Completed/Cancelled Trip Views
+              // ---------------------------------------------------------------
+              AppButton(
+                text: 'Preview Trip Views (Temp)',
+                size: AppButtonSize.small,
+                variant: AppButtonVariant.primaryOrange,
+                onPressed: () => showTripViewsPreviewSheet(context),
               ),
               const SizedBox(height: 16),
 

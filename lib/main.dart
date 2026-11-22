@@ -4,6 +4,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:anotara/services/auth_service.dart';
 
 import 'app_routes.dart';
+import 'features/trips/domain/trip_view_models.dart';
+import 'features/trips/presentation/screens/trip_map_screen.dart';
+import 'features/trips/presentation/screens/trip_overview_screen.dart';
+import 'features/trips/presentation/widgets/trip_views_preview_sheet.dart';
 import 'screens/onboarding/onboarding_flow.dart';
 import 'theme/app_theme.dart';
 
@@ -34,6 +38,15 @@ class AnoTaraApp extends StatelessWidget {
         AppRoutes.home: (_) => const HomeScreen(),
         AppRoutes.onboarding: (_) => const OnboardingFlow(),
         AppRoutes.editPreferences: (_) => const OnboardingFlow(editing: true),
+        AppRoutes.tripMap: (_) => TripMapScreen(
+          trip: TripDetailData.activeMapSample(),
+        ),
+        AppRoutes.completedTrip: (_) => TripOverviewScreen(
+          trip: TripDetailData.completedSample(),
+        ),
+        AppRoutes.cancelledTrip: (_) => TripOverviewScreen(
+          trip: TripDetailData.cancelledSample(),
+        ),
       },
     );
   }
@@ -197,9 +210,9 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {},
-        icon: const Icon(Icons.add),
-        label: const Text('New task'),
+        onPressed: () => showTripViewsPreviewSheet(context),
+        icon: const Icon(Icons.map_rounded),
+        label: const Text('Trip Views (Temp)'),
       ),
     );
   }

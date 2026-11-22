@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../components/atoms/app_button.dart';
 import '../../core/constants/app_colors.dart';
+import '../../features/trips/presentation/widgets/trip_views_preview_sheet.dart';
 import 'login_screen.dart';
 import 'sign_up_screen.dart';
 
@@ -44,6 +45,14 @@ class StartScreen extends StatelessWidget {
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const LoginScreen()),
                 ),
+              ),
+              const SizedBox(height: 14),
+              // Temporary shortcut to preview Trip Map & Completed/Cancelled Trip Views
+              AppButton(
+                text: 'Preview Trip Views (Temp)',
+                customHeight: 46,
+                variant: AppButtonVariant.primaryOrange,
+                onPressed: () => showTripViewsPreviewSheet(context),
               ),
               const Spacer(flex: 3),
             ],
