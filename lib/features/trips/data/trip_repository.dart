@@ -220,6 +220,32 @@ class TripRepository {
     return item;
   }
 
+  /// Saves several itinerary items at once (e.g. accepted AI suggestions) to
+  /// `itinerary_items` and appends them to the local state list.
+  ///
+  /// Like [saveManualItineraryItem], items are kept locally even if the
+  /// Supabase insert fails.
+  Future<List<ItineraryItemModel>> saveItineraryItems(
+    List<ItineraryItemModel> items,
+  ) async {
+    if (items.isEmpty) return items;
+
+    manualItineraryItemsNotifier.value = [
+      ...items,
+      ...manualItineraryItemsNotifier.value,
+    ];
+
+    try {
+      final client = Supabase.instance.client;
+      await client
+          .from('itinerary_items')
+          .insert(items.map((item) => item.toSupabaseMap()).toList());
+    } catch (e) {
+      debugPrint('Supabase itinerary_items batch insert fallback (local saved): $e');
+    }
+    return items;
+  }
+
   /// Saves a newly planned trip to `trips`, its selected members to `trip_members`,
   /// and its itinerary items to `itinerary_items`.
   Future<TripModel> saveTrip({
