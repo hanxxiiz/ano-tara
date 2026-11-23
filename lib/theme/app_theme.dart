@@ -49,7 +49,7 @@ class AppTokens {
   static const double sectionSpacing = 22.0;
 }
 
-const String? kAppFontFamily = AppFonts.urbanist;
+const String kAppFontFamily = AppFonts.urbanist;
 
 ThemeData buildAppTheme() {
   return ThemeData(

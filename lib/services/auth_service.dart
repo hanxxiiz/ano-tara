@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -33,8 +34,18 @@ class OnboardingCheck extends StatefulWidget {
 }
 
 class _OnboardingCheckState extends State<OnboardingCheck> {
-  late Future<MemberPreferences?> _future = PreferencesService().load();
-  void _retry() => setState(() => _future = PreferencesService().load());
+  late Future<MemberPreferences?> _future = _load();
+
+  Future<MemberPreferences?> _load() async {
+    try {
+      return await PreferencesService().load();
+    } catch (e, st) {
+      debugPrint('OnboardingCheck load failed: $e\n$st');
+      rethrow;
+    }
+  }
+
+  void _retry() => setState(() => _future = _load());
 
   @override
   Widget build(BuildContext context) {
@@ -49,9 +60,30 @@ class _OnboardingCheckState extends State<OnboardingCheck> {
         if (snap.hasError) {
           return Scaffold(
             body: Center(
-              child: TextButton(
-                onPressed: _retry,
-                child: const Text("Couldn't load. Tap to retry."),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextButton(
+                      onPressed: _retry,
+                      child: const Text("Couldn't load. Tap to retry."),
+                    ),
+                    if (kDebugMode) ...[
+                      const SizedBox(height: 12),
+                      SelectableText(
+                        '${snap.error}',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 12, color: Colors.red),
+                      ),
+                    ],
+                    const SizedBox(height: 12),
+                    TextButton(
+                      onPressed: () => supabase.auth.signOut(),
+                      child: const Text('Sign out'),
+                    ),
+                  ],
+                ),
               ),
             ),
           );
