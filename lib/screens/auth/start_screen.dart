@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../components/atoms/app_button.dart';
 import '../../components/molecules/floating_messages_button.dart';
 import '../../core/constants/app_colors.dart';
-import '../messages_list_screen.dart';
+import '../../features/group_chat/presentation/screens/messages_list_screen.dart';
 import 'login_screen.dart';
 import 'sign_up_screen.dart';
 

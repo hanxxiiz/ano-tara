@@ -8,8 +8,8 @@ import 'package:anotara/components/molecules/app_message_composer.dart';
 import 'package:anotara/components/molecules/floating_messages_button.dart';
 import 'package:anotara/components/molecules/message_thread_tile.dart';
 import 'package:anotara/core/constants/app_colors.dart';
-import 'package:anotara/screens/group_chat_screen.dart';
-import 'package:anotara/screens/messages_list_screen.dart';
+import 'package:anotara/features/group_chat/presentation/screens/group_chat_screen.dart';
+import 'package:anotara/features/group_chat/presentation/screens/messages_list_screen.dart';
 
 void main() {
   setUpAll(() {

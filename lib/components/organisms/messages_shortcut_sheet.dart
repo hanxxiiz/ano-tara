@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_typography.dart';
-import '../../models/group_chat_models.dart';
-import '../../screens/group_chat_screen.dart';
-import '../../screens/messages_list_screen.dart';
+import '../../features/group_chat/presentation/state/group_messages_store.dart';
+import '../../features/group_chat/models/group_chat_models.dart';
+import '../../features/group_chat/presentation/screens/group_chat_screen.dart';
+import '../../features/group_chat/presentation/screens/messages_list_screen.dart';
 import '../molecules/message_thread_tile.dart';
 
 /// Opens the Group Messages list shortcut overlay matching Figma
@@ -49,16 +50,29 @@ class _MessagesShortcutDialogState extends State<_MessagesShortcutDialog> {
 
   String _query = '';
   bool _isLoading = true;
+  bool _loadFailed = false;
 
   @override
   void initState() {
     super.initState();
     _store.addListener(_onStoreChanged);
+    _store.watchThreads();
     _loadThreads();
   }
 
   Future<void> _loadThreads() async {
-    await Future<void>.delayed(const Duration(milliseconds: 350));
+    setState(() {
+      _isLoading = true;
+      _loadFailed = false;
+    });
+    try {
+      await Future.wait<void>([
+        _store.loadThreads(),
+        Future<void>.delayed(const Duration(milliseconds: 350)),
+      ]);
+    } catch (_) {
+      _loadFailed = true;
+    }
     if (!mounted) return;
     setState(() => _isLoading = false);
   }
@@ -208,6 +222,26 @@ class _MessagesShortcutDialogState extends State<_MessagesShortcutDialog> {
                             itemBuilder: (_, _) =>
                                 const MessageThreadTileSkeleton(),
                           )
+                        : _loadFailed
+                            ? Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 24,
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'Could not load group messages.',
+                                      textAlign: TextAlign.center,
+                                      style: AppTypography.bodySmall,
+                                    ),
+                                    TextButton(
+                                      onPressed: _loadThreads,
+                                      child: const Text('Try again'),
+                                    ),
+                                  ],
+                                ),
+                              )
                         : threads.isEmpty
                             ? Padding(
                                 padding:
