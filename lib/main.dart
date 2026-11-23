@@ -81,7 +81,9 @@ class HomeScreen extends StatelessWidget {
             icon: const Icon(Icons.tune_rounded),
           ),
           IconButton(
-            onPressed: () {},
+            tooltip: 'Notifications',
+            onPressed: () =>
+                Navigator.of(context).pushNamed(AppRoutes.notifications),
             icon: const Icon(Icons.notifications_none_rounded),
           ),
           IconButton(
@@ -201,11 +203,19 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
       ),
-      // TODO: Remove temporary navigation button once Groups tab is wired
+      // TODO: Remove temporary navigation buttons once tabs are wired
       floatingActionButton: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
+          FloatingActionButton.extended(
+            heroTag: 'temp_notifications_btn',
+            onPressed: () =>
+                Navigator.of(context).pushNamed(AppRoutes.notifications),
+            icon: const Icon(Icons.notifications_active_outlined),
+            label: const Text('Notifications (Temp)'),
+          ),
+          const SizedBox(height: 12),
           FloatingActionButton.extended(
             heroTag: 'temp_messages_btn',
             onPressed: () =>

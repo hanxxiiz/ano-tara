@@ -4,6 +4,7 @@ import '../../components/atoms/app_button.dart';
 import '../../components/molecules/floating_messages_button.dart';
 import '../../core/constants/app_colors.dart';
 import '../messages_list_screen.dart';
+import '../notifications_screen.dart';
 import 'login_screen.dart';
 import 'sign_up_screen.dart';
 
@@ -63,6 +64,23 @@ class StartScreen extends StatelessWidget {
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) => const MessagesListScreen(),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              // TODO: Remove temporary navigation button once Notifications flow is wired everywhere
+              AppButton(
+                text: 'Notifications & Invitations (Temp)',
+                customHeight: 50,
+                variant: AppButtonVariant.primaryNavy,
+                iconLeading: const Icon(
+                  Icons.notifications_active_rounded,
+                  color: AppColors.white,
+                  size: 20,
+                ),
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const NotificationsScreen(),
                   ),
                 ),
               ),

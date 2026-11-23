@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
 
-/// InvitationTile component
+/// InvitationTile component matching Figma `04.02 · Notifications — invitation list`.
 ///
-/// Reusable card displaying an invitation:
+/// Displays an invitation card:
 /// - Invitation title in Urbanist ExtraBold on the top-left
-/// - Pill-shaped status badge on the top-right (Pending, Accepted, Rejected)
+/// - Pill-shaped status badge on the top-right (Pending, Accepted, Declined)
 /// - Description in Open Sans
-/// - Timestamp below description in Open Sans
+/// - Muted timestamp below description in Open Sans
 class InvitationTile extends StatelessWidget {
   const InvitationTile({
     super.key,
@@ -27,18 +27,20 @@ class InvitationTile extends StatelessWidget {
 
   static const Color darkNavy = Color(0xFF10052F);
   static const Color textColor = Color(0xFF0F0331);
+  static const Color timestampColor = Color(0xFF868097);
 
-  // Status Badge Colors as specified in the Design System
-  static const Color pendingBg = Color(0xFFFFEA87);
+  // Status Badge Colors matching Figma 04.02
+  static const Color pendingBg = Color(0xFFFFE87C);
   static const Color acceptedBg = Color(0xFF89A3C1);
-  static final Color rejectedBg = const Color(0xFFE24B27).withValues(alpha: 0.75);
+  static const Color declinedBg = Color(0xFFE57458);
 
   Color _getStatusBackgroundColor(String status) {
     switch (status.trim().toLowerCase()) {
       case 'accepted':
         return acceptedBg;
+      case 'declined':
       case 'rejected':
-        return rejectedBg;
+        return declinedBg;
       case 'pending':
       default:
         return pendingBg;
@@ -73,7 +75,7 @@ class InvitationTile extends StatelessWidget {
           children: [
             // Top Row: Title and Status Badge
             Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
                   child: Text(
@@ -82,7 +84,7 @@ class InvitationTile extends StatelessWidget {
                       fontFamily: AppFonts.urbanist,
                       color: textColor,
                       fontSize: 16,
-                      fontWeight: FontWeight.w800, // Urbanist ExtraBold
+                      fontWeight: FontWeight.w800,
                       letterSpacing: -0.2,
                     ),
                   ),
@@ -90,7 +92,10 @@ class InvitationTile extends StatelessWidget {
                 const SizedBox(width: 12),
                 // Pill-shaped status badge
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  constraints: const BoxConstraints(minWidth: 88),
+                  alignment: Alignment.center,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
                   decoration: BoxDecoration(
                     color: badgeColor,
                     borderRadius: BorderRadius.circular(999),
@@ -101,7 +106,6 @@ class InvitationTile extends StatelessWidget {
                       fontFamily: AppFonts.openSans,
                       color: Colors.white,
                       fontSize: 11.5,
-                      fontStyle: FontStyle.italic,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -117,7 +121,7 @@ class InvitationTile extends StatelessWidget {
                 fontFamily: AppFonts.openSans,
                 color: textColor,
                 fontSize: 12.5,
-                fontWeight: FontWeight.w400, // Open Sans Regular
+                fontWeight: FontWeight.w400,
                 height: 1.35,
               ),
             ),
@@ -128,9 +132,9 @@ class InvitationTile extends StatelessWidget {
               timestamp,
               style: const TextStyle(
                 fontFamily: AppFonts.openSans,
-                color: textColor,
+                color: timestampColor,
                 fontSize: 11.5,
-                fontWeight: FontWeight.w400, // Open Sans Regular
+                fontWeight: FontWeight.w400,
               ),
             ),
           ],
