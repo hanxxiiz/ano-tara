@@ -4,18 +4,22 @@ import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_typography.dart';
 import '../atoms/app_icon.dart';
 
-/// M10 Chat message molecule matching Figma "05.06 · Group chat — conversation.png".
+/// M10 Chat message molecule.
 /// Clearly distinguishes sent (`isMe == true`) and received (`isMe == false`) messages:
-/// - Sent: right-aligned, deep navy bubble (`#144885`) with white text, top-right sharp tail,
-///   navy avatar with dark outline & hard shadow on the right.
-/// - Received: left-aligned, warm light grey bubble (`#E8E6E3`) with dark ink text, top-left
-///   sharp tail, yellow/orange sender avatar with dark outline & hard shadow on the left.
+/// - Sent: right-aligned, deep navy bubble (`#144885`) with white text, bottom-right sharp tail
+///   on the last bubble in a sender run, and no profile icon.
+/// - Received: left-aligned, warm light grey bubble (`#E8E6E3`) with dark ink text, sender name
+///   aligned above the first bubble in a sender run, and sender avatar aligned with the last
+///   bubble in the sender run.
 class AppChatMessage extends StatelessWidget {
   final String text;
   final bool isMe;
   final String? senderName;
   final Color? avatarColor;
   final bool showAvatar;
+  final bool showSenderName;
+  final bool isFirstInGroup;
+  final bool isLastInGroup;
 
   const AppChatMessage({
     super.key,
@@ -24,6 +28,9 @@ class AppChatMessage extends StatelessWidget {
     this.senderName,
     this.avatarColor,
     this.showAvatar = true,
+    this.showSenderName = true,
+    this.isFirstInGroup = true,
+    this.isLastInGroup = true,
   });
 
   static const double _avatarSize = 42.0;
@@ -33,96 +40,92 @@ class AppChatMessage extends StatelessWidget {
   Widget build(BuildContext context) {
     final bubbleColor = isMe ? AppColors.primaryNavy : AppColors.secondaryLight;
     final textColor = isMe ? AppColors.white : AppColors.secondaryDark;
-    final resolvedAvatarColor = avatarColor ??
-        (isMe ? AppColors.primaryNavy : AppColors.semanticYellow);
+    final resolvedAvatarColor = avatarColor ?? AppColors.semanticYellow;
+
+    final shouldShowAvatar = !isMe && showAvatar;
+    final shouldShowSenderName =
+        !isMe && showSenderName && senderName != null && senderName!.isNotEmpty;
 
     final borderRadius = BorderRadius.only(
-      topLeft: Radius.circular(!isMe && showAvatar ? 6 : 16),
-      topRight: Radius.circular(isMe && showAvatar ? 6 : 16),
-      bottomLeft: const Radius.circular(16),
-      bottomRight: const Radius.circular(16),
+      topLeft: const Radius.circular(16),
+      topRight: const Radius.circular(16),
+      bottomLeft: Radius.circular(!isMe && isLastInGroup ? 6 : 16),
+      bottomRight: Radius.circular(isMe && isLastInGroup ? 6 : 16),
     );
 
-    final bubble = Column(
-      crossAxisAlignment:
-          isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-      children: [
-        if (!isMe && showAvatar && senderName != null && senderName!.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(left: 4, bottom: 4),
-            child: Text(
-              senderName!,
-              style: AppTypography.caption.copyWith(
-                color: AppColors.shayne,
-                fontWeight: FontWeight.w600,
-                fontSize: 11.5,
-              ),
+    final bubble = ConstrainedBox(
+      constraints: BoxConstraints(
+        maxWidth: MediaQuery.of(context).size.width * 0.68,
+        minWidth: 68,
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: bubbleColor,
+          borderRadius: borderRadius,
+          border: Border.all(color: AppColors.secondaryDark, width: 2.0),
+          boxShadow: const [
+            BoxShadow(
+              color: AppColors.secondaryDark,
+              offset: Offset(0, 3),
+              blurRadius: 0,
             ),
-          ),
-        ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * 0.68,
-            minWidth: 68,
-          ),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: bubbleColor,
-              borderRadius: borderRadius,
-              border: Border.all(color: AppColors.secondaryDark, width: 2.0),
-              boxShadow: const [
-                BoxShadow(
-                  color: AppColors.secondaryDark,
-                  offset: Offset(0, 3),
-                  blurRadius: 0,
-                ),
-              ],
-            ),
-            child: Text(
-              text,
-              style: AppTypography.bodyMedium.copyWith(
-                color: textColor,
-                fontWeight: FontWeight.w600,
-                fontSize: 13.5,
-                height: 1.35,
-              ),
-            ),
+          ],
+        ),
+        child: Text(
+          text,
+          style: AppTypography.bodyMedium.copyWith(
+            color: textColor,
+            fontWeight: FontWeight.w600,
+            fontSize: 13.5,
+            height: 1.35,
           ),
         ),
-      ],
+      ),
     );
 
     return Padding(
       padding: EdgeInsets.only(
-        top: showAvatar ? 8.0 : 4.0,
-        bottom: 4.0,
+        top: isFirstInGroup ? 10.0 : 3.0,
+        bottom: isLastInGroup ? 4.0 : 2.0,
       ),
-      child: Row(
-        mainAxisAlignment:
-            isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column(
+        crossAxisAlignment:
+            isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
-          if (!isMe) ...[
-            if (showAvatar)
-              _ChatSenderAvatar(
-                size: _avatarSize,
-                backgroundColor: resolvedAvatarColor,
-              )
-            else
-              const SizedBox(width: _avatarSize),
-            const SizedBox(width: _avatarGap),
-          ],
-          Flexible(child: bubble),
-          if (isMe) ...[
-            const SizedBox(width: _avatarGap),
-            if (showAvatar)
-              _ChatSenderAvatar(
-                size: _avatarSize,
-                backgroundColor: resolvedAvatarColor,
-              )
-            else
-              const SizedBox(width: _avatarSize),
-          ],
+          if (shouldShowSenderName)
+            Padding(
+              padding: const EdgeInsets.only(
+                left: _avatarSize + _avatarGap + 4,
+                bottom: 4,
+              ),
+              child: Text(
+                senderName!,
+                style: AppTypography.caption.copyWith(
+                  color: AppColors.shayne,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 11.5,
+                ),
+              ),
+            ),
+          Row(
+            mainAxisAlignment:
+                isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (!isMe) ...[
+                if (shouldShowAvatar)
+                  _ChatSenderAvatar(
+                    size: _avatarSize,
+                    backgroundColor: resolvedAvatarColor,
+                  )
+                else
+                  const SizedBox(width: _avatarSize),
+                const SizedBox(width: _avatarGap),
+              ],
+              Flexible(child: bubble),
+            ],
+          ),
         ],
       ),
     );

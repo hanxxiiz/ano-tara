@@ -51,7 +51,6 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     await Future<void>.delayed(widget.initialLoadingDuration);
     if (!mounted) return;
     setState(() => _isLoading = false);
-    _scrollToBottom(animate: false);
   }
 
   void _onStoreChanged() {
@@ -63,15 +62,15 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   void _scrollToBottom({bool animate = true}) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || !_scrollController.hasClients) return;
-      final target = _scrollController.position.maxScrollExtent;
+      if (_scrollController.offset == 0.0) return;
       if (animate) {
         _scrollController.animateTo(
-          target,
+          0.0,
           duration: const Duration(milliseconds: 240),
           curve: Curves.easeOutCubic,
         );
       } else {
-        _scrollController.jumpTo(target);
+        _scrollController.jumpTo(0.0);
       }
     });
   }
@@ -102,6 +101,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.white,
+      resizeToAvoidBottomInset: true,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(57),
         child: Column(
@@ -156,16 +156,19 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                       )
                     : _buildMessagesList(messages),
           ),
-          SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
-              child: AppMessageComposer(
-                controller: _composerController,
-                focusNode: _composerFocusNode,
-                onSend: _handleSend,
-                enabled: !_isLoading,
-                hintText: 'Type your message',
+          ColoredBox(
+            color: AppColors.white,
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
+                child: AppMessageComposer(
+                  controller: _composerController,
+                  focusNode: _composerFocusNode,
+                  onSend: _handleSend,
+                  enabled: !_isLoading,
+                  hintText: 'Type your message',
+                ),
               ),
             ),
           ),
@@ -177,11 +180,15 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   Widget _buildMessagesList(List<GroupChatMessage> messages) {
     return ListView.builder(
       controller: _scrollController,
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+      reverse: true,
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
       itemCount: messages.length,
-      itemBuilder: (context, index) {
+      itemBuilder: (context, reversedIndex) {
+        final index = messages.length - 1 - reversedIndex;
         final message = messages[index];
         final previous = index > 0 ? messages[index - 1] : null;
+        final next = index < messages.length - 1 ? messages[index + 1] : null;
 
         // Show timestamp header at the start of the conversation or when the
         // day/session label changes significantly (e.g., Tue -> Today).
@@ -189,10 +196,15 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
             _sessionPrefix(previous.timestampLabel) !=
                 _sessionPrefix(message.timestampLabel);
 
-        // Show avatar only on the first message of a consecutive sender run
-        // (matching Figma 05.06).
-        final showAvatar = showTimestampHeader ||
-            previous.senderId != message.senderId;
+        final nextShowsTimestampHeader = next != null &&
+            _sessionPrefix(message.timestampLabel) !=
+                _sessionPrefix(next.timestampLabel);
+
+        final isFirstInGroup =
+            showTimestampHeader || previous.senderId != message.senderId;
+        final isLastInGroup = next == null ||
+            nextShowsTimestampHeader ||
+            next.senderId != message.senderId;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -219,7 +231,10 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
               isMe: message.isMe,
               senderName: message.isMe ? null : message.senderName,
               avatarColor: message.avatarColor,
-              showAvatar: showAvatar,
+              showAvatar: !message.isMe && isLastInGroup,
+              showSenderName: !message.isMe && isFirstInGroup,
+              isFirstInGroup: isFirstInGroup,
+              isLastInGroup: isLastInGroup,
             ),
           ],
         );
@@ -360,15 +375,40 @@ class _ChatLoadingSkeletonState extends State<_ChatLoadingSkeleton>
             ),
           ),
           const SizedBox(height: 18),
-          _buildBubbleSkeleton(isMe: false, width: 120, height: 42),
+          _buildBubbleSkeleton(
+            isMe: false,
+            width: 120,
+            height: 42,
+            showAvatar: false,
+          ),
           const SizedBox(height: 10),
-          _buildBubbleSkeleton(isMe: false, width: 210, height: 60, showAvatar: false),
+          _buildBubbleSkeleton(
+            isMe: false,
+            width: 210,
+            height: 60,
+            showAvatar: true,
+          ),
           const SizedBox(height: 16),
-          _buildBubbleSkeleton(isMe: true, width: 140, height: 42),
+          _buildBubbleSkeleton(
+            isMe: true,
+            width: 140,
+            height: 42,
+            showAvatar: false,
+          ),
           const SizedBox(height: 10),
-          _buildBubbleSkeleton(isMe: true, width: 195, height: 56, showAvatar: false),
+          _buildBubbleSkeleton(
+            isMe: true,
+            width: 195,
+            height: 56,
+            showAvatar: false,
+          ),
           const SizedBox(height: 16),
-          _buildBubbleSkeleton(isMe: false, width: 160, height: 44),
+          _buildBubbleSkeleton(
+            isMe: false,
+            width: 160,
+            height: 44,
+            showAvatar: true,
+          ),
         ],
       ),
     );
@@ -380,7 +420,7 @@ class _ChatLoadingSkeletonState extends State<_ChatLoadingSkeleton>
     required double height,
     bool showAvatar = true,
   }) {
-    final avatar = showAvatar
+    final avatar = !isMe && showAvatar
         ? Container(
             width: 42,
             height: 42,
@@ -403,10 +443,8 @@ class _ChatLoadingSkeletonState extends State<_ChatLoadingSkeleton>
 
     return Row(
       mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: isMe
-          ? [bubble, const SizedBox(width: 10), avatar]
-          : [avatar, const SizedBox(width: 10), bubble],
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: isMe ? [bubble] : [avatar, const SizedBox(width: 10), bubble],
     );
   }
 }
