@@ -8,6 +8,7 @@ import 'components/molecules/floating_messages_button.dart';
 import 'screens/messages_list_screen.dart';
 import 'screens/notifications_screen.dart';
 import 'screens/onboarding/onboarding_flow.dart';
+import 'screens/view_trip_members_screen.dart';
 import 'theme/app_theme.dart';
 
 Future<void> main() async {
@@ -39,6 +40,7 @@ class AnoTaraApp extends StatelessWidget {
         AppRoutes.editPreferences: (_) => const OnboardingFlow(editing: true),
         AppRoutes.notifications: (_) => const NotificationsScreen(),
         AppRoutes.messages: (_) => const MessagesListScreen(),
+        AppRoutes.tripMembers: (_) => const ViewTripMembersScreen(),
       },
     );
   }
@@ -201,11 +203,19 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
       ),
-      // TODO: Remove temporary navigation button once Groups tab is wired
+      // TODO: Remove temporary navigation buttons once Groups/Trips tabs are wired
       floatingActionButton: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
+          FloatingActionButton.extended(
+            heroTag: 'temp_trip_members_btn',
+            onPressed: () =>
+                Navigator.of(context).pushNamed(AppRoutes.tripMembers),
+            icon: const Icon(Icons.group_outlined),
+            label: const Text('Trip Members (Temp)'),
+          ),
+          const SizedBox(height: 12),
           FloatingActionButton.extended(
             heroTag: 'temp_messages_btn',
             onPressed: () =>
