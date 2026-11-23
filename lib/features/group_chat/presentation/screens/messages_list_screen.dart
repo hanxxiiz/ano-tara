@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
-import '../app_routes.dart';
-import '../components/molecules/message_thread_tile.dart';
-import '../components/organisms/app_bottom_navigation.dart';
-import '../components/organisms/app_main_top_bar.dart';
-import '../core/constants/app_colors.dart';
-import '../core/constants/app_typography.dart';
-import '../models/group_chat_models.dart';
+import '../../../../app_routes.dart';
+import '../../../../components/molecules/message_thread_tile.dart';
+import '../../../../components/organisms/app_bottom_navigation.dart';
+import '../../../../components/organisms/app_main_top_bar.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_typography.dart';
+import '../state/group_messages_store.dart';
+import '../../models/group_chat_models.dart';
 import 'group_chat_screen.dart';
 
 /// Messages List Screen matching Figma "05.02 · Groups — message threads.png".
@@ -30,21 +31,34 @@ class _MessagesListScreenState extends State<MessagesListScreen> {
 
   String _query = '';
   bool _isLoading = true;
+  String? _loadError;
 
   @override
   void initState() {
     super.initState();
     _store.addListener(_onStoreChanged);
+    _store.watchThreads();
     _loadThreads();
   }
 
   Future<void> _loadThreads() async {
-    if (widget.initialLoadingDuration == Duration.zero) {
-      if (mounted) setState(() => _isLoading = false);
-      return;
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _loadError = null;
+      });
     }
-    setState(() => _isLoading = true);
-    await Future<void>.delayed(widget.initialLoadingDuration);
+    final loadingAnimation = widget.initialLoadingDuration == Duration.zero
+        ? Future<void>.value()
+        : Future<void>.delayed(widget.initialLoadingDuration);
+    try {
+      await Future.wait<void>([
+        _store.loadThreads(),
+        loadingAnimation,
+      ]);
+    } catch (_) {
+      _loadError = 'Could not load group messages. Check your connection and retry.';
+    }
     if (!mounted) return;
     setState(() => _isLoading = false);
   }
@@ -140,6 +154,26 @@ class _MessagesListScreenState extends State<MessagesListScreen> {
                         itemBuilder: (_, _) =>
                             const MessageThreadTileSkeleton(),
                       )
+                    : _loadError != null
+                        ? Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  _loadError!,
+                                  textAlign: TextAlign.center,
+                                  style: AppTypography.bodyMedium.copyWith(
+                                    color: AppColors.carla,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                TextButton(
+                                  onPressed: _loadThreads,
+                                  child: const Text('Try again'),
+                                ),
+                              ],
+                            ),
+                          )
                     : threads.isEmpty
                         ? _MessagesEmptyState(
                             isSearching: _query.trim().isNotEmpty,

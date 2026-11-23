@@ -1,10 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
-import '../components/molecules/app_chat_message.dart';
-import '../components/molecules/app_message_composer.dart';
-import '../core/constants/app_colors.dart';
-import '../core/constants/app_typography.dart';
-import '../models/group_chat_models.dart';
+import '../../../../components/molecules/app_chat_message.dart';
+import '../../../../components/molecules/app_message_composer.dart';
+import '../../../../components/molecules/group_chat_avatar.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_typography.dart';
+import '../state/group_messages_store.dart';
+import '../../models/group_chat_models.dart';
 
 /// Group Chat Screen matching Figma "05.06 · Group chat — conversation.png".
 /// Supports loading state, empty state, distinct sent/received message bubbles,
@@ -30,6 +34,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   final FocusNode _composerFocusNode = FocusNode();
 
   bool _isLoading = true;
+  bool _isSending = false;
+  String? _loadError;
 
   GroupMessageThread? get _thread => _store.getById(widget.threadId);
 
@@ -37,18 +43,29 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   void initState() {
     super.initState();
     _store.addListener(_onStoreChanged);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _store.markAsRead(widget.threadId);
-    });
+    _store.watchThread(widget.threadId);
     _loadMessages();
   }
 
   Future<void> _loadMessages() async {
-    if (widget.initialLoadingDuration == Duration.zero) {
-      if (mounted) setState(() => _isLoading = false);
-      return;
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _loadError = null;
+      });
     }
-    await Future<void>.delayed(widget.initialLoadingDuration);
+    final loadingAnimation = widget.initialLoadingDuration == Duration.zero
+        ? Future<void>.value()
+        : Future<void>.delayed(widget.initialLoadingDuration);
+    try {
+      await Future.wait<void>([
+        _store.loadMessages(widget.threadId),
+        loadingAnimation,
+      ]);
+      _store.markAsRead(widget.threadId);
+    } catch (_) {
+      _loadError = 'Could not load this group chat. Check your connection and retry.';
+    }
     if (!mounted) return;
     setState(() => _isLoading = false);
   }
@@ -76,17 +93,34 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   }
 
   void _handleSend() {
+    if (_isLoading || _isSending || _loadError != null) return;
     final text = _composerController.text.trim();
     if (text.isEmpty) return;
 
-    _store.sendMessage(widget.threadId, text);
-    _composerController.clear();
-    _scrollToBottom(animate: true);
+    unawaited(_sendMessage(text));
+  }
+
+  Future<void> _sendMessage(String text) async {
+    setState(() => _isSending = true);
+    try {
+      await _store.sendMessage(widget.threadId, text);
+      if (!mounted) return;
+      _composerController.clear();
+      _scrollToBottom(animate: true);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Message could not be sent. Try again.')),
+      );
+    } finally {
+      if (mounted) setState(() => _isSending = false);
+    }
   }
 
   @override
   void dispose() {
     _store.removeListener(_onStoreChanged);
+    _store.unwatchThread(widget.threadId);
     _composerController.dispose();
     _scrollController.dispose();
     _composerFocusNode.dispose();
@@ -125,15 +159,29 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                 ),
               ),
               titleSpacing: 4,
-              title: Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTypography.h4.copyWith(
-                  color: AppColors.secondaryDark,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 19,
-                ),
+              title: Row(
+                children: [
+                  GroupChatAvatar(
+                    size: 34,
+                    imageUrl: thread?.avatarUrl,
+                    fallbackColor: thread?.avatarColor ??
+                        AppColors.primaryOrange,
+                    borderWidth: 1.2,
+                  ),
+                  const SizedBox(width: 9),
+                  Expanded(
+                    child: Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTypography.h4.copyWith(
+                        color: AppColors.secondaryDark,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 19,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             const Divider(
@@ -149,6 +197,29 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
           Expanded(
             child: _isLoading
                 ? const _ChatLoadingSkeleton()
+                : _loadError != null
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 28),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                _loadError!,
+                                textAlign: TextAlign.center,
+                                style: AppTypography.bodyMedium.copyWith(
+                                  color: AppColors.carla,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              TextButton(
+                                onPressed: _loadMessages,
+                                child: const Text('Try again'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
                 : messages.isEmpty
                     ? _ChatEmptyState(
                         groupName: title,
@@ -166,7 +237,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                   controller: _composerController,
                   focusNode: _composerFocusNode,
                   onSend: _handleSend,
-                  enabled: !_isLoading,
+                  enabled: !_isLoading && !_isSending && _loadError == null,
                   hintText: 'Type your message',
                 ),
               ),
@@ -190,26 +261,25 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         final previous = index > 0 ? messages[index - 1] : null;
         final next = index < messages.length - 1 ? messages[index + 1] : null;
 
-        // Show timestamp header at the start of the conversation or when the
-        // day/session label changes significantly (e.g., Tue -> Today).
-        final showTimestampHeader = previous == null ||
-            _sessionPrefix(previous.timestampLabel) !=
-                _sessionPrefix(message.timestampLabel);
+        // Show a date separator once when the calendar day changes. Each
+        // bubble has its own local time label.
+        final showDateSeparator = previous == null ||
+            !_isSameDay(previous.createdAt, message.createdAt);
 
-        final nextShowsTimestampHeader = next != null &&
-            _sessionPrefix(message.timestampLabel) !=
-                _sessionPrefix(next.timestampLabel);
+        final nextShowsDateSeparator = next != null &&
+            !_isSameDay(message.createdAt, next.createdAt);
 
-        final isFirstInGroup =
-            showTimestampHeader || previous.senderId != message.senderId;
+        final isFirstInGroup = showDateSeparator ||
+            previous == null ||
+            previous.senderId != message.senderId;
         final isLastInGroup = next == null ||
-            nextShowsTimestampHeader ||
+            nextShowsDateSeparator ||
             next.senderId != message.senderId;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (showTimestampHeader)
+            if (showDateSeparator)
               Padding(
                 padding: EdgeInsets.only(
                   top: index == 0 ? 0 : 14,
@@ -217,7 +287,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                 ),
                 child: Center(
                   child: Text(
-                    message.timestampLabel,
+                    _dateSeparatorLabel(message.createdAt),
                     style: AppTypography.bodySmall.copyWith(
                       color: AppColors.shayne,
                       fontWeight: FontWeight.w600,
@@ -228,8 +298,10 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
               ),
             AppChatMessage(
               text: message.text,
+              timeLabel: message.timeLabel,
               isMe: message.isMe,
               senderName: message.isMe ? null : message.senderName,
+              senderAvatarUrl: message.senderAvatarUrl,
               avatarColor: message.avatarColor,
               showAvatar: !message.isMe && isLastInGroup,
               showSenderName: !message.isMe && isFirstInGroup,
@@ -242,9 +314,37 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     );
   }
 
-  String _sessionPrefix(String timestamp) {
-    final parts = timestamp.split(' ');
-    return parts.isNotEmpty ? parts.first : timestamp;
+  bool _isSameDay(DateTime first, DateTime second) {
+    return first.year == second.year &&
+        first.month == second.month &&
+        first.day == second.day;
+  }
+
+  String _dateSeparatorLabel(DateTime value) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final messageDate = DateTime(value.year, value.month, value.day);
+    const months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+    final date = '${months[value.month - 1]} ${value.day}';
+
+    if (messageDate == today) return 'Today, $date';
+    if (messageDate == today.subtract(const Duration(days: 1))) {
+      return 'Yesterday, $date';
+    }
+    return date;
   }
 }
 

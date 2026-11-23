@@ -13,8 +13,10 @@ import '../atoms/app_icon.dart';
 ///   bubble in the sender run.
 class AppChatMessage extends StatelessWidget {
   final String text;
+  final String? timeLabel;
   final bool isMe;
   final String? senderName;
+  final String? senderAvatarUrl;
   final Color? avatarColor;
   final bool showAvatar;
   final bool showSenderName;
@@ -24,8 +26,10 @@ class AppChatMessage extends StatelessWidget {
   const AppChatMessage({
     super.key,
     required this.text,
+    this.timeLabel,
     this.isMe = false,
     this.senderName,
+    this.senderAvatarUrl,
     this.avatarColor,
     this.showAvatar = true,
     this.showSenderName = true,
@@ -72,14 +76,33 @@ class AppChatMessage extends StatelessWidget {
             ),
           ],
         ),
-        child: Text(
-          text,
-          style: AppTypography.bodyMedium.copyWith(
-            color: textColor,
-            fontWeight: FontWeight.w600,
-            fontSize: 13.5,
-            height: 1.35,
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              text,
+              style: AppTypography.bodyMedium.copyWith(
+                color: textColor,
+                fontWeight: FontWeight.w600,
+                fontSize: 13.5,
+                height: 1.35,
+              ),
+            ),
+            if (timeLabel != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                timeLabel!,
+                style: AppTypography.caption.copyWith(
+                  color: isMe
+                      ? AppColors.white.withValues(alpha: 0.72)
+                      : AppColors.carla,
+                  fontSize: 10,
+                  height: 1.1,
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );
@@ -118,6 +141,7 @@ class AppChatMessage extends StatelessWidget {
                   _ChatSenderAvatar(
                     size: _avatarSize,
                     backgroundColor: resolvedAvatarColor,
+                    imageUrl: senderAvatarUrl,
                   )
                 else
                   const SizedBox(width: _avatarSize),
@@ -135,10 +159,12 @@ class AppChatMessage extends StatelessWidget {
 class _ChatSenderAvatar extends StatelessWidget {
   final double size;
   final Color backgroundColor;
+  final String? imageUrl;
 
   const _ChatSenderAvatar({
     required this.size,
     required this.backgroundColor,
+    this.imageUrl,
   });
 
   @override
@@ -149,7 +175,6 @@ class _ChatSenderAvatar extends StatelessWidget {
       decoration: BoxDecoration(
         color: backgroundColor,
         shape: BoxShape.circle,
-        border: Border.all(color: AppColors.secondaryDark, width: 2.0),
         boxShadow: const [
           BoxShadow(
             color: AppColors.secondaryDark,
@@ -158,12 +183,36 @@ class _ChatSenderAvatar extends StatelessWidget {
           ),
         ],
       ),
-      child: Center(
-        child: AppIcon(
-          Iconsax.user5,
-          color: AppColors.secondaryDark,
-          size: size * 0.48,
+      foregroundDecoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: AppColors.secondaryDark, width: 2.0),
+      ),
+      child: ClipOval(
+        child: SizedBox.expand(
+          child: imageUrl == null
+              ? ColoredBox(
+                  color: backgroundColor,
+                  child: _fallbackIcon(),
+                )
+              : Image.network(
+                  imageUrl!,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) => ColoredBox(
+                    color: backgroundColor,
+                    child: _fallbackIcon(),
+                  ),
+                ),
         ),
+      ),
+    );
+  }
+
+  Widget _fallbackIcon() {
+    return Center(
+      child: AppIcon(
+        Iconsax.user5,
+        color: AppColors.secondaryDark,
+        size: size * 0.48,
       ),
     );
   }

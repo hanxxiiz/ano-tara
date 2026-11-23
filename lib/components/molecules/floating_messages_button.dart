@@ -1,6 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
-import '../../models/group_chat_models.dart';
+import '../../features/group_chat/presentation/state/group_messages_store.dart';
 import '../organisms/messages_shortcut_sheet.dart';
 
 /// Floating Messages button matching Figma "05.01 · Groups — group list.png".
@@ -31,6 +33,8 @@ class _FloatingMessagesButtonState extends State<FloatingMessagesButton> {
   void initState() {
     super.initState();
     _store.addListener(_onStoreChanged);
+    _store.watchThreads();
+    unawaited(_store.loadThreads(silent: true).catchError((_) {}));
   }
 
   void _onStoreChanged() {

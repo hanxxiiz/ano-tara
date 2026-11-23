@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_typography.dart';
-import '../../models/group_chat_models.dart';
+import '../../features/group_chat/models/group_chat_models.dart';
+import 'group_chat_avatar.dart';
 
 /// Group message thread card matching Figma "05.02 · Groups — message threads.png"
 /// and "05.20 · Group messages — list shortcut.png".
@@ -53,18 +54,11 @@ class _MessageThreadTileState extends State<MessageThreadTile> {
           ),
           child: Row(
             children: [
-              // Group orange circle avatar
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: thread.avatarColor,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppColors.secondaryDark,
-                    width: 1.4,
-                  ),
-                ),
+              GroupChatAvatar(
+                size: 48,
+                imageUrl: thread.avatarUrl,
+                fallbackColor: thread.avatarColor,
+                borderWidth: 1.4,
               ),
               const SizedBox(width: 14),
               // Group name + last message preview
