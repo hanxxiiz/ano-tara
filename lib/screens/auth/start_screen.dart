@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../app_routes.dart';
 import '../../components/atoms/app_button.dart';
 import '../../components/molecules/floating_messages_button.dart';
 import '../../core/constants/app_colors.dart';
@@ -65,6 +66,20 @@ class StartScreen extends StatelessWidget {
                     builder: (_) => const MessagesListScreen(),
                   ),
                 ),
+              ),
+              const SizedBox(height: 14),
+              // TODO: Remove temporary navigation button once Trips tab is wired
+              AppButton(
+                text: 'Expenses (Temp)',
+                customHeight: 50,
+                variant: AppButtonVariant.primaryNavy,
+                iconLeading: const Icon(
+                  Icons.account_balance_wallet_rounded,
+                  color: AppColors.white,
+                  size: 20,
+                ),
+                onPressed: () =>
+                    Navigator.of(context).pushNamed(AppRoutes.expenses),
               ),
               const Spacer(flex: 3),
             ],

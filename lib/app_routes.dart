@@ -7,4 +7,5 @@ class AppRoutes {
   static const editPreferences = '/preferences/edit';
   static const notifications = '/notifications';
   static const messages = '/messages';
+  static const expenses = '/expenses';
 }
