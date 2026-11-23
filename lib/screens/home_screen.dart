@@ -331,6 +331,10 @@ class _HomeScreenState extends State<HomeScreen> {
         currentIndex: 0,
         onTabSelected: (index) {
           if (index == 0) return;
+          if (index == 4) {
+            Navigator.of(context).pushNamed(AppRoutes.profile);
+            return;
+          }
           const destinations = [
             'Home',
             'Trips',
