@@ -5,6 +5,7 @@ import 'package:anotara/services/auth_service.dart';
 
 import 'app_routes.dart';
 import 'components/molecules/floating_messages_button.dart';
+import 'screens/expenses/view_expenses_screen.dart';
 import 'screens/messages_list_screen.dart';
 import 'screens/notifications_screen.dart';
 import 'screens/onboarding/onboarding_flow.dart';
@@ -39,6 +40,7 @@ class AnoTaraApp extends StatelessWidget {
         AppRoutes.editPreferences: (_) => const OnboardingFlow(editing: true),
         AppRoutes.notifications: (_) => const NotificationsScreen(),
         AppRoutes.messages: (_) => const MessagesListScreen(),
+        AppRoutes.expenses: (_) => const ViewExpensesScreen(),
       },
     );
   }
@@ -201,11 +203,19 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
       ),
-      // TODO: Remove temporary navigation button once Groups tab is wired
+      // TODO: Remove temporary navigation buttons once Trips & Groups tabs are wired
       floatingActionButton: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
+          FloatingActionButton.extended(
+            heroTag: 'temp_expenses_btn',
+            onPressed: () =>
+                Navigator.of(context).pushNamed(AppRoutes.expenses),
+            icon: const Icon(Icons.account_balance_wallet_outlined),
+            label: const Text('Expenses (Temp)'),
+          ),
+          const SizedBox(height: 12),
           FloatingActionButton.extended(
             heroTag: 'temp_messages_btn',
             onPressed: () =>

@@ -307,7 +307,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     'You have an unpaid ₱420 balance for Bantayan Trip.',
                 badgeColor: AppColors.promotionalBanner,
                 icon: Iconsax.bitcoin_convert5,
-                onTap: () => _onActionTap('Unsettled Expenses'),
+                onTap: () =>
+                    Navigator.of(context).pushNamed(AppRoutes.expenses),
               ),
               const SizedBox(height: 12),
 
