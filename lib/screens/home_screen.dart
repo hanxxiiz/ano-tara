@@ -317,7 +317,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 description: '3 members haven\'t confirmed Bantayan Trip.',
                 badgeColor: AppColors.secondaryYellow,
                 icon: Iconsax.sms_star5,
-                onTap: () => _onActionTap('Waiting for Responses'),
+                onTap: () =>
+                    Navigator.of(context).pushNamed(AppRoutes.tripMembers),
               ),
               const SizedBox(height: 24),
             ],
