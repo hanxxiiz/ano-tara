@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
+import 'atoms/app_icon.dart';
 
-/// NotificationTile component
+/// NotificationTile component matching Figma `04.01 · Notifications — all activity`.
 ///
-/// Reusable card displaying an activity notification:
-/// - Blue vertical rectangle icon container on the left that naturally
-///   stretches with card content height (no awkward empty space below it)
+/// Displays an activity notification card:
+/// - Terracotta orange (`#E24B27`) rounded square icon container on the left
 /// - Title in Urbanist ExtraBold
-/// - Description and Timestamp in Open Sans
-/// - Small circular unread badge (#F9CF09) in the top-right corner
+/// - Description and timestamp in Open Sans
+/// - Circular yellow unread badge (`#F9CF09`) with dark navy outline in top-right
 class NotificationTile extends StatelessWidget {
   const NotificationTile({
     super.key,
@@ -29,8 +29,9 @@ class NotificationTile extends StatelessWidget {
   final VoidCallback? onTap;
 
   static const Color darkNavy = Color(0xFF10052F);
-  static const Color primaryBlue = Color(0xFF164D91);
+  static const Color iconContainerColor = Color(0xFFE24B27);
   static const Color textColor = Color(0xFF0F0331);
+  static const Color timestampColor = Color(0xFF4B4265);
   static const Color unreadIndicatorColor = Color(0xFFF9CF09);
 
   @override
@@ -61,20 +62,20 @@ class NotificationTile extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Blue vertical rectangle container on the left
+                    // Terracotta orange rounded square icon container
                     Container(
-                      width: 58,
-                      constraints: const BoxConstraints(minHeight: 56),
+                      width: 62,
+                      constraints: const BoxConstraints(minHeight: 62),
                       decoration: BoxDecoration(
-                        color: primaryBlue,
+                        color: iconContainerColor,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: darkNavy,
-                          width: 1.5,
-                        ),
                       ),
                       child: Center(
-                        child: _buildIconWidget(),
+                        child: AppIcon(
+                          icon,
+                          color: Colors.white,
+                          size: 28,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 14),
@@ -93,7 +94,7 @@ class NotificationTile extends StatelessWidget {
                                 fontFamily: AppFonts.urbanist,
                                 color: textColor,
                                 fontSize: 16,
-                                fontWeight: FontWeight.w800, // Urbanist ExtraBold
+                                fontWeight: FontWeight.w800,
                                 letterSpacing: -0.2,
                               ),
                             ),
@@ -105,7 +106,7 @@ class NotificationTile extends StatelessWidget {
                               fontFamily: AppFonts.openSans,
                               color: textColor,
                               fontSize: 12.5,
-                              fontWeight: FontWeight.w400, // Open Sans Regular
+                              fontWeight: FontWeight.w400,
                               height: 1.35,
                             ),
                           ),
@@ -114,9 +115,9 @@ class NotificationTile extends StatelessWidget {
                             timestamp,
                             style: const TextStyle(
                               fontFamily: AppFonts.openSans,
-                              color: textColor,
+                              color: timestampColor,
                               fontSize: 11.5,
-                              fontWeight: FontWeight.w400, // Open Sans Regular
+                              fontWeight: FontWeight.w400,
                             ),
                           ),
                         ],
@@ -133,6 +134,7 @@ class NotificationTile extends StatelessWidget {
                 top: 14,
                 right: 14,
                 child: Container(
+                  key: const Key('unread_dot'),
                   width: 11,
                   height: 11,
                   decoration: BoxDecoration(
@@ -148,14 +150,6 @@ class NotificationTile extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildIconWidget() {
-    return Icon(
-      icon,
-      color: Colors.white,
-      size: 26,
     );
   }
 }

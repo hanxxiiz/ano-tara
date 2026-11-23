@@ -1,97 +1,254 @@
-import 'package:flutter/material.dart';
-import 'package:anotara/components/organisms/app_top_bar.dart';
-import 'package:flutter_test/flutter_test.dart';
-
 import 'package:anotara/components/invitation_filter.dart';
 import 'package:anotara/components/invitation_tile.dart';
 import 'package:anotara/components/mark_all_as_read.dart';
 import 'package:anotara/components/notification_tile.dart';
+import 'package:anotara/components/organisms/app_top_bar.dart';
+import 'package:anotara/screens/group_invitation_screen.dart';
+import 'package:anotara/screens/invitation_result_screen.dart';
 import 'package:anotara/screens/notifications_screen.dart';
+import 'package:anotara/screens/trip_invitation_screen.dart';
 import 'package:anotara/theme/app_theme.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   Widget buildTestableScreen(Widget child) {
     return MaterialApp(
       theme: buildAppTheme(),
-      home: Scaffold(body: child),
+      home: child,
     );
   }
 
-  group('NotificationsScreen tests', () {
-    testWidgets('Renders Topbar, ToggleTab, and Activity tab content by default',
-        (WidgetTester tester) async {
-      tester.view.physicalSize = const Size(375, 812);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
+  void setPhoneViewport(WidgetTester tester) {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+  }
 
-      await tester.pumpWidget(buildTestableScreen(const NotificationsScreen()));
-      await tester.pumpAndSettle();
+  group('NotificationsScreen Activity Tab tests', () {
+    testWidgets(
+      'Renders TopBar, SegmentedTabs, Mark all as read, Filter, and unread dot',
+      (WidgetTester tester) async {
+        setPhoneViewport(tester);
 
-      // Topbar
-      expect(find.text('Notifications'), findsOneWidget);
-      expect(find.byType(AppTopBar), findsOneWidget);
+        await tester.pumpWidget(buildTestableScreen(const NotificationsScreen()));
+        await tester.pumpAndSettle();
 
-      // ToggleTab
-      expect(find.text('Activity'), findsOneWidget);
-      expect(find.text('Invitations'), findsOneWidget);
+        expect(find.text('Notifications'), findsOneWidget);
+        expect(find.byType(AppTopBar), findsOneWidget);
+        expect(find.text('Activity'), findsOneWidget);
+        expect(find.text('Invitations'), findsOneWidget);
 
-      // Activity Tab Content
-      expect(find.byType(MarkAllAsRead), findsOneWidget);
-      expect(find.text('Mark all as read'), findsOneWidget);
+        expect(find.byType(MarkAllAsRead), findsOneWidget);
+        expect(find.text('Mark all as read'), findsOneWidget);
+        expect(find.byKey(const Key('activity_filter')), findsOneWidget);
+        expect(find.text('Filter'), findsOneWidget);
 
-      // Notification Tiles
-      expect(find.byType(NotificationTile), findsNWidgets(2));
-      expect(find.text('New expense added'), findsOneWidget);
-      expect(find.text('Trip details updated'), findsOneWidget);
-    });
+        expect(find.byType(NotificationTile), findsNWidgets(2));
+        expect(find.text('New expense added'), findsOneWidget);
+        expect(find.text('Trip details updated'), findsOneWidget);
+        // Only the first notification is unread
+        expect(find.byKey(const Key('unread_dot')), findsOneWidget);
+      },
+    );
 
-    testWidgets('Toggling Mark All as Read updates all notification read states',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(buildTestableScreen(const NotificationsScreen()));
-      await tester.pumpAndSettle();
+    testWidgets(
+      'Mark all as read clears unread indicators and Activity filter works',
+      (WidgetTester tester) async {
+        setPhoneViewport(tester);
 
-      final markAllFinder = find.byType(MarkAllAsRead);
-      expect(markAllFinder, findsOneWidget);
+        await tester.pumpWidget(buildTestableScreen(const NotificationsScreen()));
+        await tester.pumpAndSettle();
 
-      // Tap Mark all as read
-      await tester.tap(markAllFinder);
-      await tester.pumpAndSettle();
+        expect(find.byKey(const Key('unread_dot')), findsOneWidget);
 
-      // Tap again to toggle back
-      await tester.tap(markAllFinder);
-      await tester.pumpAndSettle();
-    });
+        // Filter to Unread only
+        await tester.tap(find.byKey(const Key('activity_filter')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Unread'));
+        await tester.pumpAndSettle();
 
-    testWidgets('Switching to Invitations tab shows filter and invitation tiles',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(buildTestableScreen(const NotificationsScreen()));
-      await tester.pumpAndSettle();
+        expect(find.byType(NotificationTile), findsOneWidget);
+        expect(find.text('New expense added'), findsOneWidget);
 
-      // Switch tab to Invitations
-      await tester.tap(find.text('Invitations'));
-      await tester.pumpAndSettle();
+        // Reset filter to All
+        await tester.tap(find.byKey(const Key('activity_filter')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('All'));
+        await tester.pumpAndSettle();
+        expect(find.byType(NotificationTile), findsNWidgets(2));
 
-      // Invitations tab content
-      expect(find.byType(InvitationFilter), findsOneWidget);
-      expect(find.text('Pending'), findsWidgets); // Filter label & badge
-      expect(find.byType(InvitationTile), findsWidgets);
-      expect(find.text('Weekend Wanderers'), findsOneWidget);
-    });
+        // Tap Mark all as read -> unread dot disappears
+        await tester.tap(find.byType(MarkAllAsRead));
+        await tester.pumpAndSettle();
+        expect(find.byKey(const Key('unread_dot')), findsNothing);
+      },
+    );
+  });
+
+  group('NotificationsScreen Invitations Tab & Flows', () {
+    testWidgets(
+      'Invitations tab shows all invitations by default and filters by status',
+      (WidgetTester tester) async {
+        setPhoneViewport(tester);
+
+        await tester.pumpWidget(buildTestableScreen(const NotificationsScreen()));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Invitations'));
+        await tester.pumpAndSettle();
+
+        expect(find.byKey(const Key('invitation_filter')), findsOneWidget);
+        expect(find.text('Filter'), findsOneWidget);
+        expect(find.byType(InvitationTile), findsNWidgets(4));
+        expect(find.text('Weekend Wanderers'), findsOneWidget);
+        expect(find.text('Pending'), findsNWidgets(2));
+        expect(find.text('Accepted'), findsOneWidget);
+        expect(find.text('Declined'), findsOneWidget);
+
+        // Filter by Declined
+        await tester.tap(find.byKey(const Key('invitation_filter')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Declined').last);
+        await tester.pumpAndSettle();
+
+        expect(find.byType(InvitationTile), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'Group Invitation Accept shows Group Invitation Accepted result screen',
+      (WidgetTester tester) async {
+        setPhoneViewport(tester);
+
+        await tester.pumpWidget(
+          buildTestableScreen(const NotificationsScreen(initialTabIndex: 1)),
+        );
+        await tester.pumpAndSettle();
+
+        // Tap Weekend Wanderers (Group Invitation)
+        await tester.tap(find.text('Weekend Wanderers'));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(GroupInvitationScreen), findsOneWidget);
+        expect(find.text('Group Invitation'), findsOneWidget);
+
+        // Tap Accept
+        await tester.tap(find.text('Accept'));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(InvitationResultScreen), findsOneWidget);
+        expect(find.text('Group Invitation Accepted'), findsOneWidget);
+        expect(find.text('View Group'), findsOneWidget);
+
+        // Tap View Group -> returns to Invitations list with updated status
+        await tester.tap(find.text('View Group'));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(NotificationsScreen), findsOneWidget);
+        expect(find.text('Accepted'), findsNWidgets(2));
+      },
+    );
+
+    testWidgets(
+      'Group Invitation Decline shows Group Invitation Declined result screen',
+      (WidgetTester tester) async {
+        setPhoneViewport(tester);
+
+        await tester.pumpWidget(
+          buildTestableScreen(const NotificationsScreen(initialTabIndex: 1)),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Weekend Wanderers'));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Decline'));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(InvitationResultScreen), findsOneWidget);
+        expect(find.text('Group Invitation Declined'), findsOneWidget);
+        expect(find.text('Back to Invitations'), findsOneWidget);
+
+        await tester.tap(find.text('Back to Invitations'));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(NotificationsScreen), findsOneWidget);
+        expect(find.text('Declined'), findsNWidgets(2));
+      },
+    );
+
+    testWidgets(
+      'Trip Invitation Accept shows Trip Invitation Accepted result screen',
+      (WidgetTester tester) async {
+        setPhoneViewport(tester);
+
+        await tester.pumpWidget(
+          buildTestableScreen(const NotificationsScreen(initialTabIndex: 1)),
+        );
+        await tester.pumpAndSettle();
+
+        // Tap the first Bantayan Trip (Pending Trip Invitation)
+        await tester.tap(find.text('Bantayan Trip').first);
+        await tester.pumpAndSettle();
+
+        expect(find.byType(TripInvitationScreen), findsOneWidget);
+        expect(find.text('Trip Invitation'), findsOneWidget);
+
+        await tester.tap(find.text('Accept'));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(InvitationResultScreen), findsOneWidget);
+        expect(find.text('Trip Invitation Accepted'), findsOneWidget);
+        expect(find.text('View Group'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'Trip Invitation Decline shows Invitation Declined result screen',
+      (WidgetTester tester) async {
+        setPhoneViewport(tester);
+
+        await tester.pumpWidget(
+          buildTestableScreen(const NotificationsScreen(initialTabIndex: 1)),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Bantayan Trip').first);
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Decline'));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(InvitationResultScreen), findsOneWidget);
+        expect(find.text('Invitation Declined'), findsOneWidget);
+        expect(
+          find.textContaining('Your response has been updated to Not Going.'),
+          findsOneWidget,
+        );
+        expect(find.text('Back to Invitations'), findsOneWidget);
+      },
+    );
   });
 
   group('Component Unit & Widget Tests', () {
-    testWidgets('MarkAllAsRead responds to tap and displays checkmark',
-        (WidgetTester tester) async {
+    testWidgets('MarkAllAsRead responds to tap and displays checkmark', (
+      WidgetTester tester,
+    ) async {
       bool checkedVal = false;
-      await tester.pumpWidget(buildTestableScreen(
-        StatefulBuilder(
-          builder: (context, setState) => MarkAllAsRead(
-            checked: checkedVal,
-            onChanged: (val) => setState(() => checkedVal = val),
+      await tester.pumpWidget(
+        buildTestableScreen(
+          Scaffold(
+            body: StatefulBuilder(
+              builder: (context, setState) => MarkAllAsRead(
+                checked: checkedVal,
+                onChanged: (val) => setState(() => checkedVal = val),
+              ),
+            ),
           ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('Mark all as read'), findsOneWidget);
@@ -104,108 +261,37 @@ void main() {
       expect(find.byIcon(Icons.check_rounded), findsOneWidget);
     });
 
-    testWidgets(
-        'NotificationTile renders vertical rectangle icon tile matching content height and shows unread badge',
+    testWidgets('InvitationFilter displays Filter for All and updates selection',
         (WidgetTester tester) async {
-      await tester.pumpWidget(buildTestableScreen(
-        const Column(
-          children: [
-            NotificationTile(
-              title: 'Unread Notif',
-              description: 'Mika added ₱1,200 for transportation to your Bohol Getaway.',
-              timestamp: '2 hours ago',
-              icon: Icons.notifications,
-              isUnread: true,
+      String current = 'All';
+      await tester.pumpWidget(
+        buildTestableScreen(
+          Scaffold(
+            body: StatefulBuilder(
+              builder: (context, setState) => InvitationFilter(
+                selectedStatus: current,
+                onChanged: (val) => setState(() => current = val),
+              ),
             ),
-            NotificationTile(
-              title: 'Read Notif',
-              description: 'Short desc',
-              timestamp: 'Yesterday',
-              icon: Icons.notifications,
-              isUnread: false,
-            ),
-          ],
-        ),
-      ));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Unread Notif'), findsOneWidget);
-      expect(find.text('Read Notif'), findsOneWidget);
-
-      // Verify that the icon container uses IntrinsicHeight and stretch layout
-      expect(find.byType(IntrinsicHeight), findsNWidgets(2));
-    });
-
-    testWidgets('InvitationTile displays title, status badge and description',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(buildTestableScreen(
-        const InvitationTile(
-          title: 'Weekend Wanderers',
-          description: 'Group invitation from Louielyn Abella.',
-          timestamp: '5 minutes ago',
-          status: 'Pending',
-        ),
-      ));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Weekend Wanderers'), findsOneWidget);
-      expect(find.text('Pending'), findsOneWidget);
-      expect(find.text('Group invitation from Louielyn Abella.'), findsOneWidget);
-      expect(find.text('5 minutes ago'), findsOneWidget);
-    });
-
-    testWidgets(
-        'InvitationFilter triggers menu without layout errors and updates selection',
-        (WidgetTester tester) async {
-      String current = 'Pending';
-      await tester.pumpWidget(buildTestableScreen(
-        StatefulBuilder(
-          builder: (context, setState) => InvitationFilter(
-            selectedStatus: current,
-            onChanged: (val) => setState(() => current = val),
           ),
         ),
-      ));
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Filter'), findsOneWidget);
+
+      await tester.tap(find.byType(InvitationFilter));
       await tester.pumpAndSettle();
 
       expect(find.text('Pending'), findsOneWidget);
-
-      // Tap filter button to open menu
-      await tester.tap(find.byType(InvitationFilter));
-      await tester.pumpAndSettle();
-
-      // Options in popup menu
-      expect(find.text('All'), findsOneWidget);
       expect(find.text('Accepted'), findsOneWidget);
-      expect(find.text('Rejected'), findsOneWidget);
+      expect(find.text('Declined'), findsOneWidget);
 
-      // Select 'All'
-      await tester.tap(find.text('All'));
+      await tester.tap(find.text('Pending'));
       await tester.pumpAndSettle();
 
-      expect(current, 'All');
-    });
-
-    testWidgets('Selecting All in NotificationsScreen shows all invitations',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(buildTestableScreen(const NotificationsScreen()));
-      await tester.pumpAndSettle();
-
-      // Switch to Invitations tab
-      await tester.tap(find.text('Invitations'));
-      await tester.pumpAndSettle();
-
-      // Open filter menu and select 'All'
-      await tester.tap(find.byType(InvitationFilter));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.text('All'));
-      await tester.pumpAndSettle();
-
-      // All 3 items should now be visible
-      expect(find.byType(InvitationTile), findsNWidgets(3));
-      expect(find.text('Weekend Wanderers'), findsOneWidget);
-      expect(find.text('Bantayan Trip'), findsNWidgets(2));
+      expect(current, 'Pending');
+      expect(find.text('Pending'), findsOneWidget);
     });
   });
 }
