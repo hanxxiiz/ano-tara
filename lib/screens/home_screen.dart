@@ -15,6 +15,7 @@ import '../core/theme/smooth_page_route.dart';
 import '../models/group_models.dart';
 import 'groups/group_details_screen.dart';
 import 'groups/groups_list_screen.dart';
+import '../components/molecules/floating_messages_button.dart';
 
 /// Dashboard for group travel planning.
 class HomeScreen extends StatefulWidget {
@@ -328,6 +329,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
+
+      // =======================================================================
+      // FLOATING MESSAGES BUTTON
+      // =======================================================================
+      floatingActionButton: const FloatingMessagesButton(),
 
       // =======================================================================
       // G. BOTTOM NAVBAR
