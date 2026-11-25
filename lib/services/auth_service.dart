@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:anotara/main.dart';
+import 'package:anotara/screens/home_screen.dart';
 import 'package:anotara/screens/auth/start_screen.dart';
 import 'package:anotara/models/member_preferences.dart';
 import 'package:anotara/services/preferences_service.dart';

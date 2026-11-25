@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:anotara/services/auth_service.dart';
 
 import 'app_routes.dart';
+import 'screens/home_screen.dart';
 import 'components/molecules/floating_messages_button.dart';
 import 'screens/messages_list_screen.dart';
 import 'screens/notifications_screen.dart';

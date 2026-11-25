@@ -13,6 +13,14 @@ class ItineraryItemModel {
   final String notes;
   final int dayNumber;
 
+  /// Map position of [placeName], when it was picked from location search.
+  /// Kept locally only (not part of the `itinerary_items` insert).
+  final double? latitude;
+  final double? longitude;
+
+  /// Place rating out of 5, when known.
+  final double? rating;
+
   const ItineraryItemModel({
     required this.id,
     this.tripId,
@@ -24,9 +32,45 @@ class ItineraryItemModel {
     required this.endTime,
     this.notes = '',
     this.dayNumber = 19,
+    this.latitude,
+    this.longitude,
+    this.rating,
   });
 
   String get timeRange => '$startTime - $endTime';
+
+  bool get hasCoordinates => latitude != null && longitude != null;
+
+  ItineraryItemModel copyWith({
+    String? category,
+    String? placeName,
+    String? location,
+    String? title,
+    String? startTime,
+    String? endTime,
+    String? notes,
+    int? dayNumber,
+    double? latitude,
+    double? longitude,
+    double? rating,
+    bool clearCoordinates = false,
+  }) {
+    return ItineraryItemModel(
+      id: id,
+      tripId: tripId,
+      category: category ?? this.category,
+      placeName: placeName ?? this.placeName,
+      location: location ?? this.location,
+      title: title ?? this.title,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
+      notes: notes ?? this.notes,
+      dayNumber: dayNumber ?? this.dayNumber,
+      latitude: clearCoordinates ? null : (latitude ?? this.latitude),
+      longitude: clearCoordinates ? null : (longitude ?? this.longitude),
+      rating: clearCoordinates ? null : (rating ?? this.rating),
+    );
+  }
 
   Map<String, dynamic> toSupabaseMap({String? overrideTripId}) {
     return {
@@ -191,9 +235,12 @@ class TripRepository {
     required String endTime,
     String notes = '',
     int dayNumber = 19,
+    double? latitude,
+    double? longitude,
+    double? rating,
   }) async {
     final item = ItineraryItemModel(
-      id: 'item-${DateTime.now().millisecondsSinceEpoch}',
+      id: 'item-${DateTime.now().microsecondsSinceEpoch}',
       tripId: tripId,
       category: category,
       placeName: placeName,
@@ -203,6 +250,9 @@ class TripRepository {
       endTime: endTime,
       notes: notes,
       dayNumber: dayNumber,
+      latitude: latitude,
+      longitude: longitude,
+      rating: rating,
     );
 
     manualItineraryItemsNotifier.value = [
@@ -218,6 +268,81 @@ class TripRepository {
     }
 
     return item;
+  }
+
+  /// Saves several itinerary items at once (e.g. accepted AI suggestions) to
+  /// `itinerary_items` and appends them to the local state list.
+  ///
+  /// Like [saveManualItineraryItem], items are kept locally even if the
+  /// Supabase insert fails.
+  Future<List<ItineraryItemModel>> saveItineraryItems(
+    List<ItineraryItemModel> items,
+  ) async {
+    if (items.isEmpty) return items;
+
+    manualItineraryItemsNotifier.value = [
+      ...items,
+      ...manualItineraryItemsNotifier.value,
+    ];
+
+    try {
+      final client = Supabase.instance.client;
+      await client
+          .from('itinerary_items')
+          .insert(items.map((item) => item.toSupabaseMap()).toList());
+    } catch (e) {
+      debugPrint('Supabase itinerary_items batch insert fallback (local saved): $e');
+    }
+    return items;
+  }
+
+  /// Itinerary items of one trip (all days), from the local state list.
+  List<ItineraryItemModel> itineraryItemsForTrip(String? tripId) {
+    return manualItineraryItemsNotifier.value
+        .where((i) => i.tripId == tripId)
+        .toList();
+  }
+
+  /// Replaces an existing itinerary item (matched by id) locally and in
+  /// `itinerary_items`. Kept locally even if the Supabase update fails.
+  Future<ItineraryItemModel> updateItineraryItem(
+    ItineraryItemModel item,
+  ) async {
+    manualItineraryItemsNotifier.value = [
+      for (final existing in manualItineraryItemsNotifier.value)
+        existing.id == item.id ? item : existing,
+    ];
+
+    try {
+      final client = Supabase.instance.client;
+      await client
+          .from('itinerary_items')
+          .update(item.toSupabaseMap())
+          .eq('id', item.id);
+    } catch (e) {
+      debugPrint('Supabase itinerary_items update fallback (local saved): $e');
+    }
+    return item;
+  }
+
+  /// Removes itinerary items by id locally and from `itinerary_items`.
+  Future<void> deleteItineraryItems(Iterable<String> ids) async {
+    final toDelete = ids.toSet();
+    if (toDelete.isEmpty) return;
+
+    manualItineraryItemsNotifier.value = manualItineraryItemsNotifier.value
+        .where((i) => !toDelete.contains(i.id))
+        .toList();
+
+    try {
+      final client = Supabase.instance.client;
+      await client
+          .from('itinerary_items')
+          .delete()
+          .inFilter('id', toDelete.toList());
+    } catch (e) {
+      debugPrint('Supabase itinerary_items delete fallback (local removed): $e');
+    }
   }
 
   /// Saves a newly planned trip to `trips`, its selected members to `trip_members`,
@@ -307,5 +432,54 @@ class TripRepository {
 
     tripsNotifier.value = [newTrip, ...tripsNotifier.value];
     return newTrip;
+  }
+
+  /// Updates an existing trip's essentials in `trips` and the local list.
+  /// Kept locally even if the Supabase update fails.
+  Future<void> updateTripDetails({
+    required String tripId,
+    required String name,
+    required String destination,
+    required String startDate,
+    required String endDate,
+    required String meetingPlace,
+    required String description,
+    List<TripMemberModel>? members,
+  }) async {
+    tripsNotifier.value = [
+      for (final t in tripsNotifier.value)
+        t.id == tripId
+            ? TripModel(
+                id: t.id,
+                groupName: t.groupName,
+                name: name,
+                destination: destination,
+                startDate: startDate,
+                endDate: endDate,
+                meetingPlace: meetingPlace,
+                description: description,
+                isAiGenerated: t.isAiGenerated,
+                members: members ?? t.members,
+                itineraryItems: t.itineraryItems,
+              )
+            : t,
+    ];
+
+    try {
+      final client = Supabase.instance.client;
+      await client
+          .from('trips')
+          .update({
+            'name': name,
+            'destination': destination,
+            'start_date': startDate,
+            'end_date': endDate,
+            'meeting_place': meetingPlace,
+            'description': description,
+          })
+          .eq('id', tripId);
+    } catch (e) {
+      debugPrint('Supabase trips update fallback (local saved): $e');
+    }
   }
 }

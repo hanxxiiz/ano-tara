@@ -16,6 +16,8 @@ dependencies:
   iconsax: ^0.0.8
   google_fonts: ^6.2.1
   flutter_svg: ^2.2.0
+  flutter_map: ^8.3.2
+  latlong2: ^0.10.1
 
 dev_dependencies:
   flutter_test:
@@ -43,6 +45,8 @@ flutter:
       fonts:
         - asset: assets/fonts/OpenSans-Regular.ttf
           weight: 400
+        - asset: assets/fonts/OpenSans-Medium.ttf
+          weight: 500
         - asset: assets/fonts/OpenSans-SemiBold.ttf
           weight: 600
         - asset: assets/fonts/OpenSans-Bold.ttf

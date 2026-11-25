@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 /// App color palette matching the Figma design system specifications.
 class AppColors {
@@ -28,6 +28,22 @@ class AppColors {
   static const Color semanticYellowLight = Color(0xFFFFF9E0);
   static const Color creamYellow = Color(0xFFFDE8B3);
 
+  /// Selected option highlight in filter sheets (#FFEE9F)
+  static const Color highlightYellow = Color(0xFFFFEE9F);
+
+  /// Trip map placeholder background and line art
+  static const Color mapLavender = Color(0xFFE9E7FC);
+  static const Color mapLavenderLine = Color(0xFF8094FF);
+
+  /// Availability calendar day nobody can make (#D9D9D9)
+  static const Color calendarEmpty = Color(0xFFD9D9D9);
+
+  /// Selected row tint in the Invite Members list (#ECF1F9)
+  static const Color selectedRowBlue = Color(0xFFECF1F9);
+
+  // "Next: trip" pill on group list cards (05.01)
+  static const Color nextTripPill = Color(0xFFC4D1E0);
+
   /// Error / Destructive Red (#F50506)
   static const Color semanticRed = Color(0xFFF50506);
   static const Color semanticRedLight = Color(0xFFFDE6E6);
@@ -48,6 +64,9 @@ class AppColors {
 
   /// "Ann" - Light Neutral / Borders / Inactive (#C3C0CB)
   static const Color ann = Color(0xFFC3C0CB);
+
+  /// Secondary copy in sheets and cards (#635E78)
+  static const Color slate = Color(0xFF635E78);
 
   // Background & Surface Colors
   static const Color background = Color(0xFFFFFFFF);
