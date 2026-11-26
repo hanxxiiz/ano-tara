@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import '../../../../components/atoms/app_button.dart';
 import '../../../../components/atoms/app_icon.dart';
+import '../../../../components/atoms/app_input_field.dart';
 import '../../../../components/organisms/app_bottom_navigation.dart';
 import '../../../../components/organisms/app_main_top_bar.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -13,11 +15,9 @@ import 'trip_itinerary_readonly_screen.dart';
 import 'trip_map_screen.dart';
 import 'trip_members_screen.dart';
 
-/// Read-only Completed and Cancelled Trip Overview screen matching:
+/// Completed and Cancelled Trip Overview screen matching:
 /// - Figma 11.01 (Completed trip — overview)
 /// - Figma 11.10 (Cancelled trip — overview)
-///
-/// Strictly non-editable: no edit controls are shown on Completed or Cancelled trips.
 class TripOverviewScreen extends StatefulWidget {
   final TripDetailData trip;
 
@@ -32,11 +32,208 @@ class TripOverviewScreen extends StatefulWidget {
 
 class _TripOverviewScreenState extends State<TripOverviewScreen> {
   late int _selectedDay;
+  late String _cancellationReason;
+  late List<TripExpenseItem> _expenses;
 
   @override
   void initState() {
     super.initState();
     _selectedDay = widget.trip.currentDay.clamp(1, widget.trip.totalDays);
+    _cancellationReason =
+        widget.trip.cancellationReason ?? 'No reason provided.';
+    _expenses = List<TripExpenseItem>.from(widget.trip.expenses);
+  }
+
+  void _showDeleteTripModal(TripDetailData trip) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+          decoration: const BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            border: Border(
+              top: BorderSide(color: AppColors.secondaryDark, width: 2.0),
+              left: BorderSide(color: AppColors.secondaryDark, width: 2.0),
+              right: BorderSide(color: AppColors.secondaryDark, width: 2.0),
+            ),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: Container(
+                    width: 44,
+                    height: 4.5,
+                    decoration: BoxDecoration(
+                      color: AppColors.secondaryDark,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TripModalCloseButton(
+                    onTap: () => Navigator.of(ctx).pop(),
+                  ),
+                ),
+                const Center(
+                  child: Icon(
+                    Iconsax.trash,
+                    color: AppColors.primaryOrange,
+                    size: 48,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Delete Trip',
+                  textAlign: TextAlign.center,
+                  style: AppTypography.h3.copyWith(
+                    color: AppColors.secondaryDark,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 22,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Are you sure you want to delete "${trip.title}"? This action cannot be undone.',
+                  textAlign: TextAlign.center,
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.shayne,
+                    fontSize: 13.5,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 22),
+                AppButton(
+                  text: 'Delete Trip',
+                  variant: AppButtonVariant.destructive,
+                  borderRadius: 16,
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('${trip.title} deleted.'),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                    Navigator.of(context).maybePop();
+                  },
+                ),
+                const SizedBox(height: 10),
+                AppButton(
+                  text: 'Cancel',
+                  variant: AppButtonVariant.secondary,
+                  borderRadius: 16,
+                  onPressed: () => Navigator.of(ctx).pop(),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showEditCancellationReasonModal() {
+    final controller = TextEditingController(text: _cancellationReason);
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(ctx).viewInsets.bottom,
+          ),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+            decoration: const BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              border: Border(
+                top: BorderSide(color: AppColors.secondaryDark, width: 2.0),
+                left: BorderSide(color: AppColors.secondaryDark, width: 2.0),
+                right: BorderSide(color: AppColors.secondaryDark, width: 2.0),
+              ),
+            ),
+            child: SafeArea(
+              top: false,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 44,
+                      height: 4.5,
+                      decoration: BoxDecoration(
+                        color: AppColors.secondaryDark,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Edit Cancellation Reason',
+                          style: AppTypography.h4.copyWith(
+                            color: AppColors.secondaryDark,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 19,
+                          ),
+                        ),
+                      ),
+                      TripModalCloseButton(
+                        onTap: () => Navigator.of(ctx).pop(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  AppInputField(
+                    label: 'Reason',
+                    hint: 'Enter cancellation reason...',
+                    controller: controller,
+                    minLines: 3,
+                    maxLines: 5,
+                  ),
+                  const SizedBox(height: 20),
+                  AppButton(
+                    text: 'Save Changes',
+                    variant: AppButtonVariant.primaryNavy,
+                    borderRadius: 16,
+                    onPressed: () {
+                      final updated = controller.text.trim();
+                      setState(() {
+                        _cancellationReason = updated.isEmpty
+                            ? 'No reason provided.'
+                            : updated;
+                      });
+                      Navigator.of(ctx).pop();
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  AppButton(
+                    text: 'Cancel',
+                    variant: AppButtonVariant.secondary,
+                    borderRadius: 16,
+                    onPressed: () => Navigator.of(ctx).pop(),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    ).whenComplete(controller.dispose);
   }
 
   @override
@@ -85,7 +282,7 @@ class _TripOverviewScreenState extends State<TripOverviewScreen> {
                           MaterialPageRoute(
                             builder: (_) => TripItineraryReadOnlyScreen(
                               trip: trip,
-                              initialDay: 2,
+                              initialDay: 1,
                             ),
                           ),
                         );
@@ -105,6 +302,12 @@ class _TripOverviewScreenState extends State<TripOverviewScreen> {
                             builder: (_) => TripExpensesScreen(
                               trip: trip,
                               initialDay: 1,
+                              expenses: _expenses,
+                              onExpensesChanged: (updated) {
+                                if (mounted) {
+                                  setState(() => _expenses = updated);
+                                }
+                              },
                             ),
                           ),
                         );
@@ -241,15 +444,50 @@ class _TripOverviewScreenState extends State<TripOverviewScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Title Row (strictly read-only — no edit button)
-                Text(
-                  trip.title,
-                  style: AppTypography.h2.copyWith(
-                    color: AppColors.secondaryDark,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 25,
-                    height: 1.15,
-                  ),
+                // Title Row with Delete icon on the rightmost side
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        trip.title,
+                        style: AppTypography.h2.copyWith(
+                          color: AppColors.secondaryDark,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 25,
+                          height: 1.15,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    GestureDetector(
+                      key: const Key('delete_trip_button'),
+                      onTap: () => _showDeleteTripModal(trip),
+                      child: Tooltip(
+                        message: 'Delete Trip',
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryOrangeLight,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: AppColors.secondaryDark,
+                              width: 1.6,
+                            ),
+                            boxShadow: kTripSmallHardShadow,
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              Iconsax.trash,
+                              color: AppColors.primaryOrange,
+                              size: 18,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 6),
 
@@ -540,28 +778,58 @@ class _TripOverviewScreenState extends State<TripOverviewScreen> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'TRIP CANCELLED',
-                      style: AppTypography.caption.copyWith(
-                        color: AppColors.white.withValues(alpha: 0.9),
-                        fontWeight: FontWeight.w700,
-                        fontSize: 10.5,
-                        letterSpacing: 0.5,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'TRIP CANCELLED',
+                        style: AppTypography.caption.copyWith(
+                          color: AppColors.white.withValues(alpha: 0.9),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 10.5,
+                          letterSpacing: 0.5,
+                        ),
                       ),
-                    ),
-                    Text(
-                      'This trip is off',
-                      style: AppTypography.h3.copyWith(
+                      Text(
+                        'This trip is off',
+                        style: AppTypography.h3.copyWith(
+                          color: AppColors.white,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 20,
+                          height: 1.15,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 10),
+                GestureDetector(
+                  key: const Key('edit_cancelled_announcement_button'),
+                  onTap: _showEditCancellationReasonModal,
+                  child: Tooltip(
+                    message: 'Edit Cancellation Reason',
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
                         color: AppColors.white,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 20,
-                        height: 1.15,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: AppColors.secondaryDark,
+                          width: 1.6,
+                        ),
+                        boxShadow: kTripSmallHardShadow,
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Iconsax.edit_2,
+                          color: AppColors.secondaryDark,
+                          size: 18,
+                        ),
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ],
             ),
@@ -627,7 +895,7 @@ class _TripOverviewScreenState extends State<TripOverviewScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        trip.cancellationReason ?? 'No reason provided.',
+                        _cancellationReason,
                         style: AppTypography.bodyMedium.copyWith(
                           color: AppColors.secondaryDark,
                           fontSize: 13.5,

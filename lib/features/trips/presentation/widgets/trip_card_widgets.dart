@@ -399,3 +399,40 @@ class TripInitialsAvatarStack extends StatelessWidget {
     );
   }
 }
+
+/// Rounded square close ("X") button matching the Ano Tara modal sheets.
+class TripModalCloseButton extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const TripModalCloseButton({
+    super.key,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: AppColors.secondaryDark,
+            width: 1.8,
+          ),
+          boxShadow: kTripSmallHardShadow,
+        ),
+        child: const Center(
+          child: Icon(
+            Icons.close_rounded,
+            color: AppColors.secondaryDark,
+            size: 18,
+          ),
+        ),
+      ),
+    );
+  }
+}

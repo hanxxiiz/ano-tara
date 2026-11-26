@@ -11,11 +11,15 @@ import 'trip_expense_settlements_screen.dart';
 class TripExpensesScreen extends StatefulWidget {
   final TripDetailData trip;
   final int initialDay;
+  final List<TripExpenseItem>? expenses;
+  final ValueChanged<List<TripExpenseItem>>? onExpensesChanged;
 
   const TripExpensesScreen({
     super.key,
     required this.trip,
     this.initialDay = 1,
+    this.expenses,
+    this.onExpensesChanged,
   });
 
   @override
@@ -24,11 +28,32 @@ class TripExpensesScreen extends StatefulWidget {
 
 class _TripExpensesScreenState extends State<TripExpensesScreen> {
   late int _selectedDay;
+  late List<TripExpenseItem> _expenses;
 
   @override
   void initState() {
     super.initState();
     _selectedDay = widget.initialDay.clamp(1, widget.trip.totalDays);
+    _expenses = List<TripExpenseItem>.from(
+      widget.expenses ?? widget.trip.expenses,
+    );
+  }
+
+  void _updateExpense(TripExpenseItem updated) {
+    setState(() {
+      final idx = _expenses.indexWhere((e) => e.id == updated.id);
+      if (idx != -1) {
+        _expenses[idx] = updated;
+      }
+    });
+    widget.onExpensesChanged?.call(List<TripExpenseItem>.from(_expenses));
+  }
+
+  void _deleteExpense(String expenseId) {
+    setState(() {
+      _expenses.removeWhere((e) => e.id == expenseId);
+    });
+    widget.onExpensesChanged?.call(List<TripExpenseItem>.from(_expenses));
   }
 
   @override
@@ -37,9 +62,8 @@ class _TripExpensesScreenState extends State<TripExpensesScreen> {
         ? widget.trip.fullDayDates[_selectedDay - 1]
         : 'Day $_selectedDay';
 
-    final dayExpenses = widget.trip.expenses
-        .where((e) => e.dayNumber == _selectedDay)
-        .toList();
+    final dayExpenses =
+        _expenses.where((e) => e.dayNumber == _selectedDay).toList();
 
     return Scaffold(
       backgroundColor: AppColors.white,
@@ -96,6 +120,9 @@ class _TripExpensesScreenState extends State<TripExpensesScreen> {
                           builder: (_) => TripExpenseSettlementsScreen(
                             expense: expense,
                             tripStatus: widget.trip.status,
+                            totalDays: widget.trip.totalDays,
+                            onExpenseUpdated: _updateExpense,
+                            onExpenseDeleted: () => _deleteExpense(expense.id),
                           ),
                         ),
                       );

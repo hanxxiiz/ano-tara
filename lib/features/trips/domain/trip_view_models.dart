@@ -128,13 +128,19 @@ class TripExpenseSettlement {
     return isSettled ? 'Payment received' : 'Awaiting payment';
   }
 
-  TripExpenseSettlement copyWith({bool? isSettled}) {
+  TripExpenseSettlement copyWith({
+    String? memberName,
+    bool? isCurrentUser,
+    bool? isPaidAtPurchase,
+    double? amount,
+    bool? isSettled,
+  }) {
     return TripExpenseSettlement(
       id: id,
-      memberName: memberName,
-      isCurrentUser: isCurrentUser,
-      isPaidAtPurchase: isPaidAtPurchase,
-      amount: amount,
+      memberName: memberName ?? this.memberName,
+      isCurrentUser: isCurrentUser ?? this.isCurrentUser,
+      isPaidAtPurchase: isPaidAtPurchase ?? this.isPaidAtPurchase,
+      amount: amount ?? this.amount,
       isSettled: isSettled ?? this.isSettled,
     );
   }
@@ -161,6 +167,27 @@ class TripExpenseItem {
     this.isPaidByYou = false,
     required this.settlements,
   });
+
+  TripExpenseItem copyWith({
+    int? dayNumber,
+    String? category,
+    String? title,
+    double? totalAmount,
+    String? paidByName,
+    bool? isPaidByYou,
+    List<TripExpenseSettlement>? settlements,
+  }) {
+    return TripExpenseItem(
+      id: id,
+      dayNumber: dayNumber ?? this.dayNumber,
+      category: category ?? this.category,
+      title: title ?? this.title,
+      totalAmount: totalAmount ?? this.totalAmount,
+      paidByName: paidByName ?? this.paidByName,
+      isPaidByYou: isPaidByYou ?? this.isPaidByYou,
+      settlements: settlements ?? this.settlements,
+    );
+  }
 
   String get paidByLabel =>
       isPaidByYou ? 'Paid by: $paidByName (you)' : 'Paid by: $paidByName';

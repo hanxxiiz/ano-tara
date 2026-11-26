@@ -15,7 +15,7 @@ class TripItineraryReadOnlyScreen extends StatefulWidget {
   const TripItineraryReadOnlyScreen({
     super.key,
     required this.trip,
-    this.initialDay = 2,
+    this.initialDay = 1,
   });
 
   @override
