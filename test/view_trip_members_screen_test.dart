@@ -187,4 +187,36 @@ void main() {
       expect(find.text('Louielyn Abella'), findsOneWidget);
     },
   );
+
+  testWidgets(
+    'Remove Participant modal close button is aligned in top-right corner',
+    (tester) async {
+      await tester.pumpWidget(buildTestApp(isOrganizer: true));
+
+      await tester.tap(find.byTooltip('Remove Louielyn Abella'));
+      await tester.pumpAndSettle();
+
+      final closeIcon = find.byIcon(Icons.close_rounded);
+      final title = find.text('Remove Trip Participant');
+      final headerStack = find
+          .ancestor(of: closeIcon, matching: find.byType(Stack))
+          .first;
+      expect(closeIcon, findsOneWidget);
+      expect(title, findsOneWidget);
+
+      final closeRect = tester.getRect(closeIcon);
+      final titleRect = tester.getRect(title);
+      final stackRect = tester.getRect(headerStack);
+
+      // Close icon (centered inside 40x40 tap target) should align to top-right
+      expect(closeRect.center.dx, closeTo(stackRect.right - 20, 1.0));
+      expect(closeRect.bottom, lessThan(titleRect.top));
+
+      // Tapping close dismisses the modal without removing the participant
+      await tester.tap(closeIcon);
+      await tester.pumpAndSettle();
+      expect(find.text('Remove Trip Participant'), findsNothing);
+      expect(find.text('Louielyn Abella'), findsOneWidget);
+    },
+  );
 }

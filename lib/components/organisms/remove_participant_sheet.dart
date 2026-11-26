@@ -66,11 +66,9 @@ class _RemoveParticipantSheet extends StatelessWidget {
                       child: GestureDetector(
                         behavior: HitTestBehavior.opaque,
                         onTap: () => Navigator.of(context).pop(false),
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(
-                            minWidth: 40,
-                            minHeight: 40,
-                          ),
+                        child: SizedBox(
+                          width: 40,
+                          height: 40,
                           child: Center(
                             child: Container(
                               width: 36,
