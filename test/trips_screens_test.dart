@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:anotara/features/trips/data/trip_repository.dart';
+import 'package:anotara/features/trips/presentation/screens/edit_trip_screen.dart';
 import 'package:anotara/features/trips/presentation/screens/trips_list_screen.dart';
 import 'package:anotara/features/trips/presentation/screens/trip_overview_screen.dart';
 import 'package:anotara/features/trips/presentation/widgets/filter_trips_sheet.dart';
@@ -93,6 +94,8 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text('Cancel Trip'), findsNWidgets(2));
+    expect(find.text('Reason'), findsOneWidget);
+    expect(find.byType(TextField), findsOneWidget);
 
     await tester.pumpWidget(
       const MaterialApp(home: Scaffold(body: DeleteTripDialog())),
@@ -100,6 +103,84 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Delete Trip'), findsNWidgets(2));
     expect(find.text('Cancel'), findsOneWidget);
+  });
+
+  testWidgets('EditTripScreen renders all fields and saves updated trip', (
+    tester,
+  ) async {
+    final trip = TripRepository.instance.getTripById('seed-trip-1')!;
+    TripModel? savedTrip;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (ctx) => Scaffold(
+            body: ElevatedButton(
+              onPressed: () async {
+                savedTrip = await Navigator.of(ctx).push<TripModel>(
+                  MaterialPageRoute(
+                    builder: (_) => EditTripScreen(trip: trip),
+                  ),
+                );
+              },
+              child: const Text('Open Edit'),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open Edit'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Edit Trip'), findsOneWidget);
+    expect(find.text('Set up your trip essentials'), findsOneWidget);
+    expect(find.text('Trip Name*'), findsOneWidget);
+    expect(find.text('Destination*'), findsOneWidget);
+    expect(find.text('Start Date*'), findsOneWidget);
+    expect(find.text('End Date*'), findsOneWidget);
+    expect(find.text('Meeting Place*'), findsOneWidget);
+    expect(find.text('Description'), findsOneWidget);
+    expect(find.text('Save Changes'), findsOneWidget);
+    expect(find.text('Cancel'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextFormField).first, 'Updated Bantayan');
+    await tester.ensureVisible(find.text('Save Changes'));
+    await tester.tap(find.text('Save Changes'));
+    await tester.pumpAndSettle();
+
+    expect(savedTrip, isNotNull);
+    expect(savedTrip!.name, 'Updated Bantayan');
+  });
+
+  testWidgets('CancelTripDialog returns entered cancellation reason', (
+    tester,
+  ) async {
+    String? returnedReason;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (ctx) => Scaffold(
+            body: ElevatedButton(
+              onPressed: () async {
+                returnedReason = await CancelTripDialog.show(ctx);
+              },
+              child: const Text('Open Cancel'),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open Cancel'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), 'Typhoon warning');
+    await tester.tap(find.text('Cancel Trip').last);
+    await tester.pumpAndSettle();
+
+    expect(returnedReason, 'Typhoon warning');
   });
 
   testWidgets('Trip actions show only to the Organizer', (tester) async {
@@ -217,6 +298,13 @@ void main() {
     await tester.tap(find.text('Open Delete'));
     await tester.pumpAndSettle();
     Navigator.of(tester.element(find.text('Delete Trip').first)).pop();
+    await tester.pumpAndSettle();
+
+    // 5. EditTripScreen on narrow 360x640 viewport
+    final trip = TripRepository.instance.getTripById('seed-trip-1')!;
+    await tester.pumpWidget(
+      MaterialApp(home: EditTripScreen(trip: trip)),
+    );
     await tester.pumpAndSettle();
   });
 }

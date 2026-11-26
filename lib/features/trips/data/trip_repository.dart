@@ -119,6 +119,7 @@ class TripModel {
   final String description;
   final bool isAiGenerated;
   final TripStatus status;
+  final String? cancellationReason;
   final bool isOrganizer;
   final int currentDay;
   final List<TripDaySchedule> days;
@@ -138,6 +139,7 @@ class TripModel {
     required this.description,
     required this.isAiGenerated,
     this.status = TripStatus.ongoing,
+    this.cancellationReason,
     this.isOrganizer = true,
     this.currentDay = 1,
     this.days = const [],
@@ -174,6 +176,7 @@ class TripModel {
     String? description,
     bool? isAiGenerated,
     TripStatus? status,
+    String? cancellationReason,
     bool? isOrganizer,
     int? currentDay,
     List<TripDaySchedule>? days,
@@ -193,6 +196,7 @@ class TripModel {
       description: description ?? this.description,
       isAiGenerated: isAiGenerated ?? this.isAiGenerated,
       status: status ?? this.status,
+      cancellationReason: cancellationReason ?? this.cancellationReason,
       isOrganizer: isOrganizer ?? this.isOrganizer,
       currentDay: currentDay ?? this.currentDay,
       days: days ?? this.days,
@@ -565,10 +569,19 @@ class TripRepository {
   }
 
   /// Cancels a trip and keeps it in history with `TripStatus.cancelled`.
-  Future<void> cancelTrip(String tripId) async {
+  Future<void> cancelTrip(String tripId, {String? reason}) async {
+    final trimmedReason = reason?.trim();
     tripsNotifier.value = tripsNotifier.value
         .map(
-          (t) => t.id == tripId ? t.copyWith(status: TripStatus.cancelled) : t,
+          (t) => t.id == tripId
+              ? t.copyWith(
+                  status: TripStatus.cancelled,
+                  cancellationReason:
+                      (trimmedReason != null && trimmedReason.isNotEmpty)
+                          ? trimmedReason
+                          : t.cancellationReason,
+                )
+              : t,
         )
         .toList();
 
@@ -576,7 +589,11 @@ class TripRepository {
       final client = Supabase.instance.client;
       await client
           .from('trips')
-          .update({'status': TripStatus.cancelled.name})
+          .update({
+            'status': TripStatus.cancelled.name,
+            if (trimmedReason != null && trimmedReason.isNotEmpty)
+              'cancellation_reason': trimmedReason,
+          })
           .eq('id', tripId);
     } catch (e) {
       debugPrint('Supabase trips cancel fallback (cancelled locally): $e');

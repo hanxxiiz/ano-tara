@@ -4,7 +4,6 @@ import 'package:iconsax/iconsax.dart';
 import '../../../../components/atoms/app_button.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
-import '../../data/trip_repository.dart';
 
 enum TripActionChoice {
   edit,
@@ -183,143 +182,31 @@ class DeleteTripDialog extends StatelessWidget {
 }
 
 /// Cancel Trip confirmation dialog/sheet matching Figma 07.06.
-class CancelTripDialog extends StatelessWidget {
+class CancelTripDialog extends StatefulWidget {
   const CancelTripDialog({super.key});
 
-  static Future<bool> show(BuildContext context) async {
-    final result = await showModalBottomSheet<bool>(
+  /// Returns the cancellation reason string when confirmed (may be empty),
+  /// or `null` when dismissed.
+  static Future<String?> show(BuildContext context) {
+    return showModalBottomSheet<String>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (_) => const CancelTripDialog(),
     );
-    return result == true;
   }
 
   @override
-  Widget build(BuildContext context) {
-    return _NeoBottomSheetContainer(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 4, 24, 28),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Align(
-              alignment: Alignment.centerRight,
-              child: _CloseSquareButton(
-                onTap: () => Navigator.of(context).pop(false),
-              ),
-            ),
-            const _WarningHexagonBadge(),
-            const SizedBox(height: 16),
-            Text(
-              'Cancel Trip',
-              style: AppTypography.h2.copyWith(
-                color: AppColors.secondaryDark,
-                fontSize: 24,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'Are you sure you want to cancel this trip? Participants will be notified, and the trip will remain in your history.',
-              textAlign: TextAlign.center,
-              style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.carla,
-                fontSize: 13.5,
-                fontWeight: FontWeight.w600,
-                height: 1.45,
-              ),
-            ),
-            const SizedBox(height: 44),
-            AppButton(
-              text: 'Cancel Trip',
-              variant: AppButtonVariant.destructive,
-              customHeight: 50,
-              borderRadius: 16,
-              onPressed: () => Navigator.of(context).pop(true),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  State<CancelTripDialog> createState() => _CancelTripDialogState();
 }
 
-/// Functional Edit Trip sheet for Organizer to update trip details.
-class EditTripSheet extends StatefulWidget {
-  final TripModel trip;
-
-  const EditTripSheet({super.key, required this.trip});
-
-  static Future<TripModel?> show(BuildContext context, TripModel trip) {
-    return showModalBottomSheet<TripModel>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => EditTripSheet(trip: trip),
-    );
-  }
-
-  @override
-  State<EditTripSheet> createState() => _EditTripSheetState();
-}
-
-class _EditTripSheetState extends State<EditTripSheet> {
-  late final TextEditingController _nameController;
-  late final TextEditingController _destinationController;
-  late final TextEditingController _startDateController;
-  late final TextEditingController _endDateController;
-  late final TextEditingController _meetingPlaceController;
-  late final TextEditingController _descriptionController;
-
-  @override
-  void initState() {
-    super.initState();
-    _nameController = TextEditingController(text: widget.trip.name);
-    _destinationController =
-        TextEditingController(text: widget.trip.destination);
-    _startDateController = TextEditingController(text: widget.trip.startDate);
-    _endDateController = TextEditingController(text: widget.trip.endDate);
-    _meetingPlaceController =
-        TextEditingController(text: widget.trip.meetingPlace);
-    _descriptionController =
-        TextEditingController(text: widget.trip.description);
-  }
+class _CancelTripDialogState extends State<CancelTripDialog> {
+  final TextEditingController _reasonController = TextEditingController();
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _destinationController.dispose();
-    _startDateController.dispose();
-    _endDateController.dispose();
-    _meetingPlaceController.dispose();
-    _descriptionController.dispose();
+    _reasonController.dispose();
     super.dispose();
-  }
-
-  void _save() {
-    final name = _nameController.text.trim();
-    final destination = _destinationController.text.trim();
-    final startDate = _startDateController.text.trim();
-    final endDate = _endDateController.text.trim();
-    final meetingPlace = _meetingPlaceController.text.trim();
-    final description = _descriptionController.text.trim();
-
-    final updated = widget.trip.copyWith(
-      name: name.isNotEmpty ? name : widget.trip.name,
-      destination:
-          destination.isNotEmpty ? destination : widget.trip.destination,
-      startDate: startDate.isNotEmpty ? startDate : widget.trip.startDate,
-      endDate: endDate.isNotEmpty ? endDate : widget.trip.endDate,
-      fullDateRange:
-          '${startDate.isNotEmpty ? startDate : widget.trip.startDate} - ${endDate.isNotEmpty ? endDate : widget.trip.endDate}',
-      meetingPlace:
-          meetingPlace.isNotEmpty ? meetingPlace : widget.trip.meetingPlace,
-      description: description,
-    );
-
-    Navigator.of(context).pop(updated);
   }
 
   @override
@@ -330,111 +217,94 @@ class _EditTripSheetState extends State<EditTripSheet> {
       padding: EdgeInsets.only(bottom: bottomInset),
       child: _NeoBottomSheetContainer(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+          padding: const EdgeInsets.fromLTRB(24, 4, 24, 28),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 5,
-                        height: 22,
-                        decoration: BoxDecoration(
-                          color: AppColors.semanticYellow,
-                          borderRadius: BorderRadius.circular(4),
-                          border: Border.all(
-                            color: AppColors.secondaryDark,
-                            width: 1,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Text(
-                        'Edit Trip',
-                        style: AppTypography.h2.copyWith(
-                          color: AppColors.secondaryDark,
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ],
-                  ),
-                  _CloseSquareButton(onTap: () => Navigator.of(context).pop()),
-                ],
+              Align(
+                alignment: Alignment.centerRight,
+                child: _CloseSquareButton(
+                  onTap: () => Navigator.of(context).pop(null),
+                ),
               ),
+              const _WarningHexagonBadge(),
               const SizedBox(height: 16),
-              _buildField('Trip Name', _nameController),
-              const SizedBox(height: 12),
-              _buildField('Destination', _destinationController),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(child: _buildField('Start Date', _startDateController)),
-                  const SizedBox(width: 12),
-                  Expanded(child: _buildField('End Date', _endDateController)),
-                ],
+              Text(
+                'Cancel Trip',
+                style: AppTypography.h2.copyWith(
+                  color: AppColors.secondaryDark,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
-              const SizedBox(height: 12),
-              _buildField('Meeting Location', _meetingPlaceController),
-              const SizedBox(height: 12),
-              _buildField('About This Trip', _descriptionController, maxLines: 3),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
+              Text(
+                'Are you sure you want to cancel this trip? Participants will be notified, and the trip will remain in your history.',
+                textAlign: TextAlign.center,
+                style: AppTypography.bodyMedium.copyWith(
+                  color: AppColors.carla,
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w600,
+                  height: 1.45,
+                ),
+              ),
+              const SizedBox(height: 18),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Reason',
+                  style: AppTypography.inputLabel.copyWith(
+                    color: AppColors.primaryOrange,
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.secondaryLight,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: AppColors.secondaryDark,
+                    width: 2.0,
+                  ),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 6,
+                ),
+                child: TextField(
+                  controller: _reasonController,
+                  minLines: 4,
+                  maxLines: 5,
+                  textInputAction: TextInputAction.newline,
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: AppColors.secondaryDark,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  cursorColor: AppColors.secondaryDark,
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(vertical: 8),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 22),
               AppButton(
-                text: 'Save Changes',
-                variant: AppButtonVariant.primaryNavy,
-                customHeight: 48,
-                borderRadius: 14,
-                onPressed: _save,
+                text: 'Cancel Trip',
+                variant: AppButtonVariant.destructive,
+                customHeight: 50,
+                borderRadius: 16,
+                onPressed: () =>
+                    Navigator.of(context).pop(_reasonController.text.trim()),
               ),
             ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildField(
-    String label,
-    TextEditingController controller, {
-    int maxLines = 1,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: AppTypography.inputLabel.copyWith(
-            fontSize: 13,
-            color: AppColors.secondaryDark,
-          ),
-        ),
-        const SizedBox(height: 6),
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.secondaryLight,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.secondaryDark, width: 1.8),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: TextField(
-            controller: controller,
-            maxLines: maxLines,
-            style: AppTypography.bodyMedium.copyWith(
-              color: AppColors.secondaryDark,
-              fontWeight: FontWeight.w600,
-            ),
-            decoration: const InputDecoration(
-              border: InputBorder.none,
-              isDense: true,
-              contentPadding: EdgeInsets.symmetric(vertical: 12),
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

@@ -9,6 +9,7 @@ import '../../data/trip_repository.dart';
 import '../widgets/trip_actions_sheet.dart';
 import '../widgets/trip_map_banner.dart';
 import '../widgets/trip_member_avatars.dart';
+import 'edit_trip_screen.dart';
 
 /// Organizer Trip Overview screen matching Figma 07.02:
 /// - Hero trip card with map banner, status pill, organizer-only actions menu,
@@ -39,7 +40,11 @@ class _TripOverviewScreenState extends State<TripOverviewScreen> {
 
     switch (choice) {
       case TripActionChoice.edit:
-        final updated = await EditTripSheet.show(context, trip);
+        final updated = await Navigator.of(context).push<TripModel>(
+          MaterialPageRoute(
+            builder: (_) => EditTripScreen(trip: trip),
+          ),
+        );
         if (updated != null && mounted) {
           await TripRepository.instance.updateTrip(updated);
           if (!mounted) return;
@@ -50,9 +55,9 @@ class _TripOverviewScreenState extends State<TripOverviewScreen> {
         break;
 
       case TripActionChoice.cancel:
-        final confirmed = await CancelTripDialog.show(context);
-        if (confirmed && mounted) {
-          await TripRepository.instance.cancelTrip(trip.id);
+        final reason = await CancelTripDialog.show(context);
+        if (reason != null && mounted) {
+          await TripRepository.instance.cancelTrip(trip.id, reason: reason);
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
