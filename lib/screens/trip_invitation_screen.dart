@@ -2,15 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 
 import '../components/atoms/app_button.dart';
-import '../components/atoms/app_icon.dart';
+import '../components/invitation_hero_avatar.dart';
 import '../components/invitation_tile.dart';
 import '../components/organisms/app_top_bar.dart';
 import '../models/notification_models.dart';
 import '../theme/app_theme.dart';
 import 'invitation_result_screen.dart';
 
-/// Trip Invitation detail screen allowing the user to review trip metadata
-/// and Accept or Decline the invitation.
+/// Trip Invitation detail screen matching the Figma design.
 class TripInvitationScreen extends StatelessWidget {
   const TripInvitationScreen({
     super.key,
@@ -23,8 +22,9 @@ class TripInvitationScreen extends StatelessWidget {
 
   static const Color darkNavy = Color(0xFF10052F);
   static const Color inkText = Color(0xFF0F0331);
-  static const Color mutedText = Color(0xFF4B4265);
-  static const Color orangeAccent = Color(0xFFE24B27);
+  static const Color mutedText = Color(0xFF6E6880);
+  static const Color yellowAccent = Color(0xFFFFD633);
+  static const Color yellowPending = Color(0xFFFAD94E);
 
   Color _statusBadgeColor(InvitationStatus status) {
     switch (status) {
@@ -33,7 +33,7 @@ class TripInvitationScreen extends StatelessWidget {
       case InvitationStatus.declined:
         return InvitationTile.declinedBg;
       case InvitationStatus.pending:
-        return InvitationTile.pendingBg;
+        return yellowPending;
     }
   }
 
@@ -64,16 +64,68 @@ class TripInvitationScreen extends StatelessWidget {
             Container(height: 1, color: darkNavy),
             Expanded(
               child: SingleChildScrollView(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Main Trip Invitation Card
+                    // Centered Hero Avatar + Paper-Plane Badge
+                    const Center(
+                      child: InvitationHeroAvatar(
+                        badgeIcon: Icons.near_me_rounded,
+                        size: 98,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // "You're invited!" Heading
+                    const Text(
+                      "You're invited!",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: AppFonts.urbanist,
+                        color: inkText,
+                        fontSize: 25,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.4,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Centered rich-text subtitle
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      child: Text.rich(
+                        TextSpan(
+                          style: const TextStyle(
+                            fontFamily: AppFonts.openSans,
+                            color: Color(0xFF3E3752),
+                            fontSize: 13,
+                            height: 1.4,
+                          ),
+                          children: [
+                            TextSpan(
+                              text: invitation.inviterName,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                                color: inkText,
+                              ),
+                            ),
+                            TextSpan(
+                              text:
+                                  ' (${invitation.displayHandle}) invited you to join ${invitation.title}! Get ready to explore, make memories, and enjoy the adventure together.',
+                            ),
+                          ],
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+
+                    // Trip Details Card
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(18),
                         border: Border.all(color: darkNavy, width: 2),
                         boxShadow: const [
                           BoxShadow(
@@ -83,26 +135,25 @@ class TripInvitationScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-                      padding: const EdgeInsets.all(18),
+                      padding: const EdgeInsets.all(16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Trip icon, name, status pill
+                          // Card Header: Yellow Calendar-Check Icon + Trip Name + "TRIP DETAILS"
                           Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Container(
-                                width: 58,
-                                height: 58,
+                                width: 48,
+                                height: 48,
                                 decoration: BoxDecoration(
-                                  color: orangeAccent,
-                                  borderRadius: BorderRadius.circular(14),
+                                  color: yellowAccent,
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: const Center(
-                                  child: AppIcon(
-                                    Iconsax.map_15,
+                                  child: Icon(
+                                    Iconsax.calendar_tick,
                                     color: Colors.white,
-                                    size: 28,
+                                    size: 24,
                                   ),
                                 ),
                               ),
@@ -116,31 +167,20 @@ class TripInvitationScreen extends StatelessWidget {
                                       style: const TextStyle(
                                         fontFamily: AppFonts.urbanist,
                                         color: inkText,
-                                        fontSize: 20,
+                                        fontSize: 18,
                                         fontWeight: FontWeight.w800,
-                                        letterSpacing: -0.3,
+                                        letterSpacing: -0.2,
                                       ),
                                     ),
-                                    const SizedBox(height: 6),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 14,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color:
-                                            _statusBadgeColor(invitation.status),
-                                        borderRadius:
-                                            BorderRadius.circular(999),
-                                      ),
-                                      child: Text(
-                                        invitation.status.label,
-                                        style: const TextStyle(
-                                          fontFamily: AppFonts.openSans,
-                                          color: Colors.white,
-                                          fontSize: 11.5,
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                    const SizedBox(height: 2),
+                                    const Text(
+                                      'TRIP DETAILS',
+                                      style: TextStyle(
+                                        fontFamily: AppFonts.openSans,
+                                        color: mutedText,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        letterSpacing: 0.4,
                                       ),
                                     ),
                                   ],
@@ -148,162 +188,103 @@ class TripInvitationScreen extends StatelessWidget {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 16),
-                          Container(
-                            height: 1.5,
-                            color: darkNavy.withValues(alpha: 0.12),
+                          const SizedBox(height: 12),
+                          const Divider(
+                            height: 1,
+                            thickness: 1,
+                            color: Color(0xFFE4E2EC),
                           ),
-                          const SizedBox(height: 14),
+                          const SizedBox(height: 12),
 
-                          // Inviter metadata
+                          // Key-Value Metadata Rows
+                          _TripDetailRow(
+                            label: 'Organizer',
+                            value: invitation.displayOrganizer,
+                          ),
+                          const SizedBox(height: 10),
+                          _TripDetailRow(
+                            label: 'Destination',
+                            value: invitation.location ?? 'TBD',
+                          ),
+                          const SizedBox(height: 10),
+                          _TripDetailRow(
+                            label: 'Dates',
+                            value: invitation.dateRange ?? 'TBD',
+                          ),
+                          const SizedBox(height: 10),
                           Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              const AppIcon(
-                                Iconsax.user5,
-                                size: 17,
-                                color: inkText,
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
+                              const SizedBox(
+                                width: 105,
                                 child: Text(
-                                  'Invited by ${invitation.inviterName}',
+                                  'Your status',
+                                  style: TextStyle(
+                                    fontFamily: AppFonts.openSans,
+                                    color: mutedText,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                constraints: const BoxConstraints(minWidth: 84),
+                                alignment: Alignment.center,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: _statusBadgeColor(invitation.status),
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: Text(
+                                  invitation.status.label,
                                   style: const TextStyle(
                                     fontFamily: AppFonts.openSans,
-                                    color: inkText,
-                                    fontSize: 13.5,
+                                    color: Colors.white,
+                                    fontSize: 11.5,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ),
-                              Text(
-                                invitation.timestamp,
-                                style: const TextStyle(
-                                  fontFamily: AppFonts.openSans,
-                                  color: mutedText,
-                                  fontSize: 11.5,
-                                ),
-                              ),
                             ],
                           ),
-                          const SizedBox(height: 14),
-
-                          // Trip description
-                          Text(
-                            invitation.summary,
-                            style: const TextStyle(
-                              fontFamily: AppFonts.openSans,
-                              color: inkText,
-                              fontSize: 13.5,
-                              height: 1.45,
-                            ),
-                          ),
-                          const SizedBox(height: 18),
-
-                          // Trip metadata rows
-                          if (invitation.location != null)
-                            _TripMetaRow(
-                              icon: Iconsax.location5,
-                              label: 'Destination',
-                              value: invitation.location!,
-                            ),
-                          if (invitation.dateRange != null)
-                            _TripMetaRow(
-                              icon: Iconsax.calendar5,
-                              label: 'Dates',
-                              value: invitation.dateRange!,
-                            ),
-                          if (invitation.groupName != null)
-                            _TripMetaRow(
-                              icon: Iconsax.profile_2user5,
-                              label: 'Group',
-                              value: invitation.groupName!,
-                            ),
-                          if (invitation.estimatedBudget != null)
-                            _TripMetaRow(
-                              icon: Iconsax.wallet_25,
-                              label: 'Estimated Budget',
-                              value: invitation.estimatedBudget!,
-                              isLast: true,
-                            ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 18),
 
-                    // Informational note
-                    Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF8F8FA),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: darkNavy.withValues(alpha: 0.2),
-                          width: 1.2,
-                        ),
+                    // Action Buttons
+                    if (isPending) ...[
+                      AppButton(
+                        text: 'Accept Invitation',
+                        variant: AppButtonVariant.primaryNavy,
+                        customHeight: 48,
+                        borderRadius: 14,
+                        onPressed: () =>
+                            _handleRespond(context, InvitationStatus.accepted),
                       ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Icon(
-                            Icons.info_outline_rounded,
-                            size: 18,
-                            color: mutedText,
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              isPending
-                                  ? 'Accepting confirms you as Going for ${invitation.title}. Declining updates your RSVP to Not Going.'
-                                  : 'You have already ${invitation.status.label.toLowerCase()} this trip invitation.',
-                              style: const TextStyle(
-                                fontFamily: AppFonts.openSans,
-                                color: mutedText,
-                                fontSize: 12.5,
-                                height: 1.4,
-                              ),
-                            ),
-                          ),
-                        ],
+                      const SizedBox(height: 10),
+                      AppButton(
+                        text: 'Decline',
+                        variant: AppButtonVariant.secondary,
+                        customHeight: 48,
+                        borderRadius: 14,
+                        onPressed: () =>
+                            _handleRespond(context, InvitationStatus.declined),
                       ),
-                    ),
+                    ] else
+                      AppButton(
+                        text: 'Back to Invitations',
+                        variant: AppButtonVariant.primaryNavy,
+                        customHeight: 48,
+                        borderRadius: 14,
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
                   ],
                 ),
               ),
-            ),
-
-            // Bottom Actions
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
-              child: isPending
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        AppButton(
-                          text: 'Accept',
-                          variant: AppButtonVariant.primaryNavy,
-                          customHeight: 52,
-                          borderRadius: 16,
-                          onPressed: () =>
-                              _handleRespond(context, InvitationStatus.accepted),
-                        ),
-                        const SizedBox(height: 12),
-                        AppButton(
-                          text: 'Decline',
-                          variant: AppButtonVariant.secondary,
-                          customHeight: 52,
-                          borderRadius: 16,
-                          onPressed: () =>
-                              _handleRespond(context, InvitationStatus.declined),
-                        ),
-                      ],
-                    )
-                  : AppButton(
-                      text: 'Back to Invitations',
-                      variant: AppButtonVariant.primaryNavy,
-                      customHeight: 52,
-                      borderRadius: 16,
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
             ),
           ],
         ),
@@ -312,65 +293,44 @@ class TripInvitationScreen extends StatelessWidget {
   }
 }
 
-class _TripMetaRow extends StatelessWidget {
-  const _TripMetaRow({
-    required this.icon,
+class _TripDetailRow extends StatelessWidget {
+  const _TripDetailRow({
     required this.label,
     required this.value,
-    this.isLast = false,
   });
 
-  final IconData icon;
   final String label;
   final String value;
-  final bool isLast;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: isLast ? 0 : 12),
-      child: Row(
-        children: [
-          Container(
-            width: 34,
-            height: 34,
-            decoration: BoxDecoration(
-              color: const Color(0xFFE8EEF5),
-              borderRadius: BorderRadius.circular(9),
-              border: Border.all(color: const Color(0xFF10052F), width: 1.2),
-            ),
-            child: Center(
-              child: AppIcon(icon, size: 17, color: const Color(0xFF144885)),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 105,
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontFamily: AppFonts.openSans,
+              color: Color(0xFF6E6880),
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    fontFamily: AppFonts.openSans,
-                    color: Color(0xFF868097),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontFamily: AppFonts.urbanist,
-                    color: Color(0xFF0F0331),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(
+              fontFamily: AppFonts.urbanist,
+              color: Color(0xFF0F0331),
+              fontSize: 13.5,
+              fontWeight: FontWeight.w700,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

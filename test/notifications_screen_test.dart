@@ -54,7 +54,7 @@ void main() {
     );
 
     testWidgets(
-      'Mark all as read clears unread indicators and Activity filter works',
+      'Clicking Filter opens Filter Activity modal and applies/resets filters',
       (WidgetTester tester) async {
         setPhoneViewport(tester);
 
@@ -63,20 +63,36 @@ void main() {
 
         expect(find.byKey(const Key('unread_dot')), findsOneWidget);
 
-        // Filter to Unread only
+        // Tap Filter -> opens Filter Activity modal
         await tester.tap(find.byKey(const Key('activity_filter')));
         await tester.pumpAndSettle();
+
+        expect(find.text('Filter Activity'), findsOneWidget);
+        expect(find.text('Read Status'), findsOneWidget);
+        expect(find.text('All Notifications'), findsOneWidget);
+        expect(find.text('Activity Type'), findsOneWidget);
+        expect(find.text('All Activities'), findsOneWidget);
+        expect(find.text('Sort By'), findsOneWidget);
+        expect(find.text('Reset'), findsOneWidget);
+        expect(find.text('Apply Filters'), findsOneWidget);
+
+        // Select Unread and Apply Filters
         await tester.tap(find.text('Unread'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Apply Filters'));
         await tester.pumpAndSettle();
 
         expect(find.byType(NotificationTile), findsOneWidget);
         expect(find.text('New expense added'), findsOneWidget);
 
-        // Reset filter to All
+        // Open modal again -> Reset -> Apply Filters
         await tester.tap(find.byKey(const Key('activity_filter')));
         await tester.pumpAndSettle();
-        await tester.tap(find.text('All'));
+        await tester.tap(find.text('Reset'));
         await tester.pumpAndSettle();
+        await tester.tap(find.text('Apply Filters'));
+        await tester.pumpAndSettle();
+
         expect(find.byType(NotificationTile), findsNWidgets(2));
 
         // Tap Mark all as read -> unread dot disappears
@@ -89,7 +105,7 @@ void main() {
 
   group('NotificationsScreen Invitations Tab & Flows', () {
     testWidgets(
-      'Invitations tab shows all invitations by default and filters by status',
+      'Clicking Filter opens Filter Invitations modal and filters by status & type',
       (WidgetTester tester) async {
         setPhoneViewport(tester);
 
@@ -103,22 +119,44 @@ void main() {
         expect(find.text('Filter'), findsOneWidget);
         expect(find.byType(InvitationTile), findsNWidgets(4));
         expect(find.text('Weekend Wanderers'), findsOneWidget);
-        expect(find.text('Pending'), findsNWidgets(2));
-        expect(find.text('Accepted'), findsOneWidget);
-        expect(find.text('Declined'), findsOneWidget);
 
-        // Filter by Declined
+        // Open Filter Invitations modal
         await tester.tap(find.byKey(const Key('invitation_filter')));
         await tester.pumpAndSettle();
+
+        expect(find.text('Filter Invitations'), findsOneWidget);
+        expect(find.text('Invitation Status'), findsOneWidget);
+        expect(find.text('All Statuses'), findsOneWidget);
+        expect(find.text('Invitation Type'), findsOneWidget);
+        expect(find.text('All Invitations'), findsOneWidget);
+        expect(find.text('Group Invitations'), findsOneWidget);
+        expect(find.text('Trip Invitations'), findsOneWidget);
+
+        // Filter by Declined and Apply
         await tester.tap(find.text('Declined').last);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Apply Filters'));
         await tester.pumpAndSettle();
 
         expect(find.byType(InvitationTile), findsOneWidget);
+
+        // Open modal, Reset, filter by Group Invitations only
+        await tester.tap(find.byKey(const Key('invitation_filter')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Reset'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Group Invitations'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Apply Filters'));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(InvitationTile), findsOneWidget);
+        expect(find.text('Weekend Wanderers'), findsOneWidget);
       },
     );
 
     testWidgets(
-      'Group Invitation Accept shows Group Invitation Accepted result screen',
+      'Group Invitation displays Figma layout and Accept shows accepted result screen',
       (WidgetTester tester) async {
         setPhoneViewport(tester);
 
@@ -133,9 +171,17 @@ void main() {
 
         expect(find.byType(GroupInvitationScreen), findsOneWidget);
         expect(find.text('Group Invitation'), findsOneWidget);
+        expect(find.text("You're invited!"), findsOneWidget);
+        expect(find.text('GROUP DETAILS'), findsOneWidget);
+        expect(find.text('Organizer'), findsOneWidget);
+        expect(find.text('Members'), findsOneWidget);
+        expect(find.text('8 members'), findsOneWidget);
+        expect(find.text('Your status'), findsOneWidget);
+        expect(find.text('Accept Invitation'), findsOneWidget);
+        expect(find.text('Decline'), findsOneWidget);
 
-        // Tap Accept
-        await tester.tap(find.text('Accept'));
+        // Tap Accept Invitation
+        await tester.tap(find.text('Accept Invitation'));
         await tester.pumpAndSettle();
 
         expect(find.byType(InvitationResultScreen), findsOneWidget);
@@ -180,7 +226,7 @@ void main() {
     );
 
     testWidgets(
-      'Trip Invitation Accept shows Trip Invitation Accepted result screen',
+      'Trip Invitation displays Figma layout and Accept shows accepted result screen',
       (WidgetTester tester) async {
         setPhoneViewport(tester);
 
@@ -195,8 +241,18 @@ void main() {
 
         expect(find.byType(TripInvitationScreen), findsOneWidget);
         expect(find.text('Trip Invitation'), findsOneWidget);
+        expect(find.text("You're invited!"), findsOneWidget);
+        expect(find.text('TRIP DETAILS'), findsOneWidget);
+        expect(find.text('Organizer'), findsOneWidget);
+        expect(find.text('Destination'), findsOneWidget);
+        expect(find.text('Bantayan Island, Cebu'), findsOneWidget);
+        expect(find.text('Dates'), findsOneWidget);
+        expect(find.text('June 8 - June 10'), findsOneWidget);
+        expect(find.text('Your status'), findsOneWidget);
+        expect(find.text('Accept Invitation'), findsOneWidget);
+        expect(find.text('Decline'), findsOneWidget);
 
-        await tester.tap(find.text('Accept'));
+        await tester.tap(find.text('Accept Invitation'));
         await tester.pumpAndSettle();
 
         expect(find.byType(InvitationResultScreen), findsOneWidget);
@@ -261,17 +317,15 @@ void main() {
       expect(find.byIcon(Icons.check_rounded), findsOneWidget);
     });
 
-    testWidgets('InvitationFilter displays Filter for All and updates selection',
-        (WidgetTester tester) async {
-      String current = 'All';
+    testWidgets('InvitationFilter displays Filter label and triggers onTap', (
+      WidgetTester tester,
+    ) async {
+      bool tapped = false;
       await tester.pumpWidget(
         buildTestableScreen(
           Scaffold(
-            body: StatefulBuilder(
-              builder: (context, setState) => InvitationFilter(
-                selectedStatus: current,
-                onChanged: (val) => setState(() => current = val),
-              ),
+            body: InvitationFilter(
+              onTap: () => tapped = true,
             ),
           ),
         ),
@@ -283,15 +337,7 @@ void main() {
       await tester.tap(find.byType(InvitationFilter));
       await tester.pumpAndSettle();
 
-      expect(find.text('Pending'), findsOneWidget);
-      expect(find.text('Accepted'), findsOneWidget);
-      expect(find.text('Declined'), findsOneWidget);
-
-      await tester.tap(find.text('Pending'));
-      await tester.pumpAndSettle();
-
-      expect(current, 'Pending');
-      expect(find.text('Pending'), findsOneWidget);
+      expect(tapped, isTrue);
     });
   });
 }

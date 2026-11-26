@@ -5,6 +5,7 @@ import '../components/invitation_filter.dart';
 import '../components/invitation_tile.dart';
 import '../components/mark_all_as_read.dart';
 import '../components/molecules/app_segmented_tabs.dart';
+import '../components/notification_filter_modals.dart';
 import '../components/notification_tile.dart';
 import '../components/organisms/app_top_bar.dart';
 import '../models/notification_models.dart';
@@ -31,8 +32,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   static const Color _darkNavy = Color(0xFF10052F);
 
   late int _activeTabIndex = widget.initialTabIndex;
-  String _activityFilter = 'All';
-  String _invitationFilter = 'All';
+  ActivityFilterState _activityFilter = ActivityFilterState.defaults;
+  InvitationFilterState _invitationFilter = InvitationFilterState.defaults;
 
   late final List<ActivityNotificationItem> _notifications = [
     ActivityNotificationItem(
@@ -43,6 +44,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       timestamp: '2 hours ago',
       icon: Iconsax.wallet_25,
       isUnread: true,
+      category: ActivityCategory.expenseUpdates,
+      createdAt: DateTime(2026, 11, 27, 0, 0),
     ),
     ActivityNotificationItem(
       id: '2',
@@ -52,6 +55,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       timestamp: 'Yesterday',
       icon: Iconsax.calendar5,
       isUnread: false,
+      category: ActivityCategory.tripUpdates,
+      createdAt: DateTime(2026, 11, 26, 12, 0),
     ),
   ];
 
@@ -60,12 +65,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       id: 'inv_1',
       title: 'Weekend Wanderers',
       inviterName: 'Louielyn Abella',
+      inviterHandle: '@louielyn.abella',
+      organizerName: 'Louielyn Abella',
       timestamp: '5 minutes ago',
       type: InvitationType.group,
       status: InvitationStatus.pending,
       summary:
           'A crew of weekend explorers planning spontaneous getaways, beach hops, and food crawls around Cebu and nearby islands.',
-      memberCount: 6,
+      memberCount: 8,
       plannedTripsCount: 2,
       memberNames: const [
         'Louielyn Abella',
@@ -80,42 +87,48 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       id: 'inv_2',
       title: 'Bantayan Trip',
       inviterName: 'Hannah S. Labandero',
+      inviterHandle: '@hannah.labandero',
+      organizerName: 'Hannah S. Labandero',
       timestamp: '10 minutes ago',
       type: InvitationType.trip,
       status: InvitationStatus.pending,
       summary:
-          'Join us for a sunny island getaway to Bantayan! Expect white sand beaches, island hopping, and fresh seafood dinners.',
+          'Get ready to explore, make memories, and enjoy the adventure together.',
       location: 'Bantayan Island, Cebu',
-      dateRange: 'Oct 10 – Oct 15, 2026',
-      groupName: 'Weekend Wanderers (6 going)',
+      dateRange: 'June 8 - June 10',
+      groupName: 'Weekend Wanderers (8 going)',
       estimatedBudget: '₱4,500 / person',
     ),
     InvitationItem(
       id: 'inv_3',
       title: 'Bantayan Trip',
       inviterName: 'Hannah S. Labandero',
+      inviterHandle: '@hannah.labandero',
+      organizerName: 'Hannah S. Labandero',
       timestamp: '20 minutes ago',
       type: InvitationType.trip,
       status: InvitationStatus.accepted,
       summary:
-          'Join us for a sunny island getaway to Bantayan! Expect white sand beaches, island hopping, and fresh seafood dinners.',
+          'Get ready to explore, make memories, and enjoy the adventure together.',
       location: 'Bantayan Island, Cebu',
-      dateRange: 'Oct 10 – Oct 15, 2026',
-      groupName: 'Weekend Wanderers (6 going)',
+      dateRange: 'June 8 - June 10',
+      groupName: 'Weekend Wanderers (8 going)',
       estimatedBudget: '₱4,500 / person',
     ),
     InvitationItem(
       id: 'inv_4',
       title: 'Bantayan Trip',
       inviterName: 'Hannah S. Labandero',
+      inviterHandle: '@hannah.labandero',
+      organizerName: 'Hannah S. Labandero',
       timestamp: '20 minutes ago',
       type: InvitationType.trip,
       status: InvitationStatus.declined,
       summary:
-          'Join us for a sunny island getaway to Bantayan! Expect white sand beaches, island hopping, and fresh seafood dinners.',
+          'Get ready to explore, make memories, and enjoy the adventure together.',
       location: 'Bantayan Island, Cebu',
-      dateRange: 'Oct 10 – Oct 15, 2026',
-      groupName: 'Weekend Wanderers (6 going)',
+      dateRange: 'June 8 - June 10',
+      groupName: 'Weekend Wanderers (8 going)',
       estimatedBudget: '₱4,500 / person',
     ),
   ];
@@ -135,6 +148,26 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       final notif = _notifications.firstWhere((n) => n.id == id);
       notif.isUnread = !notif.isUnread;
     });
+  }
+
+  Future<void> _openActivityFilterModal() async {
+    final result = await showActivityFilterModal(
+      context,
+      initialState: _activityFilter,
+    );
+    if (result != null && mounted) {
+      setState(() => _activityFilter = result);
+    }
+  }
+
+  Future<void> _openInvitationFilterModal() async {
+    final result = await showInvitationFilterModal(
+      context,
+      initialState: _invitationFilter,
+    );
+    if (result != null && mounted) {
+      setState(() => _invitationFilter = result);
+    }
   }
 
   void _openInvitation(InvitationItem invitation) {
@@ -202,16 +235,35 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   Widget _buildActivityTabContent() {
     final filteredNotifications = _notifications.where((notif) {
-      switch (_activityFilter.toLowerCase()) {
-        case 'unread':
-          return notif.isUnread;
-        case 'read':
-          return !notif.isUnread;
-        case 'all':
+      // Read Status filter
+      switch (_activityFilter.readStatus) {
+        case 'Unread':
+          if (!notif.isUnread) return false;
+          break;
+        case 'Read':
+          if (notif.isUnread) return false;
+          break;
+        case 'All Notifications':
         default:
-          return true;
+          break;
       }
+
+      // Activity Type filter
+      if (_activityFilter.activityType != 'All Activities' &&
+          notif.category.label != _activityFilter.activityType) {
+        return false;
+      }
+
+      return true;
     }).toList();
+
+    // Sort By
+    filteredNotifications.sort((a, b) {
+      if (_activityFilter.sortBy == 'Oldest First') {
+        return a.createdAt.compareTo(b.createdAt);
+      }
+      return b.createdAt.compareTo(a.createdAt);
+    });
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -233,13 +285,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             const SizedBox(width: 8),
             InvitationFilter(
               key: const Key('activity_filter'),
-              selectedStatus: _activityFilter,
-              options: InvitationFilter.activityOptions,
-              onChanged: (newFilter) {
-                setState(() {
-                  _activityFilter = newFilter;
-                });
-              },
+              hasActiveFilters: !_activityFilter.isDefault,
+              onTap: _openActivityFilterModal,
             ),
           ],
         ),
@@ -250,9 +297,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             padding: const EdgeInsets.symmetric(vertical: 32),
             child: Center(
               child: Text(
-                _activityFilter.toLowerCase() == 'all'
+                _activityFilter.isDefault
                     ? 'No activity notifications.'
-                    : 'No ${_activityFilter.toLowerCase()} notifications.',
+                    : 'No matching activity notifications.',
                 style: const TextStyle(
                   fontFamily: AppFonts.openSans,
                   color: Color(0xFF0F0331),
@@ -280,10 +327,25 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Widget _buildInvitationsTabContent() {
-    final isAll = _invitationFilter.toLowerCase() == 'all';
     final filteredInvitations = _invitations.where((inv) {
-      if (isAll) return true;
-      return inv.status.label.toLowerCase() == _invitationFilter.toLowerCase();
+      // Invitation Status filter
+      if (_invitationFilter.status != 'All Statuses' &&
+          inv.status.label.toLowerCase() !=
+              _invitationFilter.status.toLowerCase()) {
+        return false;
+      }
+
+      // Invitation Type filter
+      if (_invitationFilter.type == 'Group Invitations' &&
+          inv.type != InvitationType.group) {
+        return false;
+      }
+      if (_invitationFilter.type == 'Trip Invitations' &&
+          inv.type != InvitationType.trip) {
+        return false;
+      }
+
+      return true;
     }).toList();
 
     return Column(
@@ -295,13 +357,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           children: [
             InvitationFilter(
               key: const Key('invitation_filter'),
-              selectedStatus: _invitationFilter,
-              options: InvitationFilter.defaultOptions,
-              onChanged: (newStatus) {
-                setState(() {
-                  _invitationFilter = newStatus;
-                });
-              },
+              hasActiveFilters: !_invitationFilter.isDefault,
+              onTap: _openInvitationFilterModal,
             ),
           ],
         ),
@@ -312,9 +369,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             padding: const EdgeInsets.symmetric(vertical: 32),
             child: Center(
               child: Text(
-                isAll
+                _invitationFilter.isDefault
                     ? 'No invitations.'
-                    : 'No $_invitationFilter invitations.',
+                    : 'No matching invitations.',
                 style: const TextStyle(
                   fontFamily: AppFonts.openSans,
                   color: Color(0xFF0F0331),
