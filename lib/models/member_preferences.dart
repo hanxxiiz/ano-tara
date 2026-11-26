@@ -23,6 +23,24 @@ class MemberPreferences {
   final List<String> availableDays;
   final String notes;
 
+  MemberPreferences copyWith({
+    List<String>? activities,
+    List<String>? dietaryPreferences,
+    List<String>? allergies,
+    int? budget,
+    String? travelPace,
+    List<String>? availableDays,
+    String? notes,
+  }) => MemberPreferences(
+    activities: activities ?? this.activities,
+    dietaryPreferences: dietaryPreferences ?? this.dietaryPreferences,
+    allergies: allergies ?? this.allergies,
+    budget: budget ?? this.budget,
+    travelPace: travelPace ?? this.travelPace,
+    availableDays: availableDays ?? this.availableDays,
+    notes: notes ?? this.notes,
+  );
+
   factory MemberPreferences.fromMap(Map<String, dynamic> map) {
     List<String> list(String key) => (map[key] as List<dynamic>? ?? const [])
         .map((e) => e.toString())
