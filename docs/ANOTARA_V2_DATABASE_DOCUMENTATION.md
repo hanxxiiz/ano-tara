@@ -213,7 +213,10 @@ The existing V1 seed configuration defines these reference plans (confirm actual
 
 - `anotara_current_entitlements` returns an active, unexpired verified subscription's limits; falls back to Free otherwise.
 - AI request accounting uses the calendar month for Free/Plus and the subscription period for Trip Pass.
-- Group/member/trip quotas are **reported** but are **not consistently enforced in all creation/join RPCs** yet.
+- Since migration `20261127091612_subscription_quota_enforcement.sql`, group, member-per-group and active-trip limits are **enforced by database triggers** on `groups`, `group_members` and `trips`, so they apply to every write path (app, direct REST call or RPC). The group owner's plan sets the member limit; the creator's plan sets the group, active-trip and AI limits. A `NULL` limit means unlimited.
+- A blocked action raises an error with hint `quota_exceeded:<groups|members_per_group|active_trips|ai_generations>`. Nothing is deleted when a limit is reached or a plan expires; users simply cannot add more.
+- Group and trip creation are recorded in `usage_events` (`group_created`, `trip_created`) alongside AI requests.
+- `anotara_get_subscription_usage()` returns used/limit counts for the Manage Subscription screen. A manual test script is at `supabase/documentation/subscription_quota_test.sql`.
 - The SQL does **not** charge users or verify payment-provider transactions. A trusted service must activate subscriptions.
 - The AI quota is charged when the request is queued. Model inference, output handling, and failed-request quota/refund policy must be implemented separately.
 
@@ -289,6 +292,7 @@ All six require an **active group organizer** managing an **upcoming or ongoing*
 |---|---|---|---|
 | `anotara_change_trip_status` | `p_trip_id uuid`, `p_new_status text`, `p_cancellation_reason text = NULL` | `text` | Organizer transitions trip lifecycle and disables location on closure. |
 | `anotara_current_entitlements` | *none* | `jsonb` | Caller retrieves current plan/limits; Free fallback. |
+| `anotara_get_subscription_usage` | *none* | `jsonb` | Caller retrieves plan plus used/limit counts for groups, active trips, AI generations and members per owned group. |
 | `anotara_request_itinerary_generation` | `p_trip_id uuid`, `p_input_data jsonb = '{}'` | `uuid` | Organizer queues request and logs AI usage; does **not** generate itinerary content by itself. |
 
 **RPC count:** 6 + 8 + 6 + 4 + 3 = **27**.

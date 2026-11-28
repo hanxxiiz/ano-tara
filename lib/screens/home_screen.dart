@@ -339,6 +339,8 @@ class _HomeScreenState extends State<HomeScreen> {
           if (index == 0) return;
           if (index == 4) {
             Navigator.of(context).pushNamed(AppRoutes.profile);
+            return;
+          }
           if (index == 3) {
             Navigator.of(context).pushNamed(AppRoutes.messages);
             return;
